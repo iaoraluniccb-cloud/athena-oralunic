@@ -788,6 +788,28 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   letter-spacing: 0.05em;
   text-align: center;
 }
+.user-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.user-card {
+  background: var(--creme);
+  border: 2px solid var(--warm);
+  border-radius: 6px;
+  padding: 14px 10px;
+  text-align: center;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--vinho-deep);
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: 0.05em;
+}
+.user-card:hover { border-color: var(--vinho-light); background: var(--blush); }
+.user-card.selected { border-color: var(--vinho); background: var(--vinho); color: var(--marfim); }
 /* user pill in header */
 .user-pill {
   font-size: 11px;
@@ -830,14 +852,19 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <h1>Athena</h1>
     <p>Oral Unic · Carlos Barbosa</p>
     <div class="login-field">
-      <label>E-mail</label>
-      <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="username">
+      <label>Quem é você?</label>
+      <div class="user-cards" id="user-cards">
+        <div class="user-card" onclick="selectUser(this,'adm@oralunic.com.br','Adm')">Adm</div>
+        <div class="user-card" onclick="selectUser(this,'mone@oralunic.com.br','Dra Mone')">Dra Mone</div>
+        <div class="user-card" onclick="selectUser(this,'jarina@oralunic.com.br','Jarina')">Jarina</div>
+        <div class="user-card" onclick="selectUser(this,'alexandre@oralunic.com.br','Alexandre')">Alexandre</div>
+      </div>
     </div>
-    <div class="login-field">
-      <label>Senha</label>
+    <div class="login-field" id="pass-field" style="display:none">
+      <label id="pass-label">Senha</label>
       <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <button class="login-btn" onclick="doLogin()" id="login-btn" style="display:none">Entrar</button>
     <div class="login-err" id="login-err"></div>
   </div>
 </div>
@@ -1239,6 +1266,7 @@ const REAL_DATA = {
 const PB = 'https://oralunic-athena-pb-production.up.railway.app';
 let pbToken = null;
 let pbUser  = null;
+let selectedEmail = null;
 
 function setSyncDot(state){ // 'spin'|'ok'|'err'
   const d = document.getElementById('sync-dot');
@@ -1264,12 +1292,24 @@ async function pbFetch(method, path, body){
   }
 }
 
+function selectUser(el, email, name){
+  document.querySelectorAll('.user-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedEmail = email;
+  document.getElementById('pass-label').textContent = 'Senha de ' + name;
+  document.getElementById('pass-field').style.display = '';
+  document.getElementById('login-btn').style.display = '';
+  document.getElementById('login-err').textContent = '';
+  setTimeout(()=>document.getElementById('login-pass').focus(), 50);
+}
+
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim();
+  const email = selectedEmail;
   const pass  = document.getElementById('login-pass').value;
   const errEl = document.getElementById('login-err');
   errEl.textContent = '';
-  if(!email || !pass){ errEl.textContent = 'Preencha e-mail e senha.'; return; }
+  if(!email){ errEl.textContent = 'Selecione seu nome.'; return; }
+  if(!pass){ errEl.textContent = 'Digite a senha.'; return; }
   try {
     const r = await fetch(PB + '/api/collections/users/auth-with-password', {
       method: 'POST',
@@ -1291,10 +1331,13 @@ async function doLogin(){
 }
 
 function doLogout(){
-  pbToken = null; pbUser = null;
+  pbToken = null; pbUser = null; selectedEmail = null;
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('user-pill').style.display = 'none';
   document.getElementById('login-pass').value = '';
+  document.getElementById('pass-field').style.display = 'none';
+  document.getElementById('login-btn').style.display = 'none';
+  document.querySelectorAll('.user-card').forEach(c=>c.classList.remove('selected'));
 }
 
 // Enter key on password field triggers login
