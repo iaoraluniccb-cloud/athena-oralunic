@@ -182,6 +182,13 @@ main { padding: 24px; max-width: 1200px; margin: 0 auto; }
 .s-card.variable{ border-left-color: var(--vinho-light); }
 .s-card.ok      { border-left-color: var(--ok-text); }
 .s-card.over    { border-left-color: var(--over-text); }
+.s-card.manual  { border-left-color: #6366f1; cursor:default; }
+.s-card.manual .val { color: #4f46e5; }
+tr.data-row.row-selected td { background: #ede9fe !important; }
+tr.data-row { cursor: pointer; }
+tr.data-row:hover td { filter: brightness(.97); }
+.manual-hint { font-size:9px; letter-spacing:.08em; opacity:.5; margin-top:2px; }
+.clear-sel-btn { font-size:9px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px solid #a5b4fc; border-radius:3px; padding:2px 8px; cursor:pointer; color:#4f46e5; margin-top:6px; display:block; }
 .s-card label {
   font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
@@ -1073,8 +1080,8 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 // ═══════════════════════════════════════
 const METRIC_BASE = [
   ["Agencia de Publicidade","Mensalidade de Agencia",         1098.30,"F"],
-  ["Agencia de Publicidade","Pro-Labore Avaliador",           5000.00,"V"],
-  ["Agencia de Publicidade","Comissao de Vendas Avaliador",  15110.00,"V"],
+  ["Avaliador",             "Pro-Labore Avaliador",           5000.00,"V"],
+  ["Avaliador",             "Comissao de Vendas Avaliador",  15110.00,"V"],
   ["Beneficios",             "Vale Refeicao",                 1800.00,"F"],
   ["Beneficios",             "Vale Transporte",               null,   "F"],
   ["Bonif./Comissionamento", "Bonif. Relacionamento",         1060.00,"V"],
@@ -1169,6 +1176,7 @@ const MAP = {
   "mensalidade de agencia de publicidade":        "Mensalidade de Agencia",
   "remuneracao avaliador com comissao":           "Comissao de Vendas Avaliador",
   "pro-labore":                                   "Pro-Labore Avaliador",
+  "pró-labore":                                   "Pro-Labore Avaliador",
   "vale refeicao":                                "Vale Refeicao",
   "vale transporte":                              "Vale Transporte",
   "bonificacao/comissionamento - relacionamento": "Bonif. Relacionamento",
@@ -1543,6 +1551,7 @@ function renderSummary(rows){
     <div class="s-card variable"><label>Despesas Variáveis</label><div class="val">${varT>0?fmt(varT):'—'}</div><div class="sub">${rows.filter(r=>r.tipo==='V'&&r.real!==null).length} itens</div></div>
     <div class="s-card ok"><label>Dentro da Métrica</label><div class="val" style="color:var(--ok-text)">${okCt}</div><div class="sub">abaixo ou igual</div></div>
     <div class="s-card over"><label>Acima da Métrica</label><div class="val" style="color:var(--over-text)">${overCt}</div><div class="sub">acima do previsto</div></div>
+    <div class="s-card manual" id="card-manual"><label>Seleção Manual</label><div class="val" id="card-manual-val">—</div><div class="sub" id="card-manual-sub">clique nas linhas para somar</div><button class="clear-sel-btn" onclick="clearSelection()" id="btn-clear-sel" style="display:none">✕ Limpar seleção</button></div>
   `;
 }
 
@@ -1585,6 +1594,40 @@ function renderFlatTable(id, rows){
   document.getElementById(id).innerHTML = rows.map(r=>dataRowHtml(r,false)).join('');
 }
 
+// ── Seleção manual de linhas ──
+const _sel = new Map(); // desp → real value
+
+function toggleRowSelection(desp, realVal){
+  if(_sel.has(desp)){ _sel.delete(desp); }
+  else { _sel.set(desp, realVal||0); }
+  updateSelectionCard();
+  const tr = document.querySelector(`tr.data-row[data-desp="${CSS.escape(desp)}"]`);
+  if(tr) tr.classList.toggle('row-selected', _sel.has(desp));
+}
+
+function clearSelection(){
+  _sel.clear();
+  document.querySelectorAll('tr.data-row.row-selected').forEach(r=>r.classList.remove('row-selected'));
+  updateSelectionCard();
+}
+
+function updateSelectionCard(){
+  const valEl = document.getElementById('card-manual-val');
+  const subEl = document.getElementById('card-manual-sub');
+  const btnEl = document.getElementById('btn-clear-sel');
+  if(!valEl) return;
+  if(_sel.size===0){
+    valEl.textContent='—';
+    subEl.textContent='clique nas linhas para somar';
+    btnEl.style.display='none';
+  } else {
+    const soma = [..._sel.values()].reduce((a,b)=>a+b,0);
+    valEl.textContent = fmt(soma);
+    subEl.textContent = `${_sel.size} item${_sel.size>1?'s':''} selecionado${_sel.size>1?'s':''}`;
+    btnEl.style.display='block';
+  }
+}
+
 function dataRowHtml(r, indent){
   const despEsc = r.desp.replace(/"/g,'&quot;').replace(/'/g,"\\'");
   const badge = r.tipo==='F'
@@ -1612,7 +1655,8 @@ function dataRowHtml(r, indent){
   } else {
     realCell = r.real!==null?fmt(r.real):'—';
   }
-  return `<tr class="data-row ${r.rowClass}">
+  const realNum = r.real !== null ? r.real : 0;
+  return `<tr class="data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}" data-desp="${despEsc}" onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real'))toggleRowSelection('${despEsc}',${realNum})">
     <td class="${lc}">${r.desp}</td>
     <td>${badge}</td>
     <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
