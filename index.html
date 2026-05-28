@@ -903,7 +903,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <div class="legend" id="legend-block"></div>
     <div class="table-wrap">
       <table id="metrics-table">
-        <thead>
+        <thead id="metrics-thead">
           <tr>
             <th style="width:32%">Despesa</th>
             <th>Tipo</th>
@@ -911,6 +911,12 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
             <th class="right">Realizado</th>
             <th class="right">Diferença</th>
             <th class="right">Status</th>
+          </tr>
+          <tr id="thead-totals" style="display:none">
+            <th style="font-size:10px;letter-spacing:.08em;font-weight:400;opacity:.7;padding-top:2px;padding-bottom:6px;" colspan="2"></th>
+            <th class="right" id="thead-total-metrica" style="font-size:11px;color:var(--vinho);padding-top:2px;padding-bottom:6px;border-top:1px solid var(--warm);"></th>
+            <th class="right" id="thead-total-real" style="font-size:11px;color:var(--vinho);padding-top:2px;padding-bottom:6px;border-top:1px solid var(--warm);"></th>
+            <th colspan="2" style="border-top:1px solid var(--warm);padding-top:2px;padding-bottom:6px;"></th>
           </tr>
         </thead>
         <tbody id="metrics-tbody"></tbody>
@@ -1563,6 +1569,16 @@ function renderMainTable(rows){
     for(const r of cr) html += dataRowHtml(r, true);
   }
   document.getElementById('metrics-tbody').innerHTML = html;
+  const totalMet = rows.reduce((s,r)=>s+(r.metrica||0),0);
+  const totalReal = rows.reduce((s,r)=>s+(r.real||0),0);
+  const totalsRow = document.getElementById('thead-totals');
+  if(rows.length>0){
+    document.getElementById('thead-total-metrica').textContent = fmt(totalMet);
+    document.getElementById('thead-total-real').textContent = fmt(totalReal);
+    totalsRow.style.display='';
+  } else {
+    totalsRow.style.display='none';
+  }
 }
 
 function renderFlatTable(id, rows){
