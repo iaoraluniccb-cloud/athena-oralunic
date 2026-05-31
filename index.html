@@ -1574,7 +1574,7 @@ function renderMainTable(rows){
     const cr=cats[cat];
     const cTotal=cr.reduce((s,r)=>s+(r.real||0),0);
     const cMet=cr.reduce((s,r)=>s+(r.metrica||0),0);
-    html+=`<tr class="cat-row"><td colspan="3">${cat}</td><td class="right">${cMet>0?fmt(cMet):'—'}</td><td class="right">${cTotal>0?fmt(cTotal):'—'}</td><td></td></tr>`;
+    html+=`<tr class="cat-row"><td colspan="2">${cat}</td><td class="right">${cMet>0?fmt(cMet):'—'}</td><td class="right">${cTotal>0?fmt(cTotal):'—'}</td><td></td><td></td></tr>`;
     for(const r of cr) html += dataRowHtml(r, true);
   }
   document.getElementById('metrics-tbody').innerHTML = html;
