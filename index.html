@@ -328,23 +328,32 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 .editable-metrica:hover { color: var(--vinho); }
 .editable-real { cursor: pointer; border-bottom: 1px dashed var(--vinho); color: inherit; transition: color .15s; }
 .editable-real:hover { color: var(--vinho); }
-/* Lab Externo distribution modal */
-#lab-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
-#lab-modal-overlay.open { display:flex; }
-#lab-modal { background:var(--marfim,#fdf8f2); border-radius:10px; padding:28px 32px; min-width:380px; max-width:94vw; box-shadow:0 8px 40px rgba(0,0,0,.25); font-family:'Josefin Sans',sans-serif; }
-#lab-modal h3 { font-family:'Cormorant SC',serif; color:var(--vinho); margin:0 0 4px; font-size:18px; }
-#lab-modal .lab-total-line { font-size:12px; color:var(--moka,.5); margin-bottom:16px; }
-#lab-modal .lab-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
-#lab-modal .lab-row { display:flex; align-items:center; gap:8px; }
+/* Distribution modals (Lab Externo + generic) */
+#lab-modal-overlay,#dist-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
+#lab-modal-overlay.open,#dist-modal-overlay.open { display:flex; }
+#lab-modal,#dist-modal { background:var(--marfim,#fdf8f2); border-radius:10px; padding:28px 32px; min-width:420px; max-width:96vw; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.25); font-family:'Josefin Sans',sans-serif; }
+#lab-modal h3,#dist-modal h3 { font-family:'Cormorant SC',serif; color:var(--vinho); margin:0 0 4px; font-size:18px; }
+#lab-modal .lab-total-line,#dist-modal .dist-total-line { font-size:12px; color:var(--moka); opacity:.6; margin-bottom:16px; }
+#lab-modal .lab-rows,#dist-modal .dist-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+#lab-modal .lab-row,#dist-modal .dist-row { display:flex; align-items:center; gap:8px; }
 #lab-modal .lab-row label { flex:1; font-size:13px; color:var(--vinho-deep,#3a1a2e); }
 #lab-modal .lab-row input { width:110px; font-size:13px; padding:4px 8px; border:1px solid var(--warm,#d4b8a0); border-radius:4px; text-align:right; font-family:inherit; background:white; }
-#lab-modal .lab-unallocated { font-size:12px; padding:8px 10px; background:rgba(0,0,0,.04); border-radius:5px; margin-bottom:16px; }
-#lab-modal .lab-unallocated.negative { color:#c0392b; }
-#lab-modal .lab-btn-row { display:flex; gap:10px; justify-content:flex-end; }
-#lab-modal .lab-btn { padding:7px 18px; border:none; border-radius:5px; cursor:pointer; font-family:inherit; font-size:13px; }
-#lab-modal .lab-btn-save { background:var(--vinho,#6b1d3d); color:white; }
-#lab-modal .lab-btn-clear { background:transparent; border:1px solid var(--cobre,#a0522d); color:var(--cobre,#a0522d); }
-#lab-modal .lab-btn-cancel { background:transparent; color:var(--moka,#7a5c4d); }
+#lab-modal .lab-unallocated,#dist-modal .dist-unallocated { font-size:12px; padding:8px 10px; background:rgba(0,0,0,.04); border-radius:5px; margin-bottom:16px; }
+#lab-modal .lab-unallocated.negative,#dist-modal .dist-unallocated.negative { color:#c0392b; }
+#lab-modal .lab-btn-row,#dist-modal .dist-btn-row { display:flex; gap:10px; justify-content:flex-end; }
+#lab-modal .lab-btn,#dist-modal .dist-btn { padding:7px 18px; border:none; border-radius:5px; cursor:pointer; font-family:inherit; font-size:13px; }
+#lab-modal .lab-btn-save,#dist-modal .dist-btn-save { background:var(--vinho,#6b1d3d); color:white; }
+#lab-modal .lab-btn-clear,#dist-modal .dist-btn-clear { background:transparent; border:1px solid var(--cobre,#a0522d); color:var(--cobre,#a0522d); }
+#lab-modal .lab-btn-cancel,#dist-modal .dist-btn-cancel { background:transparent; color:var(--moka,#7a5c4d); }
+/* dist-modal dynamic rows */
+#dist-modal .dist-row input.di-nome { flex:1; font-size:12px; padding:4px 8px; border:1px solid var(--warm); border-radius:4px; font-family:inherit; background:white; }
+#dist-modal .dist-row input.di-val { width:110px; font-size:12px; padding:4px 8px; border:1px solid var(--warm); border-radius:4px; text-align:right; font-family:inherit; background:white; }
+#dist-modal .dist-row select.di-tipo { font-size:11px; padding:3px 5px; border:1px solid var(--warm); border-radius:4px; font-family:inherit; background:white; color:var(--tinta); }
+#dist-modal .dist-row .di-del { background:none; border:none; cursor:pointer; color:#c0392b; font-size:15px; padding:0 4px; }
+#dist-modal .dist-add-btn { font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px dashed var(--cobre); border-radius:4px; padding:5px 14px; cursor:pointer; color:var(--cobre); margin-bottom:14px; width:100%; }
+/* sub-item rows in table */
+tr.sub-row td { background:#f5f0ea; font-size:12px; padding:6px 14px; }
+tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka); }
 
 /* status pill */
 .metric-pill {
@@ -1074,6 +1083,22 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   </div>
 </div>
 
+<!-- Generic distribution modal (Avaliador / Outras Despesas / etc.) -->
+<div id="dist-modal-overlay" onclick="if(event.target===this)closeDistModal()">
+  <div id="dist-modal">
+    <h3 id="dist-modal-title">Distribuir Despesa</h3>
+    <div class="dist-total-line" id="dist-total-line"></div>
+    <div class="dist-rows" id="dist-modal-rows"></div>
+    <button class="dist-add-btn" id="dist-add-btn" onclick="distAddRow()" style="display:none">+ Adicionar item</button>
+    <div class="dist-unallocated" id="dist-unallocated"></div>
+    <div class="dist-btn-row">
+      <button class="dist-btn dist-btn-cancel" onclick="closeDistModal()">Cancelar</button>
+      <button class="dist-btn dist-btn-clear" onclick="clearDistModal()">Limpar</button>
+      <button class="dist-btn dist-btn-save" onclick="saveDistModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════
 // ORAL UNIC ATHENA — Metric Base (Maio 2025)
@@ -1467,6 +1492,13 @@ function resetOverrides(){ localStorage.removeItem('ou_athena_overrides'); rende
 const LAB_SUB_DESPS = ["AGA","Marcelo","Fabio","Breda","Kion Mensalidade","Kion Trabalhos"];
 const LAB_CONSOL    = "Lab. Externo (consolidado)";
 
+// Avaliador split: Comissao recebe valor total da planilha; Pro-Labore vem de override
+const AVAL_COMISSAO = "Comissao de Vendas Avaliador";
+const AVAL_PROLABORE = "Pro-Labore Avaliador";
+
+// Outras Despesas: sub-itens dinâmicos salvos em override como { items:[{nome,valor,tipo}] }
+const OUTRAS_CONSOL = "Outras Despesas";
+
 function buildRows(monthRows){
   const realMap = {};
   if(monthRows){
@@ -1478,16 +1510,24 @@ function buildRows(monthRows){
   }
   const overrides = getOverrides();
 
-  // Compute sub-lab allocated total from overrides
+  // Sub-lab allocation
   const labTotal = realMap[LAB_CONSOL] || 0;
   let labAllocated = 0;
-  for(const d of LAB_SUB_DESPS){
-    const ov = overrides[d] || {};
-    if(ov.real !== undefined) labAllocated += ov.real;
-  }
+  for(const d of LAB_SUB_DESPS){ const ov=overrides[d]||{}; if(ov.real!==undefined) labAllocated+=ov.real; }
   const labHasDist = LAB_SUB_DESPS.some(d => (overrides[d]||{}).real !== undefined);
 
-  return METRIC_BASE.map(([cat,desp,metrica,tipo])=>{
+  // Avaliador split
+  const avalTotal = realMap[AVAL_COMISSAO] || 0;
+  const avalOv = overrides[AVAL_PROLABORE] || {};
+  const avalProLabore = avalOv.real !== undefined ? avalOv.real : 0;
+  const avalHasSplit = avalOv.real !== undefined;
+
+  // Outras Despesas sub-items
+  const outrasOv = overrides[OUTRAS_CONSOL] || {};
+  const outrasItems = outrasOv.items || [];
+  const outrasTotal = realMap[OUTRAS_CONSOL] || 0;
+
+  const baseRows = METRIC_BASE.map(([cat,desp,metrica,tipo])=>{
     const ov = overrides[desp] || {};
     const metricaEff = ov.metrica !== undefined ? ov.metrica : metrica;
     const tipoEff    = ov.tipo    !== undefined ? ov.tipo    : tipo;
@@ -1496,20 +1536,40 @@ function buildRows(monthRows){
       real = labHasDist ? Math.max(0, labTotal - labAllocated) : (realMap[desp] !== undefined ? realMap[desp] : null);
     } else if(LAB_SUB_DESPS.includes(desp)){
       real = ov.real !== undefined ? ov.real : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else if(desp === AVAL_PROLABORE){
+      real = avalHasSplit ? avalProLabore : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else if(desp === AVAL_COMISSAO){
+      real = avalHasSplit ? Math.max(0, avalTotal - avalProLabore) : (realMap[desp] !== undefined ? realMap[desp] : null);
     } else {
       real = realMap[desp] !== undefined ? realMap[desp] : null;
     }
-    let status, rowClass, delta=null, deltaPct=null;
-    if(metricaEff !== null){
-      if(real === null){ status='warn'; rowClass='row-warn'; }
-      else if(real <= metricaEff){ status='ok'; rowClass='row-ok'; delta=real-metricaEff; deltaPct=metricaEff>0?(real-metricaEff)/metricaEff*100:0; }
-      else{ status='over'; rowClass='row-over'; delta=real-metricaEff; deltaPct=metricaEff>0?(real-metricaEff)/metricaEff*100:0; }
-    } else {
-      if(!real){ status='nf-eq'; rowClass='row-nf-eq'; }
-      else { status='nf-high'; rowClass='row-nf-high'; }
-    }
-    return {cat,desp,metrica:metricaEff,tipo:tipoEff,real,status,rowClass,delta,deltaPct};
+    return makeRow(cat,desp,metricaEff,tipoEff,real);
   });
+
+  // Inject Outras Despesas sub-rows after OUTRAS_CONSOL
+  const result = [];
+  for(const r of baseRows){
+    result.push(r);
+    if(r.desp === OUTRAS_CONSOL && outrasItems.length > 0){
+      for(const it of outrasItems){
+        result.push({...makeRow(r.cat, it.nome, null, it.tipo||'V', it.valor||0), isSub:true, parentDesp:OUTRAS_CONSOL});
+      }
+    }
+  }
+  return result;
+}
+
+function makeRow(cat,desp,metrica,tipo,real){
+  let status, rowClass, delta=null, deltaPct=null;
+  if(metrica !== null){
+    if(real === null){ status='warn'; rowClass='row-warn'; }
+    else if(real <= metrica){ status='ok'; rowClass='row-ok'; delta=real-metrica; deltaPct=metrica>0?(real-metrica)/metrica*100:0; }
+    else{ status='over'; rowClass='row-over'; delta=real-metrica; deltaPct=metrica>0?(real-metrica)/metrica*100:0; }
+  } else {
+    if(!real){ status='nf-eq'; rowClass='row-nf-eq'; }
+    else { status='nf-high'; rowClass='row-nf-high'; }
+  }
+  return {cat,desp,metrica,tipo,real,status,rowClass,delta,deltaPct};
 }
 
 // ═══════════════════════════════════════
@@ -1644,7 +1704,8 @@ function dataRowHtml(r, indent){
   else if(r.status==='over') sHtml=`<span class="metric-pill mp-over">↑ Acima</span>`;
   else if(r.status==='warn') sHtml=`<span class="metric-pill mp-warn">— Aguard.</span>`;
   else                       sHtml=`<span class="metric-pill mp-nf">Sem métrica</span>`;
-  const lc = indent ? 'label-col' : '';
+  const isSub = !!r.isSub;
+  const lc = (indent && !isSub) ? 'label-col' : '';
   const metVal = r.metrica !== null ? r.metrica : '';
   const metDisplay = r.metrica !== null ? fmt(r.metrica) : '—';
   let realCell;
@@ -1652,12 +1713,22 @@ function dataRowHtml(r, indent){
     const ovHasDist = LAB_SUB_DESPS.some(d => (getOverrides()[d]||{}).real !== undefined);
     const tooltip = ovHasDist ? 'Distribuído — clique para editar' : 'Clique para distribuir por laboratório';
     realCell = `<span class="editable-real" onclick="openLabModal()" title="${tooltip}">⚗ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else if(r.desp === AVAL_COMISSAO){
+    const hasSplit = (getOverrides()[AVAL_PROLABORE]||{}).real !== undefined;
+    const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
+    realCell = `<span class="editable-real" onclick="openDistModal('avaliador')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else if(r.desp === OUTRAS_CONSOL){
+    const hasItems = ((getOverrides()[OUTRAS_CONSOL]||{}).items||[]).length > 0;
+    const tooltip = hasItems ? 'Detalhado — clique para editar' : 'Clique para detalhar';
+    realCell = `<span class="editable-real" onclick="openDistModal('outras')" title="${tooltip}">≡ ${r.real!==null?fmt(r.real):'—'}</span>`;
   } else {
     realCell = r.real!==null?fmt(r.real):'—';
   }
   const realNum = r.real !== null ? r.real : 0;
-  return `<tr class="data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}" data-desp="${despEsc}" onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real'))toggleRowSelection('${despEsc}',${realNum})">
-    <td class="${lc}">${r.desp}</td>
+  const trClass = isSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
+  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real'))toggleRowSelection('${despEsc}',${realNum})"`;
+  return `<tr class="${trClass}" data-desp="${despEsc}" ${trClick}>
+    <td class="${isSub?'label-col':lc}">${isSub?'↳ '+r.desp:r.desp}</td>
     <td>${badge}</td>
     <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
     <td class="right">${realCell}</td>
@@ -1824,6 +1895,165 @@ function clearLabDist(){
   LAB_SUB_DESPS.forEach(d => { if(o[d]) delete o[d].real; });
   localStorage.setItem('ou_athena_overrides', JSON.stringify(o));
   closeLabModal();
+  renderAll();
+}
+
+// ═══════════════════════════════════════
+// GENERIC DISTRIBUTION MODAL
+// ═══════════════════════════════════════
+let _distMode = ''; // 'avaliador' | 'outras'
+
+function openDistModal(mode){
+  _distMode = mode;
+  const ovs = getOverrides();
+  const rowsEl = document.getElementById('dist-modal-rows');
+  const addBtn = document.getElementById('dist-add-btn');
+  const totalLine = document.getElementById('dist-total-line');
+  const title = document.getElementById('dist-modal-title');
+
+  if(mode === 'avaliador'){
+    title.textContent = 'Distribuir Remuneração Avaliador';
+    const total = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        if(MAP[k]===AVAL_COMISSAO||(r.d||r.despesa)===AVAL_COMISSAO) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    totalLine.textContent = 'Total Remuneração Avaliador (planilha): ' + fmt(total);
+    const curProLabore = (ovs[AVAL_PROLABORE]||{}).real;
+    rowsEl.innerHTML = `
+      <div class="dist-row">
+        <label style="flex:1;font-size:13px;color:var(--vinho-deep)">Pró-Labore Avaliador</label>
+        <input type="number" min="0" step="0.01" id="dist-aval-prolabore" value="${curProLabore!==undefined?curProLabore:''}" placeholder="0,00" oninput="updateDistUnallocated(${total})">
+      </div>
+      <div class="dist-row" style="opacity:.6">
+        <label style="flex:1;font-size:13px;color:var(--vinho-deep)">Comissão de Vendas (restante)</label>
+        <span id="dist-aval-comissao-display" style="font-size:13px;min-width:110px;text-align:right">${fmt(Math.max(0,total-(curProLabore||0)))}</span>
+      </div>`;
+    addBtn.style.display='none';
+    updateDistUnallocated(total);
+  } else if(mode === 'outras'){
+    title.textContent = 'Detalhar Outras Despesas';
+    const total = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        if(MAP[k]===OUTRAS_CONSOL||(r.d||r.despesa)===OUTRAS_CONSOL) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    totalLine.textContent = 'Total Outras Despesas (planilha): ' + fmt(total);
+    const items = (ovs[OUTRAS_CONSOL]||{}).items || [];
+    addBtn.style.display='block';
+    rowsEl.innerHTML = items.map((it,i)=>distOutrasRowHtml(it,i)).join('');
+    updateDistUnallocated(total);
+  }
+  document.getElementById('dist-modal-overlay').classList.add('open');
+}
+
+function distOutrasRowHtml(it, i){
+  return `<div class="dist-row" data-idx="${i}">
+    <input class="di-nome" type="text" placeholder="Nome da despesa" value="${(it.nome||'').replace(/"/g,'&quot;')}" oninput="updateDistUnallocated()">
+    <input class="di-val" type="number" min="0" step="0.01" placeholder="0,00" value="${it.valor||''}" oninput="updateDistUnallocated()">
+    <select class="di-tipo" oninput="updateDistUnallocated()">
+      <option value="V"${(it.tipo||'V')==='V'?' selected':''}>Variável</option>
+      <option value="F"${(it.tipo||'V')==='F'?' selected':''}>Fixa</option>
+    </select>
+    <button class="di-del" onclick="distRemoveRow(this)" title="Remover">✕</button>
+  </div>`;
+}
+
+function distAddRow(){
+  const rowsEl = document.getElementById('dist-modal-rows');
+  const i = rowsEl.querySelectorAll('.dist-row').length;
+  const div = document.createElement('div');
+  div.innerHTML = distOutrasRowHtml({}, i);
+  rowsEl.appendChild(div.firstChild);
+  updateDistUnallocated();
+}
+
+function distRemoveRow(btn){
+  btn.closest('.dist-row').remove();
+  updateDistUnallocated();
+}
+
+function updateDistUnallocated(total){
+  const el = document.getElementById('dist-unallocated');
+  if(_distMode === 'avaliador'){
+    const inp = document.getElementById('dist-aval-prolabore');
+    if(!inp||!el) return;
+    const v = parseFloat((inp.value||'').replace(',','.')) || 0;
+    const remaining = (total||0) - v;
+    const dispEl = document.getElementById('dist-aval-comissao-display');
+    if(dispEl) dispEl.textContent = fmt(Math.max(0, remaining));
+    el.textContent = 'Restante para comissão: ' + fmt(Math.max(0, remaining));
+    el.classList.toggle('negative', remaining < -0.005);
+  } else if(_distMode === 'outras'){
+    let used=0;
+    document.querySelectorAll('#dist-modal-rows .di-val').forEach(inp=>{
+      const v=parseFloat((inp.value||'').replace(',','.'));
+      if(!isNaN(v)) used+=v;
+    });
+    if(!el) return;
+    const curTotal = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        if(MAP[k]===OUTRAS_CONSOL||(r.d||r.despesa)===OUTRAS_CONSOL) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    const rem = curTotal - used;
+    el.textContent = 'Detalhado: ' + fmt(used) + ' · Não alocado: ' + fmt(rem);
+    el.classList.toggle('negative', rem < -0.005);
+  }
+}
+
+function closeDistModal(){
+  document.getElementById('dist-modal-overlay').classList.remove('open');
+}
+
+function saveDistModal(){
+  const ovs = getOverrides();
+  if(_distMode === 'avaliador'){
+    const inp = document.getElementById('dist-aval-prolabore');
+    const v = inp ? inp.value.trim() : '';
+    if(v === ''){ if(ovs[AVAL_PROLABORE]) delete ovs[AVAL_PROLABORE].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(AVAL_PROLABORE,'real',n); }
+  } else if(_distMode === 'outras'){
+    const items = [];
+    document.querySelectorAll('#dist-modal-rows .dist-row').forEach(row=>{
+      const nome = (row.querySelector('.di-nome')||{}).value||'';
+      const valStr = (row.querySelector('.di-val')||{}).value||'';
+      const tipo = (row.querySelector('.di-tipo')||{}).value||'V';
+      const valor = parseFloat(valStr.replace(',','.'));
+      if(nome.trim() && !isNaN(valor)) items.push({nome:nome.trim(), valor, tipo});
+    });
+    if(items.length===0){ if(ovs[OUTRAS_CONSOL]) delete ovs[OUTRAS_CONSOL].items; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); }
+    else {
+      if(!ovs[OUTRAS_CONSOL]) ovs[OUTRAS_CONSOL]={};
+      ovs[OUTRAS_CONSOL].items = items;
+      localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs));
+    }
+  }
+  closeDistModal();
+  renderAll();
+}
+
+function clearDistModal(){
+  const ovs = getOverrides();
+  if(_distMode === 'avaliador'){
+    if(ovs[AVAL_PROLABORE]) delete ovs[AVAL_PROLABORE].real;
+  } else if(_distMode === 'outras'){
+    if(ovs[OUTRAS_CONSOL]) delete ovs[OUTRAS_CONSOL].items;
+  }
+  localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs));
+  closeDistModal();
   renderAll();
 }
 
