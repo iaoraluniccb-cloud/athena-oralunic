@@ -1054,6 +1054,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 
         <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
           <button class="btn-primary" onclick="loadRealData()">Carregar Fev / Mar / Abr 2026</button>
+          <button class="btn-primary" onclick="createBlankMonth()" style="background:var(--cobre);border-color:var(--cobre)" title="Cria o mês selecionado com todas as despesas zeradas, pronto para editar">+ Criar mês em branco</button>
           <button class="btn-secondary" onclick="clearCurrent()">Limpar visualização</button>
         </div>
         <div class="import-log" id="import-log"></div>
@@ -1802,6 +1803,28 @@ function loadRealData(){
   renderAll();
   log('Exibindo Abril 2026');
   setTimeout(()=>switchTab('metrics'), 500);
+}
+
+function createBlankMonth(){
+  const m = parseInt(document.getElementById('import-month').value);
+  const y = parseInt(document.getElementById('import-year').value);
+  const key = monthKey(m, y);
+  const label = monthLabel(m, y);
+  const all = getAll();
+  if(all[key]){
+    if(!confirm(`${label} já existe. Deseja substituir pelos dados em branco?`)) return;
+  }
+  // Build rows from METRIC_BASE with value 0
+  const rows = METRIC_BASE.map(([,desp])=>({d: desp, v: 0}));
+  // Also add sub-lab names so they can receive values
+  for(const d of LAB_SUB_DESPS) rows.push({d, v:0});
+  clearLog();
+  saveMonth(key, label, rows);
+  currentMonth = getAll()[key];
+  renderAll();
+  log(`✓ ${label} criado em branco — ${METRIC_BASE.length} despesas com valor R$ 0,00`);
+  log('Edite os valores de Realizado usando o botão de importar CSV, ou atualize os valores de métrica diretamente na tabela.');
+  setTimeout(()=>switchTab('metrics'), 400);
 }
 
 // ═══════════════════════════════════════
