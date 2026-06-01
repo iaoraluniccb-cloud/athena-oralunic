@@ -1362,6 +1362,8 @@ async function doLogin(){
     if(!r.ok) { errEl.textContent = 'E-mail ou senha incorretos.'; return; }
     pbToken = j.token;
     pbUser  = j.record;
+    localStorage.setItem('ou_athena_token', pbToken);
+    localStorage.setItem('ou_athena_user', JSON.stringify(pbUser));
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('user-pill').style.display = 'flex';
     document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
@@ -1374,6 +1376,8 @@ async function doLogin(){
 
 function doLogout(){
   pbToken = null; pbUser = null; selectedEmail = null;
+  localStorage.removeItem('ou_athena_token');
+  localStorage.removeItem('ou_athena_user');
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('user-pill').style.display = 'none';
   document.getElementById('login-pass').value = '';
@@ -2210,15 +2214,36 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';const 
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded', async ()=>{
   // Sincroniza REAL_DATA no localStorage (adiciona meses novos sem apagar existentes)
-  // Nota: saveMonth também envia pro PB, mas aqui o login ainda não ocorreu —
-  // o envio ao PB acontece após login em loadFromPB
   { const _s=getAll();
     for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]){ _s[k]={key:k,label:o.label,rows:o.rows}; } }
     localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
-  // Foca o campo email no login
-  setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
+  // Se já há sessão salva (token no localStorage), recarrega do PB direto
+  const _savedToken = localStorage.getItem('ou_athena_token');
+  const _savedUser  = localStorage.getItem('ou_athena_user');
+  if(_savedToken && _savedUser){
+    try {
+      pbToken = _savedToken;
+      pbUser  = JSON.parse(_savedUser);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      document.getElementById('user-pill').style.display = 'flex';
+      document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+      setSyncDot('ok');
+      await loadFromPB();
+    } catch(e) {
+      // token inválido — mostra login
+      localStorage.removeItem('ou_athena_token');
+      localStorage.removeItem('ou_athena_user');
+      document.getElementById('login-email')?.focus();
+    }
+  } else {
+    // Sem sessão — define currentMonth pelos dados locais para pré-visualização
+    const _initKeys = Object.keys(getAll()).sort().reverse();
+    if(_initKeys.length){ currentMonth = getAll()[_initKeys[0]]; renderAll(); }
+    setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
+  }
 });
 </script>
 </body>
