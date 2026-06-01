@@ -2208,12 +2208,13 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';const 
 // INIT
 // ═══════════════════════════════════════
 window.addEventListener('DOMContentLoaded',()=>{
-  // Pré-popula REAL_DATA no localStorage como fallback
-  if(Object.keys(getAll()).length === 0){
-    for(const [k,o] of Object.entries(REAL_DATA)) {
-      const a=getAll(); a[k]={key:k,label:o.label,rows:o.rows}; localStorage.setItem('ou_athena_v2',JSON.stringify(a));
-    }
+  // Sincroniza REAL_DATA no localStorage (adiciona meses novos sem apagar existentes)
+  const _stored = getAll();
+  let _changed = false;
+  for(const [k,o] of Object.entries(REAL_DATA)){
+    if(!_stored[k]){ _stored[k]={key:k,label:o.label,rows:o.rows}; _changed=true; }
   }
+  if(_changed) localStorage.setItem('ou_athena_v2', JSON.stringify(_stored));
   // Foca o campo email no login
   setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
 });
