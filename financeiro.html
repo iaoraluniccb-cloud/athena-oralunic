@@ -529,20 +529,23 @@
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- HEADER oculto via CSS -->
 <div class="header">
   <div class="logo">Athena</div>
   <div class="logo-divider"></div>
   <div class="logo-sub">Controle Financeiro</div>
   <button onclick="openBackupModal()" title="Backup / Restaurar dados" style="margin-left:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--marfim);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.04em;display:flex;align-items:center;gap:6px">💾 Backup</button>
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('cobranca')">Cobrança <span class="tab-badge" id="badge-cobranca">0</span></button>
-    <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
-    <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
-    <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
-    <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
-    <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
-  </div>
+</div>
+
+<!-- BARRA DE ABAS — fora do header para aparecer sempre -->
+<div style="background:var(--vinho-p);padding:0 24px;display:flex;align-items:center;gap:2px;border-bottom:2px solid var(--cobre);flex-wrap:wrap;">
+  <button class="tab active" onclick="switchTab('cobranca')">Cobrança <span class="tab-badge" id="badge-cobranca">0</span></button>
+  <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
+  <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
+  <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
+  <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
+  <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
+  <button onclick="openBackupModal()" style="margin-left:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--marfim);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.04em;display:flex;align-items:center;gap:6px">💾 Backup</button>
 </div>
 
 <!-- MAIN -->
