@@ -927,6 +927,31 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 .fech-badge-dinheiro { background: #dcfce7; color: #15803d; border-radius: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: .08em; }
 .fech-badge-pix      { background: #dbeafe; color: #1d4ed8; border-radius: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: .08em; }
 
+/* ── Row edit/delete actions ── */
+.frow-actions { text-align: right; white-space: nowrap; padding-right: 6px !important; }
+.frow-btn {
+  background: none; border: none; cursor: pointer; padding: 2px 5px; border-radius: 3px;
+  font-size: 12px; color: var(--over-text); opacity: .45; transition: opacity .15s, color .15s;
+}
+.frow-btn:hover { opacity: 1; }
+.frow-del:hover { color: #c0392b; }
+.frow-save:hover { color: #15803d; }
+.frow-input {
+  border: 1px solid var(--warm); border-radius: 3px; padding: 3px 6px;
+  font-family: 'Josefin Sans', sans-serif; font-size: 12.5px; color: var(--tinta);
+  background: var(--marfim); outline: none; box-sizing: border-box;
+}
+.frow-input:focus { border-color: var(--vinho); }
+.frow-num { width: 90px; text-align: right; }
+.fech-add-row td { padding: 4px 8px 8px 8px !important; border: none !important; }
+.frow-add-btn {
+  background: none; border: 1px dashed var(--warm); border-radius: 4px;
+  color: var(--over-text); font-family: 'Josefin Sans', sans-serif; font-size: 11px;
+  padding: 3px 12px; cursor: pointer; opacity: .6; transition: opacity .15s;
+}
+.frow-add-btn:hover { opacity: 1; border-color: var(--vinho); color: var(--vinho); }
+.frow-editing td { background: #fafafa; }
+
 /* ── DIREÇÃO TAB ── */
 .dir-card {
   background: white;
@@ -1419,6 +1444,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
               <th class="right">Dinheiro</th>
               <th class="right">Transferência</th>
               <th class="right">Total</th>
+              <th style="width:64px"></th>
             </tr>
           </thead>
           <tbody id="fech-tbody"></tbody>
@@ -3525,19 +3551,19 @@ function renderFechamento(){
     </div>`;
   }).join('');
 
-  // Agrupar por categoria
+  // Agrupar por categoria (usando índice global para edição)
   const groups = {};
   for(const cat of FECH_CATS) groups[cat.key] = { label: cat.label, rows: [] };
-  for(const r of rows){
-    const catKey = categorizeFech(r.b);
-    groups[catKey].rows.push(r);
-  }
+  rows.forEach((r, idx) => {
+    const catKey = (r._cat && groups[r._cat]) ? r._cat : categorizeFech(r.b);
+    groups[catKey].rows.push({ ...r, _idx: idx });
+  });
 
   // Montar tabela
   let html = '';
   for(const cat of FECH_CATS){
     const g = groups[cat.key];
-    if(!g.rows.length) continue;
+    if(!g.rows.length && cat.key !== 'bonificacoes') continue;
     const catD = g.rows.reduce((s,r)=>s+(r.d||0),0);
     const catT = g.rows.reduce((s,r)=>s+(r.t||0),0);
     const catG = catD + catT;
@@ -3546,18 +3572,29 @@ function renderFechamento(){
       <td class="right">${catD>0?fmt(catD):'—'}</td>
       <td class="right">${catT>0?fmt(catT):'—'}</td>
       <td class="right">${catG>0?fmt(catG):'—'}</td>
+      <td></td>
     </tr>`;
     for(const r of g.rows){
       const tot = (r.d||0)+(r.t||0);
       const dSpan = r.d>0 ? `<span class="fech-badge-dinheiro">${fmt(r.d)}</span>` : '—';
       const tSpan = r.t>0 ? `<span class="fech-badge-pix">${fmt(r.t)}</span>` : '—';
-      html += `<tr class="fech-data-row">
+      html += `<tr class="fech-data-row" id="frow-${r._idx}">
         <td class="label-col">${r.b}</td>
         <td class="right">${dSpan}</td>
         <td class="right">${tSpan}</td>
         <td class="right">${tot>0?fmt(tot):'—'}</td>
+        <td class="frow-actions">
+          <button class="frow-btn" title="Editar" onclick="editFechRow('${key}',${r._idx})">✎</button>
+          <button class="frow-btn frow-del" title="Excluir" onclick="deleteFechRow('${key}',${r._idx})">✕</button>
+        </td>
       </tr>`;
     }
+    // Botão de adicionar linha dentro da categoria
+    html += `<tr class="fech-add-row">
+      <td colspan="5">
+        <button class="frow-add-btn" onclick="addFechRow('${key}','${cat.key}')">+ Adicionar linha em ${g.label}</button>
+      </td>
+    </tr>`;
   }
   // Linha de total geral
   html += `<tr class="fech-total-row">
@@ -3565,6 +3602,7 @@ function renderFechamento(){
     <td class="right">${fmt(totalD)}</td>
     <td class="right">${fmt(totalT)}</td>
     <td class="right">${fmt(totalG)}</td>
+    <td></td>
   </tr>`;
 
   document.getElementById('fech-tbody').innerHTML = html;
@@ -3634,6 +3672,59 @@ function clearFechACard(monthKey, cardKey){
   if(data[monthKey]?.acards) data[monthKey].acards[cardKey] = [];
   saveFechData(data);
   renderFechamento();
+}
+
+// ── Edição inline de linhas da tabela de pagamentos ─────────────────────────
+function editFechRow(monthKey, idx){
+  const tr = document.getElementById('frow-'+idx);
+  if(!tr || tr.classList.contains('frow-editing')) return;
+  const data = getFechData();
+  const r = data[monthKey]?.rows?.[idx];
+  if(!r) return;
+  tr.classList.add('frow-editing');
+  const dVal = r.d > 0 ? r.d : '';
+  const tVal = r.t > 0 ? r.t : '';
+  tr.innerHTML = `
+    <td colspan="2"><input class="frow-input" id="frow-b-${idx}" value="${r.b.replace(/"/g,'&quot;')}" placeholder="Beneficiário" style="width:100%"></td>
+    <td><input class="frow-input frow-num" id="frow-d-${idx}" value="${dVal}" placeholder="Dinheiro"></td>
+    <td><input class="frow-input frow-num" id="frow-t-${idx}" value="${tVal}" placeholder="Transferência"></td>
+    <td class="frow-actions">
+      <button class="frow-btn frow-save" title="Salvar" onclick="saveFechRowEdit('${monthKey}',${idx})">✓</button>
+      <button class="frow-btn" title="Cancelar" onclick="renderFechamento()">✕</button>
+    </td>`;
+  document.getElementById('frow-b-'+idx)?.focus();
+}
+
+function saveFechRowEdit(monthKey, idx){
+  const data = getFechData();
+  const rows = data[monthKey]?.rows;
+  if(!rows || !rows[idx]) return;
+  const b = document.getElementById('frow-b-'+idx)?.value.trim() || rows[idx].b;
+  const dRaw = document.getElementById('frow-d-'+idx)?.value.replace(',','.') || '0';
+  const tRaw = document.getElementById('frow-t-'+idx)?.value.replace(',','.') || '0';
+  rows[idx] = { b, d: parseFloat(dRaw)||0, t: parseFloat(tRaw)||0 };
+  saveFechData(data);
+  renderFechamento();
+}
+
+function deleteFechRow(monthKey, idx){
+  const data = getFechData();
+  data[monthKey]?.rows?.splice(idx, 1);
+  saveFechData(data);
+  renderFechamento();
+}
+
+function addFechRow(monthKey, catKey){
+  const data = getFechData();
+  if(!data[monthKey]) return;
+  if(!data[monthKey].rows) data[monthKey].rows = [];
+  // Adiciona linha vazia e entra em modo de edição após render
+  const newIdx = data[monthKey].rows.length;
+  // Encontrar um label do cat para pré-preencher o beneficiário
+  data[monthKey].rows.push({ b: '', d: 0, t: 0, _cat: catKey });
+  saveFechData(data);
+  renderFechamento();
+  setTimeout(()=>{ editFechRow(monthKey, newIdx); }, 30);
 }
 
 // Drag & drop na aba fechamento
