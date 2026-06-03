@@ -3542,32 +3542,36 @@ function renderFechamento(){
       const dirM = getDirData()[mKey];
       mFluxo = dirM ? (dirM.cards.fluxo||[]).reduce((s,it)=>s+(parseFloat(it.val)||0),0) : 0;
     }
-    // Dinheiro: manual > FECH_RESUMO > linhas individuais
+    // Dinheiro entradas: manual > FECH_RESUMO > linhas individuais
     const mDinheiroItems = mAcards['dinheiro'] || [];
-    let mD;
+    let mDinEntradas;
     if(mDinheiroItems.length){
-      mD = mDinheiroItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+      mDinEntradas = mDinheiroItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
     } else if(mResumо.dinheiro != null){
-      mD = mResumо.dinheiro;
+      mDinEntradas = mResumо.dinheiro;
     } else {
-      mD = (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
+      mDinEntradas = (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
     }
+    // Saídas em dinheiro = soma coluna D das linhas da tabela
+    const mSaidasD = (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
     // Se esse mês tem sobra_anterior na planilha, usa como base (quebra a recursão)
     if(mResumо.sobra_anterior != null && depth > 0){
-      return mResumо.sobra_anterior + mFluxo - mD;
+      return mResumо.sobra_anterior + mDinEntradas - mSaidasD;
     }
     const allK  = Object.keys(getFechData()).sort();
     const idxM  = allK.indexOf(mKey);
     const prevM = idxM > 0 ? allK[idxM-1] : null;
-    return calcSobra(prevM, depth+1) + mFluxo - mD;
+    return calcSobra(prevM, depth+1) + mDinEntradas - mSaidasD;
   }
 
   // Sobra anterior: usa FECH_RESUMO do mês atual se disponível, senão calcula recursivamente
   const sobraAnterior = resumo.sobra_anterior != null ? resumo.sobra_anterior : calcSobra(prevKey, 0);
-  const fluxoAtualNum = fluxoCaixa ?? 0;
+  // Dinheiro (card) = entradas em espécie; totalD = saídas em dinheiro das linhas da tabela
   const dinheiroAutoVal = resumo.dinheiro != null ? resumo.dinheiro : totalD;
-  const dinheiroEfetivo = acardEffective('dinheiro', dinheiroAutoVal);
-  const sobraAtualAuto  = sobraAnterior + fluxoAtualNum - dinheiroEfetivo;
+  const dinheiroEfetivo = acardEffective('dinheiro', dinheiroAutoVal); // entradas
+  const saidasDinheiro  = totalD; // saídas = soma coluna D das linhas
+  // Sobra = sobra_anterior + dinheiro_entradas − saídas_dinheiro
+  const sobraAtualAuto  = sobraAnterior + dinheiroEfetivo - saidasDinheiro;
   const sobraAtual      = acardEffective('sobra', sobraAtualAuto);
 
   // ── Helpers de cor ────────────────────────────────────────────────────
