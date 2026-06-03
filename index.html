@@ -3702,19 +3702,8 @@ function renderFechamento(){
     const dispVal = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
     const bodyId  = `facard-body-${ac.key}`;
     const arrowId = `facard-arrow-${ac.key}`;
-    const itemsHtml = items.map((it,i)=>`
-      <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(139,90,60,.08)">
-        <input type="text" value="${(it.desc||'').replace(/"/g,'&quot;')}" placeholder="Descrição"
-          onblur="saveFechACard('${key}','${ac.key}',${i},'desc',this.value)"
-          style="flex:1;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:11px;color:var(--tinta);outline:none;padding:2px 4px;">
-        <input type="text" value="${it.val||''}" placeholder="0,00"
-          onblur="saveFechACard('${key}','${ac.key}',${i},'val',this.value)"
-          style="width:90px;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:600;color:var(--vinho);outline:none;padding:2px 4px;text-align:right;">
-        <button onclick="removeFechACard('${key}','${ac.key}',${i})"
-          style="background:none;border:none;cursor:pointer;color:var(--over-text);font-size:13px;padding:0 2px;line-height:1;">✕</button>
-      </div>`).join('');
-    const autoNote = items.length===0 && ac.autoVal!==null
-      ? `<div style="font-size:10px;opacity:.5;padding:4px 0;">calculado automaticamente</div>` : '';
+    // Card simplificado: só 1 input de valor (sem descrição)
+    const singleVal = items.length ? items[0].val : '';
     return `<div class="dir-card" style="min-width:0">
       <div class="dir-card-header" onclick="toggleFechACard('${ac.key}')">
         <div>
@@ -3724,10 +3713,13 @@ function renderFechamento(){
         <span class="dir-card-arrow" id="${arrowId}">▾</span>
       </div>
       <div class="dir-card-body" id="${bodyId}" style="display:none">
-        <div style="padding:6px 14px 4px">${autoNote}${itemsHtml}</div>
-        <div style="padding:4px 14px 10px;display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="dir-add-btn" onclick="addFechACard('${key}','${ac.key}')">+ Adicionar</button>
-          ${items.length ? `<button class="dir-add-btn" style="color:var(--over-text);border-color:var(--over-text)" onclick="clearFechACard('${key}','${ac.key}')">↺ Usar automático</button>` : ''}
+        <div style="padding:8px 14px 10px;display:flex;align-items:center;gap:8px">
+          <input type="text" id="facard-input-${ac.key}" value="${singleVal}" placeholder="${ac.autoVal!=null ? fmt(ac.autoVal).replace('R$ ','') : '0,00'}"
+            onblur="saveFechACardSimple('${key}','${ac.key}',this.value)"
+            onkeydown="if(event.key==='Enter'){this.blur();toggleFechACard('${ac.key}')}"
+            style="flex:1;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:14px;font-weight:600;color:var(--vinho);outline:none;padding:4px 6px;text-align:right;">
+          ${singleVal ? `<button onclick="saveFechACardSimple('${key}','${ac.key}','');document.getElementById('facard-input-${ac.key}').value=''" title="Usar automático"
+            style="background:none;border:1px solid var(--warm);border-radius:4px;cursor:pointer;color:var(--moka);font-size:10px;padding:2px 7px;font-family:'Josefin Sans',sans-serif;">↺ auto</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -3819,6 +3811,27 @@ function addFechACard(monthKey, cardKey){
     // Foca no último input de descrição do card
     const inputs = body?.querySelectorAll('input[placeholder="Descrição"]');
     if(inputs?.length) inputs[inputs.length-1].focus();
+  }, 30);
+}
+
+function saveFechACardSimple(monthKey, cardKey, value){
+  const data = getFechData();
+  if(!data[monthKey]) return;
+  if(!data[monthKey].acards) data[monthKey].acards = {};
+  const cleaned = String(value).replace(',','.').replace(/[^0-9.]/g,'');
+  const num = parseFloat(cleaned);
+  if(!value || value.trim()==='' || isNaN(num)){
+    data[monthKey].acards[cardKey] = []; // limpa → usa automático
+  } else {
+    data[monthKey].acards[cardKey] = [{ desc:'', val: num }];
+  }
+  saveFechData(data);
+  renderFechamento();
+  // Reabre o body do card
+  setTimeout(()=>{
+    const body = document.getElementById('facard-body-'+cardKey);
+    const arrow = document.getElementById('facard-arrow-'+cardKey);
+    if(body){ body.style.display=''; if(arrow) arrow.textContent='▴'; }
   }, 30);
 }
 
