@@ -1287,15 +1287,16 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <!-- ═══ DIREÇÃO ═══ -->
   <div id="tab-direcao" style="display:none">
 
-    <!-- Filtro de mês -->
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;">
-      <span style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--moka);opacity:.7;">Mês de referência</span>
-      <select id="dir-month-sel" onchange="renderDirecao()" style="border:1px solid var(--warm);border-radius:3px;padding:7px 12px;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:300;color:var(--tinta);background:var(--marfim);outline:none;">
-        <option value="">— Selecione o mês —</option>
-      </select>
-      <button onclick="addDirMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
-      <button id="dir-del-btn" onclick="deleteDirMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:3px;padding:6px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
+    <!-- Seletor de mês pills -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <div class="month-switcher" id="dir-month-switcher"></div>
+      <button onclick="addDirMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:14px;padding:5px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
+      <button id="dir-del-btn" onclick="deleteDirMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:14px;padding:5px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
     </div>
+    <!-- select oculto mantido para compatibilidade com JS existente -->
+    <select id="dir-month-sel" onchange="renderDirecao()" style="display:none;">
+      <option value="">— Selecione o mês —</option>
+    </select>
 
     <div id="dir-empty" style="text-align:center;padding:60px 24px;color:var(--moka);opacity:.5;display:none">
       <div style="font-family:'Cormorant SC',serif;font-size:18px;color:var(--vinho);margin-bottom:8px;">Selecione ou crie um mês</div>
@@ -1394,15 +1395,16 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <!-- ═══ FECHAMENTO ═══ -->
   <div id="tab-fechamento" style="display:none">
 
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;">
-      <span style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--moka);opacity:.7;">Mês</span>
-      <select id="fech-month-sel" onchange="renderFechamento()" style="border:1px solid var(--warm);border-radius:3px;padding:7px 12px;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:300;color:var(--tinta);background:var(--marfim);outline:none;min-width:160px;">
-        <option value="">— Selecione —</option>
-      </select>
-      <button onclick="showFechImport()" style="font-size:10px;letter-spacing:.15em;background:var(--vinho);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">↑ Importar mês</button>
-      <button onclick="showFechNewMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
-      <button id="fech-del-btn" onclick="deleteFechMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:3px;padding:6px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <div class="month-switcher" id="fech-month-switcher"></div>
+      <button onclick="showFechImport()" style="font-size:10px;letter-spacing:.15em;background:var(--vinho);color:var(--marfim);border:none;border-radius:14px;padding:5px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">↑ Importar</button>
+      <button onclick="showFechNewMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:14px;padding:5px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
+      <button id="fech-del-btn" onclick="deleteFechMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:14px;padding:5px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
     </div>
+    <!-- select oculto mantido para compatibilidade com JS existente -->
+    <select id="fech-month-sel" onchange="renderFechamento()" style="display:none;">
+      <option value="">— Selecione —</option>
+    </select>
 
     <!-- Painel de novo mês -->
     <div id="fech-new-panel" style="display:none;margin-bottom:24px;">
@@ -3348,6 +3350,18 @@ function populateFechMonthSel(){
   sel.innerHTML = '<option value="">— Selecione —</option>' +
     keys.map(k=>`<option value="${k}">${data[k].label}</option>`).join('');
   if(cur && data[cur]) sel.value = cur;
+  // Pills
+  const sw = document.getElementById('fech-month-switcher');
+  if(sw) sw.innerHTML = keys.map(k=>{
+    const parts = data[k].label.split(' ');
+    const lbl = parts[0].substring(0,3)+' '+(parts[1]?.slice(2)||'');
+    return `<button class="month-pill${sel.value===k?' active':''}" onclick="selectFechMonth('${k}')">${lbl}</button>`;
+  }).join('');
+}
+function selectFechMonth(k){
+  document.getElementById('fech-month-sel').value = k;
+  renderFechamento();
+  populateFechMonthSel();
 }
 
 function showFechImport(){ document.getElementById('fech-import-panel').style.display=''; hideFechNewMonth(); }
@@ -3865,6 +3879,18 @@ function populateDirMonthSel(){
   sel.innerHTML = '<option value="">— Selecione o mês —</option>' +
     keys.map(k=>`<option value="${k}">${data[k].label}</option>`).join('');
   if(cur && data[cur]) sel.value = cur;
+  // Pills
+  const sw = document.getElementById('dir-month-switcher');
+  if(sw) sw.innerHTML = keys.map(k=>{
+    const parts = data[k].label.split(' ');
+    const lbl = parts[0].substring(0,3)+' '+(parts[1]?.slice(2)||'');
+    return `<button class="month-pill${sel.value===k?' active':''}" onclick="selectDirMonth('${k}')">${lbl}</button>`;
+  }).join('');
+}
+function selectDirMonth(k){
+  document.getElementById('dir-month-sel').value = k;
+  renderDirecao();
+  populateDirMonthSel();
 }
 
 function addDirMonth(){
