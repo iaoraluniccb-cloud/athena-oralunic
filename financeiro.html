@@ -1275,14 +1275,7 @@
     <!-- Linha: usuário + finalizar -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <span style="font-size:11px;color:var(--text2);font-weight:600">Usuário ativo:</span>
-      <select id="aprov-usuario" onchange="aprovSetUsuario()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;font-family:var(--font-body);color:var(--text);cursor:pointer;outline:none">
-        <option value="">— selecione —</option>
-        <option value="Dra. Mone">Dra. Mone</option>
-        <option value="Recepção">Recepção</option>
-        <option value="Financeiro">Financeiro</option>
-        <option value="Outro">Outro</option>
-      </select>
-      <span id="aprov-usuario-tag" style="display:none;font-size:11px;background:var(--vinho);color:var(--marfim);border-radius:10px;padding:2px 10px;font-weight:600"></span>
+      <span id="aprov-usuario-tag" style="font-size:11px;background:var(--vinho);color:var(--marfim);border-radius:10px;padding:2px 10px;font-weight:600"></span>
       <div style="flex:1"></div>
       <button id="aprov-btn-finalizar" onclick="aprovFinalizar()" style="padding:6px 16px;background:var(--vinho);color:var(--marfim);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:none">🔒 Finalizar Período</button>
     </div>
@@ -6167,7 +6160,14 @@ const APROV_GRUPOS = {
 
 // aprovData2 = { 'YYYY-MM': { finalizado: bool, colunas: { colId: [{nome,ficha,valor,done,criadoEm}] }, recados: [{texto,done,criadoEm}] } }
 let aprovData2   = JSON.parse(localStorage.getItem('aprovData2') || '{}');
-let aprovUsuario = localStorage.getItem('aprovUsuario') || '';
+// Pega o nome do usuário logado no Athena (Supabase)
+function _getLoginName(){
+  try {
+    const u = JSON.parse(localStorage.getItem('ou_athena_user') || 'null');
+    return u?.name || u?.user_metadata?.name || u?.email?.split('@')[0] || '';
+  } catch(e){ return ''; }
+}
+let aprovUsuario = _getLoginName() || localStorage.getItem('aprovUsuario') || '';
 let aprovMesAtivo = '';
 let aprovSubAba   = 'entradas'; // 'entradas' | 'trocas'
 
@@ -6246,10 +6246,7 @@ function aprovMudarMes(key){
 
 // ── Usuário ───────────────────────────────────────────────────────────────────
 function aprovSetUsuario(){
-  const sel = document.getElementById('aprov-usuario');
-  aprovUsuario = sel.value;
-  localStorage.setItem('aprovUsuario', aprovUsuario);
-  aprovRender();
+  // Não usado mais — usuário vem do login
 }
 
 // ── Parse valor monetário ─────────────────────────────────────────────────────
@@ -6266,12 +6263,11 @@ function aprovRender(){
   aprovRenderRecados();
   aprovRenderSubAbas();
   aprovRenderBoard();
-  // restaura select usuário
-  const sel = document.getElementById('aprov-usuario');
-  if(sel && aprovUsuario) sel.value = aprovUsuario;
+  // Atualiza nome do usuário (sempre do login)
+  aprovUsuario = _getLoginName() || aprovUsuario;
   const tag = document.getElementById('aprov-usuario-tag');
   const banner = document.getElementById('aprov-lock-banner');
-  if(tag){ tag.style.display = aprovUsuario?'inline-block':'none'; tag.textContent = aprovUsuario; }
+  if(tag){ tag.textContent = aprovUsuario || '—'; }
   if(banner){ banner.style.display = (aprovUsuario && aprovUsuario!=='Dra. Mone') ? 'flex' : 'none'; }
   // botão finalizar
   const btnFin = document.getElementById('aprov-btn-finalizar');
