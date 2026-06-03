@@ -860,6 +860,35 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 .sync-dot.spin { animation: spin .8s linear infinite; background: var(--cobre); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── SUB-TABS (dentro de Métricas) ── */
+.subtabs-bar {
+  display: flex;
+  gap: 0;
+  background: var(--creme);
+  border-bottom: 1px solid var(--warm);
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+.subtab-btn {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  color: var(--moka);
+  opacity: .6;
+  padding: 11px 18px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .2s, opacity .2s, border-color .2s;
+}
+.subtab-btn:hover { opacity: 1; color: var(--vinho); }
+.subtab-btn.active { color: var(--vinho); opacity: 1; border-bottom-color: var(--vinho); }
+
 /* ── FECHAMENTO TAB ── */
 .fech-cat-row td {
   background: var(--vinho);
@@ -1047,169 +1076,175 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 
 <div class="tabs-bar">
   <button class="tab-btn active" onclick="switchTab('metrics')">Métricas</button>
-  <button class="tab-btn" onclick="switchTab('fixed')">Fixas</button>
-  <button class="tab-btn" onclick="switchTab('variable')">Variáveis</button>
-  <button class="tab-btn" onclick="switchTab('compare')">Comparar Meses</button>
-  <button class="tab-btn" onclick="switchTab('import')">Importar Despesas</button>
   <button class="tab-btn" onclick="switchTab('direcao')">Direção</button>
   <button class="tab-btn" id="tab-btn-fechamento" onclick="switchTab('fechamento')">Fechamento</button>
 </div>
 
 <main>
 
-  <!-- ═══ METRICS ═══ -->
+  <!-- ═══ METRICS (com sub-abas) ═══ -->
   <div id="tab-metrics">
-    <div id="summary-cards" class="summary-grid"></div>
-    <div class="section-divider"><span>Detalhamento por categoria</span><button onclick="resetOverrides()" style="font-size:10px;font-family:'Josefin Sans',sans-serif;font-weight:300;letter-spacing:.1em;background:transparent;border:1px solid var(--warm);border-radius:3px;padding:3px 10px;cursor:pointer;color:var(--moka);opacity:.7;float:right;margin-top:-2px;" title="Desfaz todas as edições de métrica e tipo">↺ Resetar edições</button></div>
-    <div class="legend" id="legend-block"></div>
-    <div class="table-wrap">
-      <table id="metrics-table">
-        <thead id="metrics-thead">
-          <tr>
-            <th style="width:32%">Despesa</th>
-            <th>Tipo</th>
-            <th class="right">Métrica</th>
-            <th class="right">Realizado</th>
-            <th class="right">Diferença</th>
-            <th class="right">Status</th>
-          </tr>
-          <tr id="thead-totals" style="display:none">
-            <th colspan="2" style="padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);font-size:9px;letter-spacing:.15em;font-weight:300;color:rgba(255,255,255,.5);text-transform:uppercase;">Total geral</th>
-            <th class="right" id="thead-total-metrica" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:var(--cobre);padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
-            <th class="right" id="thead-total-real" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:#fff;padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
-            <th colspan="2" style="border-top:1px solid rgba(255,255,255,.15);padding-top:2px;padding-bottom:7px;"></th>
-          </tr>
-        </thead>
-        <tbody id="metrics-tbody"></tbody>
-      </table>
-    </div>
-    <div id="empty-metrics" class="empty-state" style="display:none">
-      <div class="icon">— —</div>
-      <h3>Nenhum dado carregado</h3>
-      <p>Acesse <em>Importar Despesas</em> e selecione um mês.</p>
-    </div>
-  </div>
 
-  <!-- ═══ FIXED ═══ -->
-  <div id="tab-fixed" style="display:none">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:35%">Despesa</th>
-            <th>Categoria</th>
-            <th class="right">Métrica</th>
-            <th class="right">Realizado</th>
-            <th class="right">Diferença</th>
-            <th class="right">Status</th>
-          </tr>
-        </thead>
-        <tbody id="fixed-tbody"></tbody>
-      </table>
+    <!-- Sub-barra de navegação interna -->
+    <div class="subtabs-bar">
+      <button class="subtab-btn active" onclick="switchSubTab('overview')">Visão Geral</button>
+      <button class="subtab-btn" onclick="switchSubTab('fixed')">Fixas</button>
+      <button class="subtab-btn" onclick="switchSubTab('variable')">Variáveis</button>
+      <button class="subtab-btn" onclick="switchSubTab('compare')">Comparar Meses</button>
+      <button class="subtab-btn" onclick="switchSubTab('import')">Importar Despesas</button>
     </div>
-  </div>
 
-  <!-- ═══ VARIABLE ═══ -->
-  <div id="tab-variable" style="display:none">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:35%">Despesa</th>
-            <th>Categoria</th>
-            <th class="right">Métrica</th>
-            <th class="right">Realizado</th>
-            <th class="right">Diferença</th>
-            <th class="right">Status</th>
-          </tr>
-        </thead>
-        <tbody id="variable-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ═══ COMPARE ═══ -->
-  <div id="tab-compare" style="display:none">
-    <div class="compare-bar">
-      <div class="compare-selectors">
-        <div class="compare-selector-group">
-          <span class="compare-label">Mês A</span>
-          <select id="cmp-a" onchange="renderCompare()"></select>
-        </div>
-        <div class="compare-vs">vs</div>
-        <div class="compare-selector-group">
-          <span class="compare-label">Mês B</span>
-          <select id="cmp-b" onchange="renderCompare()"></select>
-        </div>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-          <label class="compare-toggle-label"><input type="checkbox" id="cmp-only-diff" onchange="renderCompare()"> Só diferenças</label>
-          <label class="compare-toggle-label"><input type="checkbox" id="cmp-hide-zero" onchange="renderCompare()" checked> Ocultar zeros</label>
-        </div>
+    <!-- Sub-aba: Visão Geral -->
+    <div id="subtab-overview">
+      <div id="summary-cards" class="summary-grid"></div>
+      <div class="section-divider"><span>Detalhamento por categoria</span><button onclick="resetOverrides()" style="font-size:10px;font-family:'Josefin Sans',sans-serif;font-weight:300;letter-spacing:.1em;background:transparent;border:1px solid var(--warm);border-radius:3px;padding:3px 10px;cursor:pointer;color:var(--moka);opacity:.7;float:right;margin-top:-2px;" title="Desfaz todas as edições de métrica e tipo">↺ Resetar edições</button></div>
+      <div class="legend" id="legend-block"></div>
+      <div class="table-wrap">
+        <table id="metrics-table">
+          <thead id="metrics-thead">
+            <tr>
+              <th style="width:32%">Despesa</th>
+              <th>Tipo</th>
+              <th class="right">Métrica</th>
+              <th class="right">Realizado</th>
+              <th class="right">Diferença</th>
+              <th class="right">Status</th>
+            </tr>
+            <tr id="thead-totals" style="display:none">
+              <th colspan="2" style="padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);font-size:9px;letter-spacing:.15em;font-weight:300;color:rgba(255,255,255,.5);text-transform:uppercase;">Total geral</th>
+              <th class="right" id="thead-total-metrica" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:var(--cobre);padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
+              <th class="right" id="thead-total-real" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:#fff;padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
+              <th colspan="2" style="border-top:1px solid rgba(255,255,255,.15);padding-top:2px;padding-bottom:7px;"></th>
+            </tr>
+          </thead>
+          <tbody id="metrics-tbody"></tbody>
+        </table>
       </div>
-      <div id="compare-summary-bar"></div>
-    </div>
-    <div class="table-wrap" style="margin-top:16px">
-      <table id="compare-table" style="display:none">
-        <thead>
-          <tr>
-            <th style="width:28%">Categoria</th>
-            <th style="width:24%">Despesa</th>
-            <th class="right" id="cmp-th-a">—</th>
-            <th class="right" id="cmp-th-b">—</th>
-            <th class="right">Variação R$</th>
-            <th class="right">Variação %</th>
-          </tr>
-        </thead>
-        <tbody id="compare-tbody"></tbody>
-      </table>
-    </div>
-    <div id="compare-empty" class="empty-state" style="display:none">
-      <div class="icon">⇄</div>
-      <h3>Selecione dois meses</h3>
-      <p>Escolha os meses A e B acima para comparar.</p>
-    </div>
-  </div>
-
-  <!-- ═══ IMPORT ═══ -->
-  <div id="tab-import" style="display:none">
-    <div class="import-wrap">
-      <div class="import-card">
-        <h2>Importar Arquivo</h2>
-        <p>Selecione o mês de referência e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
-
-        <div class="month-select">
-          <label>Mês</label>
-          <select id="import-month">
-            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-            <option value="3">Março</option><option value="4">Abril</option>
-            <option value="5" selected>Maio</option><option value="6">Junho</option>
-            <option value="7">Julho</option><option value="8">Agosto</option>
-            <option value="9">Setembro</option><option value="10">Outubro</option>
-            <option value="11">Novembro</option><option value="12">Dezembro</option>
-          </select>
-          <label>Ano</label>
-          <input type="number" id="import-year" value="2026" min="2020" max="2099" style="width:86px">
-        </div>
-
-        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-          <p>Clique ou arraste o arquivo aqui</p>
-          <small>.csv com colunas: Categoria · Despesa · Valor</small>
-        </div>
-        <input type="file" id="file-input" accept=".csv,.xlsx" onchange="handleFile(event)">
-
-        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
-          <button class="btn-primary" onclick="loadRealData()">Carregar Fev / Mar / Abr / Mai 2026</button>
-          <button class="btn-primary" onclick="createBlankMonth()" style="background:var(--cobre);border-color:var(--cobre)" title="Cria o mês selecionado com todas as despesas zeradas, pronto para editar">+ Criar mês em branco</button>
-          <button class="btn-secondary" onclick="clearCurrent()">Limpar visualização</button>
-        </div>
-        <div class="import-log" id="import-log"></div>
-      </div>
-
-      <div class="months-sidebar">
-        <h3>Meses importados</h3>
-        <div id="months-list"></div>
+      <div id="empty-metrics" class="empty-state" style="display:none">
+        <div class="icon">— —</div>
+        <h3>Nenhum dado carregado</h3>
+        <p>Acesse <em>Importar Despesas</em> e selecione um mês.</p>
       </div>
     </div>
+
+    <!-- Sub-aba: Fixas -->
+    <div id="subtab-fixed" style="display:none">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:35%">Despesa</th>
+              <th>Categoria</th>
+              <th class="right">Métrica</th>
+              <th class="right">Realizado</th>
+              <th class="right">Diferença</th>
+              <th class="right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="fixed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sub-aba: Variáveis -->
+    <div id="subtab-variable" style="display:none">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:35%">Despesa</th>
+              <th>Categoria</th>
+              <th class="right">Métrica</th>
+              <th class="right">Realizado</th>
+              <th class="right">Diferença</th>
+              <th class="right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="variable-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sub-aba: Comparar Meses -->
+    <div id="subtab-compare" style="display:none">
+      <div class="compare-bar">
+        <div class="compare-selectors">
+          <div class="compare-selector-group">
+            <span class="compare-label">Mês A</span>
+            <select id="cmp-a" onchange="renderCompare()"></select>
+          </div>
+          <div class="compare-vs">vs</div>
+          <div class="compare-selector-group">
+            <span class="compare-label">Mês B</span>
+            <select id="cmp-b" onchange="renderCompare()"></select>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <label class="compare-toggle-label"><input type="checkbox" id="cmp-only-diff" onchange="renderCompare()"> Só diferenças</label>
+            <label class="compare-toggle-label"><input type="checkbox" id="cmp-hide-zero" onchange="renderCompare()" checked> Ocultar zeros</label>
+          </div>
+        </div>
+        <div id="compare-summary-bar"></div>
+      </div>
+      <div class="table-wrap" style="margin-top:16px">
+        <table id="compare-table" style="display:none">
+          <thead>
+            <tr>
+              <th style="width:28%">Categoria</th>
+              <th style="width:24%">Despesa</th>
+              <th class="right" id="cmp-th-a">—</th>
+              <th class="right" id="cmp-th-b">—</th>
+              <th class="right">Variação R$</th>
+              <th class="right">Variação %</th>
+            </tr>
+          </thead>
+          <tbody id="compare-tbody"></tbody>
+        </table>
+      </div>
+      <div id="compare-empty" class="empty-state" style="display:none">
+        <div class="icon">⇄</div>
+        <h3>Selecione dois meses</h3>
+        <p>Escolha os meses A e B acima para comparar.</p>
+      </div>
+    </div>
+
+    <!-- Sub-aba: Importar Despesas -->
+    <div id="subtab-import" style="display:none">
+      <div class="import-wrap">
+        <div class="import-card">
+          <h2>Importar Arquivo</h2>
+          <p>Selecione o mês de referência e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
+          <div class="month-select">
+            <label>Mês</label>
+            <select id="import-month">
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+              <option value="3">Março</option><option value="4">Abril</option>
+              <option value="5" selected>Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8">Agosto</option>
+              <option value="9">Setembro</option><option value="10">Outubro</option>
+              <option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+            <label>Ano</label>
+            <input type="number" id="import-year" value="2026" min="2020" max="2099" style="width:86px">
+          </div>
+          <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <p>Clique ou arraste o arquivo aqui</p>
+            <small>.csv com colunas: Categoria · Despesa · Valor</small>
+          </div>
+          <input type="file" id="file-input" accept=".csv,.xlsx" onchange="handleFile(event)">
+          <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
+            <button class="btn-primary" onclick="loadRealData()">Carregar Fev / Mar / Abr / Mai 2026</button>
+            <button class="btn-primary" onclick="createBlankMonth()" style="background:var(--cobre);border-color:var(--cobre)" title="Cria o mês selecionado com todas as despesas zeradas, pronto para editar">+ Criar mês em branco</button>
+            <button class="btn-secondary" onclick="clearCurrent()">Limpar visualização</button>
+          </div>
+          <div class="import-log" id="import-log"></div>
+        </div>
+        <div class="months-sidebar">
+          <h3>Meses importados</h3>
+          <div id="months-list"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ═══ DIREÇÃO ═══ -->
@@ -2827,6 +2862,17 @@ function toggleDirCard(card){
 // ═══════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// SUB-TABS (dentro de Métricas)
+// ═══════════════════════════════════════
+function switchSubTab(sub){
+  ['overview','fixed','variable','compare','import'].forEach((s,i)=>{
+    document.getElementById('subtab-'+s).style.display = s===sub ? '' : 'none';
+    document.querySelectorAll('.subtab-btn')[i]?.classList.toggle('active', s===sub);
+  });
+  if(sub==='compare'){ populateCompareSelects(); renderCompare(); }
+}
+
 function isAlexandre(){
   return pbUser && (pbUser.email||'').toLowerCase().includes('alexandre');
 }
@@ -2840,13 +2886,15 @@ function applyTabVisibility(){
 }
 
 function switchTab(tab){
+  // Redirecionar sub-abas antigas para dentro de Métricas
+  const subMap = { fixed:'fixed', variable:'variable', compare:'compare', import:'import' };
+  if(subMap[tab]){ switchTab('metrics'); switchSubTab(subMap[tab]); return; }
   // Bloquear Fechamento e Direção para Alexandre
   if(isAlexandre() && (tab==='fechamento'||tab==='direcao')) tab='metrics';
-  ['metrics','fixed','variable','compare','import','direcao','fechamento'].forEach((t,i)=>{
+  ['metrics','direcao','fechamento'].forEach((t,i)=>{
     document.getElementById('tab-'+t).style.display=t===tab?'':'none';
     document.querySelectorAll('.tab-btn')[i]?.classList.toggle('active',t===tab);
   });
-  if(tab==='compare')   { populateCompareSelects(); renderCompare(); }
   if(tab==='direcao')   { populateDirMonthSel(); renderDirecao(); }
   if(tab==='fechamento'){ populateFechMonthSel(); renderFechamento(); }
 }
