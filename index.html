@@ -860,6 +860,44 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 .sync-dot.spin { animation: spin .8s linear infinite; background: var(--cobre); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── FECHAMENTO TAB ── */
+.fech-cat-row td {
+  background: var(--vinho);
+  color: var(--marfim);
+  font-family: 'Cormorant SC', serif;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: .12em;
+  padding: 9px 14px;
+}
+.fech-cat-row td.right {
+  text-align: right;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--cobre);
+}
+.fech-data-row td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--blush);
+  vertical-align: middle;
+}
+.fech-data-row:last-child td { border-bottom: none; }
+.fech-data-row td.right { text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.fech-data-row td.label-col { padding-left: 26px; font-size: 12.5px; }
+.fech-total-row td {
+  background: var(--creme);
+  font-family: 'Cormorant SC', serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--vinho);
+  padding: 10px 14px;
+  border-top: 2px solid var(--warm);
+}
+.fech-total-row td.right { text-align: right; }
+.fech-badge-dinheiro { background: #dcfce7; color: #15803d; border-radius: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: .08em; }
+.fech-badge-pix      { background: #dbeafe; color: #1d4ed8; border-radius: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: .08em; }
+
 /* ── DIREÇÃO TAB ── */
 .dir-card {
   background: white;
@@ -1014,6 +1052,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <button class="tab-btn" onclick="switchTab('compare')">Comparar Meses</button>
   <button class="tab-btn" onclick="switchTab('import')">Importar Despesas</button>
   <button class="tab-btn" onclick="switchTab('direcao')">Direção</button>
+  <button class="tab-btn" id="tab-btn-fechamento" onclick="switchTab('fechamento')">Fechamento</button>
 </div>
 
 <main>
@@ -1257,6 +1296,80 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 
       </div>
     </div>
+  </div>
+
+  <!-- ═══ FECHAMENTO ═══ -->
+  <div id="tab-fechamento" style="display:none">
+
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;">
+      <span style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--moka);opacity:.7;">Mês</span>
+      <select id="fech-month-sel" onchange="renderFechamento()" style="border:1px solid var(--warm);border-radius:3px;padding:7px 12px;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:300;color:var(--tinta);background:var(--marfim);outline:none;min-width:160px;">
+        <option value="">— Selecione —</option>
+      </select>
+      <button onclick="showFechImport()" style="font-size:10px;letter-spacing:.15em;background:var(--vinho);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">↑ Importar mês</button>
+      <button id="fech-del-btn" onclick="deleteFechMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:3px;padding:6px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
+    </div>
+
+    <!-- Painel de importação -->
+    <div id="fech-import-panel" style="display:none;margin-bottom:24px;">
+      <div class="import-card" style="max-width:560px;">
+        <h2>Importar Fechamento</h2>
+        <p>Selecione o mês e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv UTF-8</strong>.<br>
+        Colunas esperadas: <strong>BENEFICIÁRIO · DINHEIRO · TRANSFERÊNCIA</strong></p>
+        <div class="month-select">
+          <label>Mês</label>
+          <select id="fech-imp-month">
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5" selected>Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <label>Ano</label>
+          <input type="number" id="fech-imp-year" value="2026" min="2020" max="2099" style="width:86px">
+        </div>
+        <div class="drop-zone" id="fech-drop-zone" onclick="document.getElementById('fech-file-input').click()">
+          <p>Clique ou arraste o arquivo aqui</p>
+          <small>.csv com colunas: Beneficiário · Dinheiro · Transferência</small>
+        </div>
+        <input type="file" id="fech-file-input" accept=".csv,.xlsx" style="display:none" onchange="handleFechFile(event)">
+        <div style="margin-top:12px;display:flex;gap:10px;">
+          <button class="btn-secondary" onclick="hideFechImport()">Cancelar</button>
+        </div>
+        <div class="import-log" id="fech-import-log"></div>
+      </div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div id="fech-empty" style="text-align:center;padding:60px 24px;color:var(--moka);opacity:.5;">
+      <div style="font-family:'Cormorant SC',serif;font-size:18px;color:var(--vinho);margin-bottom:8px;">Nenhum fechamento carregado</div>
+      <p style="font-size:12px;">Clique em <strong>↑ Importar mês</strong> para começar.</p>
+    </div>
+
+    <!-- Conteúdo do fechamento -->
+    <div id="fech-content" style="display:none">
+
+      <!-- Cards de resumo -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;" id="fech-summary-cards"></div>
+
+      <!-- Tabela de pagamentos -->
+      <div class="section-divider"><span>Pagamentos do mês</span></div>
+      <div class="table-wrap">
+        <table id="fech-table">
+          <thead>
+            <tr>
+              <th style="width:50%">Beneficiário</th>
+              <th class="right">Dinheiro</th>
+              <th class="right">Transferência</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody id="fech-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
 </main>
@@ -1559,6 +1672,7 @@ async function doLogin(){
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('user-pill').style.display = 'flex';
     document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+    applyTabVisibility();
     setSyncDot('ok');
     await loadFromPB();
   } catch(e) {
@@ -2385,6 +2499,195 @@ function renderCompare(){
 }
 
 // ═══════════════════════════════════════
+// FECHAMENTO
+// ═══════════════════════════════════════
+const FECH_KEY = 'ou_athena_fechamento';
+
+// Categorias para agrupar os beneficiários
+const FECH_CATS = [
+  { key: 'avaliadora',    label: 'Avaliadora',          match: ['dra. mone','avaliadora','mone'] },
+  { key: 'comissoes',     label: 'Comissões',            match: ['comissão','comissao'] },
+  { key: 'dentistas',     label: 'Dentistas',            match: ['dr.','dra.','pagamento dr','pagamento dra'] },
+  { key: 'protetico',     label: 'Protético / Lab',      match: ['protetico','protético','marcelo','breda','lab','laboratorio','laboratório','guilherme','kaefer'] },
+  { key: 'folha',         label: 'Folha / Equipe',       match: ['salario','salário','fran','marta','bruna','jarina','andressa','mariele','alexia','bianca'] },
+  { key: 'marketing',     label: 'Marketing / Mídia',    match: ['radio','rádio','patrocinio','patrocínio','programa','comercial','facebook','instagram','outdoor','acbf','citadino','kaefer','campo','municipal'] },
+  { key: 'estrutura',     label: 'Estrutura / Capex',    match: ['iptu','aluguel','energia','eletricista','leandro','janela','pintura','ares','ar condicionado','assistencia tecnica','assistência técnica','ritieli','encanador','conserto','caneta','motor'] },
+  { key: 'eventos',       label: 'Eventos / Comunidade', match: ['festa','evento','ingresso','colono','jantar','churrasco','missa','caravaggio'] },
+  { key: 'bonificacoes',  label: 'Bonificações / Outros',match: [] },
+];
+
+function getFechData(){ try{ return JSON.parse(localStorage.getItem(FECH_KEY)||'{}'); }catch(e){ return {}; } }
+function saveFechData(d){ localStorage.setItem(FECH_KEY, JSON.stringify(d)); }
+
+function populateFechMonthSel(){
+  const data = getFechData();
+  const keys = Object.keys(data).sort().reverse();
+  const sel  = document.getElementById('fech-month-sel');
+  const cur  = sel.value;
+  sel.innerHTML = '<option value="">— Selecione —</option>' +
+    keys.map(k=>`<option value="${k}">${data[k].label}</option>`).join('');
+  if(cur && data[cur]) sel.value = cur;
+}
+
+function showFechImport(){ document.getElementById('fech-import-panel').style.display=''; }
+function hideFechImport(){ document.getElementById('fech-import-panel').style.display='none'; }
+
+function fechLog(msg){ const el=document.getElementById('fech-import-log'); el.classList.add('visible'); el.innerHTML+=msg+'<br>'; el.scrollTop=el.scrollHeight; }
+function fechLogClear(){ const el=document.getElementById('fech-import-log'); el.innerHTML=''; }
+
+function handleFechFile(e){
+  const file = e.target.files[0]; if(!file) return;
+  fechLogClear();
+  fechLog('Arquivo: ' + file.name);
+  if(!file.name.endsWith('.csv')){ fechLog('⚠ Salve o arquivo como CSV UTF-8 primeiro.'); return; }
+  const m = parseInt(document.getElementById('fech-imp-month').value);
+  const y = parseInt(document.getElementById('fech-imp-year').value);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const rows = parseFechCSV(ev.target.result);
+    if(!rows.length){ fechLog('❌ Nenhum dado encontrado. Verifique as colunas.'); return; }
+    const key   = monthKey(m, y);
+    const label = monthLabel(m, y);
+    const data  = getFechData();
+    data[key]   = { label, rows };
+    saveFechData(data);
+    fechLog('✓ ' + rows.length + ' registros importados para ' + label);
+    populateFechMonthSel();
+    document.getElementById('fech-month-sel').value = key;
+    setTimeout(()=>{ hideFechImport(); renderFechamento(); }, 600);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseFechCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const sep = lines[0].includes(';') ? ';' : ',';
+  const hdr  = lines[0].split(sep).map(h=>norm(h));
+  const iB   = hdr.findIndex(h=>h.includes('benefici')||h.includes('descri')||h.includes('nome'));
+  const iD   = hdr.findIndex(h=>h.includes('dinheiro')||h.includes('cash'));
+  const iT   = hdr.findIndex(h=>h.includes('transfer')||h.includes('pix')||h.includes('ted'));
+  if(iB<0){ fechLog('❌ Coluna "Beneficiário" não encontrada.'); return []; }
+  const rows = [];
+  for(const line of lines.slice(1)){
+    const c  = line.split(sep).map(x=>x.trim().replace(/^"|"$/g,''));
+    const b  = c[iB]||'';
+    if(!b.trim()) continue;
+    const vD = iD>=0 ? parseFloat((c[iD]||'0').replace(/[^0-9,\.]/g,'').replace(',','.')) || 0 : 0;
+    const vT = iT>=0 ? parseFloat((c[iT]||'0').replace(/[^0-9,\.]/g,'').replace(',','.')) || 0 : 0;
+    rows.push({ b: b.trim(), d: vD, t: vT });
+  }
+  return rows;
+}
+
+function categorizeFech(benef){
+  const n = benef.toLowerCase();
+  for(const cat of FECH_CATS){
+    if(cat.match.length && cat.match.some(m=>n.includes(m))) return cat.key;
+  }
+  return 'bonificacoes';
+}
+
+function deleteFechMonth(){
+  const key = document.getElementById('fech-month-sel').value;
+  if(!key) return;
+  const data = getFechData();
+  if(!confirm('Apagar ' + (data[key]?.label||key) + '?')) return;
+  delete data[key];
+  saveFechData(data);
+  populateFechMonthSel();
+  document.getElementById('fech-month-sel').value = '';
+  renderFechamento();
+}
+
+function renderFechamento(){
+  const key  = document.getElementById('fech-month-sel').value;
+  const data = getFechData();
+  const emptyEl   = document.getElementById('fech-empty');
+  const contentEl = document.getElementById('fech-content');
+  const delBtn    = document.getElementById('fech-del-btn');
+
+  if(!key || !data[key]){
+    emptyEl.style.display   = '';
+    contentEl.style.display = 'none';
+    delBtn.style.display    = 'none';
+    return;
+  }
+  emptyEl.style.display   = 'none';
+  contentEl.style.display = '';
+  delBtn.style.display    = '';
+
+  const month = data[key];
+  const rows  = month.rows || [];
+
+  // Totais gerais
+  const totalD = rows.reduce((s,r)=>s+(r.d||0),0);
+  const totalT = rows.reduce((s,r)=>s+(r.t||0),0);
+  const totalG = totalD + totalT;
+
+  // Cards de resumo (como na planilha: Dinheiro, Transferência, Total)
+  document.getElementById('fech-summary-cards').innerHTML = `
+    <div class="s-card total"><label>Total Geral</label><div class="val">${fmt(totalG)}</div><div class="sub">${rows.length} beneficiários</div></div>
+    <div class="s-card fixed"><label>Dinheiro</label><div class="val" style="font-size:18px">${fmt(totalD)}</div><div class="sub">saídas em espécie</div></div>
+    <div class="s-card variable"><label>Transferência / Pix</label><div class="val" style="font-size:18px">${fmt(totalT)}</div><div class="sub">saídas digitais</div></div>
+  `;
+
+  // Agrupar por categoria
+  const groups = {};
+  for(const cat of FECH_CATS) groups[cat.key] = { label: cat.label, rows: [] };
+  for(const r of rows){
+    const catKey = categorizeFech(r.b);
+    groups[catKey].rows.push(r);
+  }
+
+  // Montar tabela
+  let html = '';
+  for(const cat of FECH_CATS){
+    const g = groups[cat.key];
+    if(!g.rows.length) continue;
+    const catD = g.rows.reduce((s,r)=>s+(r.d||0),0);
+    const catT = g.rows.reduce((s,r)=>s+(r.t||0),0);
+    const catG = catD + catT;
+    html += `<tr class="fech-cat-row">
+      <td>${g.label}</td>
+      <td class="right">${catD>0?fmt(catD):'—'}</td>
+      <td class="right">${catT>0?fmt(catT):'—'}</td>
+      <td class="right">${catG>0?fmt(catG):'—'}</td>
+    </tr>`;
+    for(const r of g.rows){
+      const tot = (r.d||0)+(r.t||0);
+      const dSpan = r.d>0 ? `<span class="fech-badge-dinheiro">${fmt(r.d)}</span>` : '—';
+      const tSpan = r.t>0 ? `<span class="fech-badge-pix">${fmt(r.t)}</span>` : '—';
+      html += `<tr class="fech-data-row">
+        <td class="label-col">${r.b}</td>
+        <td class="right">${dSpan}</td>
+        <td class="right">${tSpan}</td>
+        <td class="right">${tot>0?fmt(tot):'—'}</td>
+      </tr>`;
+    }
+  }
+  // Linha de total geral
+  html += `<tr class="fech-total-row">
+    <td>Total</td>
+    <td class="right">${fmt(totalD)}</td>
+    <td class="right">${fmt(totalT)}</td>
+    <td class="right">${fmt(totalG)}</td>
+  </tr>`;
+
+  document.getElementById('fech-tbody').innerHTML = html;
+}
+
+// Drag & drop na aba fechamento
+document.addEventListener('DOMContentLoaded', ()=>{
+  const fdz = document.getElementById('fech-drop-zone');
+  if(fdz){
+    fdz.addEventListener('dragover', e=>{ e.preventDefault(); fdz.style.borderColor='var(--vinho)'; });
+    fdz.addEventListener('dragleave', ()=>fdz.style.borderColor='');
+    fdz.addEventListener('drop', e=>{ e.preventDefault(); fdz.style.borderColor=''; const f=e.dataTransfer.files[0]; if(f) handleFechFile({target:{files:e.dataTransfer.files}}); });
+  }
+});
+
+// ═══════════════════════════════════════
 // DIREÇÃO
 // ═══════════════════════════════════════
 const DIR_CARDS = ['faturamento','divisao','resultado','aplicacao'];
@@ -2524,13 +2827,28 @@ function toggleDirCard(card){
 // ═══════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════
+function isAlexandre(){
+  return pbUser && (pbUser.email||'').toLowerCase().includes('alexandre');
+}
+
+function applyTabVisibility(){
+  const alex = isAlexandre();
+  const btnDir  = document.querySelector('.tab-btn[onclick*="direcao"]');
+  const btnFech = document.getElementById('tab-btn-fechamento');
+  if(btnDir)  btnDir.style.display  = alex ? 'none' : '';
+  if(btnFech) btnFech.style.display = alex ? 'none' : '';
+}
+
 function switchTab(tab){
-  ['metrics','fixed','variable','compare','import','direcao'].forEach((t,i)=>{
+  // Bloquear Fechamento e Direção para Alexandre
+  if(isAlexandre() && (tab==='fechamento'||tab==='direcao')) tab='metrics';
+  ['metrics','fixed','variable','compare','import','direcao','fechamento'].forEach((t,i)=>{
     document.getElementById('tab-'+t).style.display=t===tab?'':'none';
-    document.querySelectorAll('.tab-btn')[i].classList.toggle('active',t===tab);
+    document.querySelectorAll('.tab-btn')[i]?.classList.toggle('active',t===tab);
   });
-  if(tab==='compare'){ populateCompareSelects(); renderCompare(); }
-  if(tab==='direcao'){ populateDirMonthSel(); renderDirecao(); }
+  if(tab==='compare')   { populateCompareSelects(); renderCompare(); }
+  if(tab==='direcao')   { populateDirMonthSel(); renderDirecao(); }
+  if(tab==='fechamento'){ populateFechMonthSel(); renderFechamento(); }
 }
 
 // ═══════════════════════════════════════
@@ -2560,6 +2878,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       document.getElementById('main-app').style.display = 'block';
       document.getElementById('user-pill').style.display = 'flex';
       document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+      applyTabVisibility();
       setSyncDot('ok');
       await loadFromPB();
     } catch(e) {
