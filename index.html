@@ -3226,6 +3226,12 @@ const FECH_CATS = [
 function getFechData(){ try{ return JSON.parse(localStorage.getItem(FECH_KEY)||'{}'); }catch(e){ return {}; } }
 function saveFechData(d){ localStorage.setItem(FECH_KEY, JSON.stringify(d)); }
 
+// Sincroniza FECH_REAL_DATA imediatamente (não espera DOMContentLoaded)
+{ const _sf = getFechData();
+  let _changed = false;
+  for(const obj of FECH_REAL_DATA){ if(!_sf[obj.key]){ _sf[obj.key]={ label: obj.label, rows: obj.rows }; _changed=true; } }
+  if(_changed) saveFechData(_sf); }
+
 function populateFechMonthSel(){
   const data = getFechData();
   const keys = Object.keys(data).sort().reverse();
@@ -3587,10 +3593,6 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   { const _s=getAll();
     for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]){ _s[k]={key:k,label:o.label,rows:o.rows}; } }
     localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
-  // Sincroniza FECH_REAL_DATA no localStorage (preenche meses ainda não presentes)
-  { const _sf = getFechData();
-    for(const obj of FECH_REAL_DATA){ if(!_sf[obj.key]){ _sf[obj.key]={ label: obj.label, rows: obj.rows }; } }
-    saveFechData(_sf); }
   // Se já há sessão salva (token no localStorage), recarrega do PB direto
   const _savedToken = localStorage.getItem('ou_athena_token');
   const _savedUser  = localStorage.getItem('ou_athena_user');
