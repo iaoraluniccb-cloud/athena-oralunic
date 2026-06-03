@@ -1464,7 +1464,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <div id="fech-content" style="display:none">
 
       <!-- Cards analíticos -->
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;" id="fech-summary-cards"></div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px;" id="fech-summary-cards"></div>
 
       <!-- Tabela de pagamentos -->
       <div class="section-divider"><span>Pagamentos do mês</span></div>
@@ -3586,11 +3586,16 @@ function renderFechamento(){
   // ── Definição dos 6 cards analíticos ────────────────────────────────────
   // Cada card tem: key, label, autoVal (calculado), sub (legenda)
   // O usuário pode adicionar itens manuais; se existirem, substituem autoVal no total
+  // Saque / Divisão: usa saque ou divisao do resumo, senão null
+  const saqueAutoVal = resumo.saque != null ? resumo.saque : (resumo.divisao != null ? resumo.divisao : null);
+  const saqueEfetivo = acardEffective('saque', saqueAutoVal);
+
   const FECH_ACARDS = [
     { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBrutoAuto, sub: resumo.bruto    != null ? 'da planilha' : 'da aba Direção', color:'total' },
     { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixaAuto,       sub: resumo.fluxo    != null ? 'da planilha' : 'da aba Direção', color:'fixed' },
     { key:'despesas',    label:'Despesas',             autoVal: despesasAuto,         sub: resumo.despesas != null ? 'da planilha' : `${rows.length} pagamentos`, color:'variable' },
     { key:'dinheiro',    label:'Dinheiro',             autoVal: dinheiroAutoVal,      sub: resumo.dinheiro != null ? 'da planilha' : `${rows.filter(r=>r.d>0).length} saídas`, color:'fixed' },
+    { key:'saque',       label:'Saque',                autoVal: saqueAutoVal,         sub: saqueAutoVal    != null ? 'da planilha' : 'manual', color:'variable' },
     { key:'sobra',       label:'Sobra de Caixa',       autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, color:'variable', signed:true },
   ];
 
