@@ -859,6 +859,111 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 .sync-dot.err  { background: #f87171; opacity: 1; }
 .sync-dot.spin { animation: spin .8s linear infinite; background: var(--cobre); }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── DIREÇÃO TAB ── */
+.dir-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 6px rgba(106,31,48,0.08);
+  overflow: hidden;
+}
+.dir-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  cursor: pointer;
+  border-top: 3px solid var(--vinho);
+  transition: background .15s;
+  user-select: none;
+}
+.dir-card-header:hover { background: var(--creme); }
+.dir-card-label {
+  font-size: 10px;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .7;
+  margin-bottom: 5px;
+}
+.dir-card-total {
+  font-family: 'Cormorant SC', serif;
+  font-size: 22px;
+  color: var(--tinta);
+  letter-spacing: .04em;
+}
+.dir-card-arrow {
+  font-size: 18px;
+  color: var(--cobre);
+  transition: transform .2s;
+}
+.dir-card-arrow.open { transform: rotate(180deg); }
+.dir-card-body {
+  border-top: 1px solid var(--blush);
+  padding: 14px 16px 16px;
+}
+.dir-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.dir-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--creme);
+  border-radius: 4px;
+}
+.dir-item-row input.di-desc {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--tinta);
+  outline: none;
+  min-width: 0;
+}
+.dir-item-row input.di-desc::placeholder { color: var(--moka); opacity: .4; }
+.dir-item-row input.di-val {
+  width: 120px;
+  border: 1px solid var(--warm);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--tinta);
+  background: white;
+  text-align: right;
+  outline: none;
+  transition: border-color .15s;
+}
+.dir-item-row input.di-val:focus { border-color: var(--vinho); }
+.dir-item-row .dir-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #c0392b;
+  font-size: 14px;
+  padding: 0 2px;
+  opacity: .6;
+  transition: opacity .15s;
+}
+.dir-item-row .dir-del-btn:hover { opacity: 1; }
+.dir-add-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--cobre);
+  border-radius: 4px;
+  padding: 7px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: .1em;
+  color: var(--cobre);
+  cursor: pointer;
+  transition: background .15s;
+}
+.dir-add-btn:hover { background: var(--creme); }
 </style>
 </head>
 <body>
@@ -908,6 +1013,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <button class="tab-btn" onclick="switchTab('variable')">Variáveis</button>
   <button class="tab-btn" onclick="switchTab('compare')">Comparar Meses</button>
   <button class="tab-btn" onclick="switchTab('import')">Importar Despesas</button>
+  <button class="tab-btn" onclick="switchTab('direcao')">Direção</button>
 </div>
 
 <main>
@@ -1063,6 +1169,92 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
       <div class="months-sidebar">
         <h3>Meses importados</h3>
         <div id="months-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DIREÇÃO ═══ -->
+  <div id="tab-direcao" style="display:none">
+
+    <!-- Filtro de mês -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;">
+      <span style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--moka);opacity:.7;">Mês de referência</span>
+      <select id="dir-month-sel" onchange="renderDirecao()" style="border:1px solid var(--warm);border-radius:3px;padding:7px 12px;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:300;color:var(--tinta);background:var(--marfim);outline:none;">
+        <option value="">— Selecione o mês —</option>
+      </select>
+      <button onclick="addDirMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
+      <button id="dir-del-btn" onclick="deleteDirMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:3px;padding:6px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
+    </div>
+
+    <div id="dir-empty" style="text-align:center;padding:60px 24px;color:var(--moka);opacity:.5;display:none">
+      <div style="font-family:'Cormorant SC',serif;font-size:18px;color:var(--vinho);margin-bottom:8px;">Selecione ou crie um mês</div>
+      <p style="font-size:12px;">Clique em <strong>+ Novo mês</strong> para começar a lançar os dados de direção.</p>
+    </div>
+
+    <div id="dir-content" style="display:none">
+      <!-- Grade de cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
+
+        <!-- CARD FATURAMENTO -->
+        <div class="dir-card" id="dir-card-faturamento">
+          <div class="dir-card-header" onclick="toggleDirCard('faturamento')">
+            <div>
+              <div class="dir-card-label">Faturamento</div>
+              <div class="dir-card-total" id="dir-total-faturamento">R$ —</div>
+            </div>
+            <span class="dir-card-arrow" id="dir-arrow-faturamento">▾</span>
+          </div>
+          <div class="dir-card-body" id="dir-body-faturamento" style="display:none">
+            <div class="dir-items" id="dir-items-faturamento"></div>
+            <button class="dir-add-btn" onclick="addDirItem('faturamento')">+ Adicionar item</button>
+          </div>
+        </div>
+
+        <!-- CARD DIVISÃO -->
+        <div class="dir-card" id="dir-card-divisao">
+          <div class="dir-card-header" onclick="toggleDirCard('divisao')">
+            <div>
+              <div class="dir-card-label">Divisão</div>
+              <div class="dir-card-total" id="dir-total-divisao">R$ —</div>
+            </div>
+            <span class="dir-card-arrow" id="dir-arrow-divisao">▾</span>
+          </div>
+          <div class="dir-card-body" id="dir-body-divisao" style="display:none">
+            <div class="dir-items" id="dir-items-divisao"></div>
+            <button class="dir-add-btn" onclick="addDirItem('divisao')">+ Adicionar item</button>
+          </div>
+        </div>
+
+        <!-- CARD RESULTADO GERENCIAL -->
+        <div class="dir-card" id="dir-card-resultado">
+          <div class="dir-card-header" onclick="toggleDirCard('resultado')">
+            <div>
+              <div class="dir-card-label">Resultado Gerencial</div>
+              <div class="dir-card-total" id="dir-total-resultado">R$ —</div>
+            </div>
+            <span class="dir-card-arrow" id="dir-arrow-resultado">▾</span>
+          </div>
+          <div class="dir-card-body" id="dir-body-resultado" style="display:none">
+            <div class="dir-items" id="dir-items-resultado"></div>
+            <button class="dir-add-btn" onclick="addDirItem('resultado')">+ Adicionar item</button>
+          </div>
+        </div>
+
+        <!-- CARD APLICAÇÃO -->
+        <div class="dir-card" id="dir-card-aplicacao">
+          <div class="dir-card-header" onclick="toggleDirCard('aplicacao')">
+            <div>
+              <div class="dir-card-label">Aplicação</div>
+              <div class="dir-card-total" id="dir-total-aplicacao">R$ —</div>
+            </div>
+            <span class="dir-card-arrow" id="dir-arrow-aplicacao">▾</span>
+          </div>
+          <div class="dir-card-body" id="dir-body-aplicacao" style="display:none">
+            <div class="dir-items" id="dir-items-aplicacao"></div>
+            <button class="dir-add-btn" onclick="addDirItem('aplicacao')">+ Adicionar item</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2193,14 +2385,152 @@ function renderCompare(){
 }
 
 // ═══════════════════════════════════════
+// DIREÇÃO
+// ═══════════════════════════════════════
+const DIR_CARDS = ['faturamento','divisao','resultado','aplicacao'];
+const DIR_KEY   = 'ou_athena_direcao';
+
+function getDirData(){ try{ return JSON.parse(localStorage.getItem(DIR_KEY)||'{}'); }catch(e){ return {}; } }
+function saveDirData(d){ localStorage.setItem(DIR_KEY, JSON.stringify(d)); }
+
+function populateDirMonthSel(){
+  const data = getDirData();
+  const keys = Object.keys(data).sort().reverse();
+  const sel  = document.getElementById('dir-month-sel');
+  const cur  = sel.value;
+  sel.innerHTML = '<option value="">— Selecione o mês —</option>' +
+    keys.map(k=>`<option value="${k}">${data[k].label}</option>`).join('');
+  if(cur && data[cur]) sel.value = cur;
+}
+
+function addDirMonth(){
+  const label = prompt('Nome do mês (ex: Maio 2026):');
+  if(!label || !label.trim()) return;
+  const key = label.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+  const data = getDirData();
+  if(!data[key]){
+    data[key] = { label: label.trim(), cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[] } };
+    saveDirData(data);
+  }
+  populateDirMonthSel();
+  document.getElementById('dir-month-sel').value = key;
+  renderDirecao();
+}
+
+function deleteDirMonth(){
+  const key = document.getElementById('dir-month-sel').value;
+  if(!key) return;
+  const data = getDirData();
+  if(!confirm('Apagar ' + (data[key]?.label||key) + '?')) return;
+  delete data[key];
+  saveDirData(data);
+  populateDirMonthSel();
+  document.getElementById('dir-month-sel').value = '';
+  renderDirecao();
+}
+
+function renderDirecao(){
+  const key  = document.getElementById('dir-month-sel').value;
+  const data = getDirData();
+  const emptyEl   = document.getElementById('dir-empty');
+  const contentEl = document.getElementById('dir-content');
+  const delBtn    = document.getElementById('dir-del-btn');
+
+  if(!key || !data[key]){
+    emptyEl.style.display   = '';
+    contentEl.style.display = 'none';
+    delBtn.style.display    = 'none';
+    return;
+  }
+  emptyEl.style.display   = 'none';
+  contentEl.style.display = '';
+  delBtn.style.display    = '';
+
+  const month = data[key];
+  for(const card of DIR_CARDS){
+    const items = (month.cards[card]||[]);
+    const total = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    document.getElementById('dir-total-'+card).textContent = total > 0 ? fmt(total) : 'R$ —';
+    renderDirItems(card, items);
+  }
+}
+
+function renderDirItems(card, items){
+  const el = document.getElementById('dir-items-'+card);
+  el.innerHTML = items.map((it,i)=>`
+    <div class="dir-item-row" data-card="${card}" data-idx="${i}">
+      <input class="di-desc" type="text" placeholder="Descrição" value="${(it.desc||'').replace(/"/g,'&quot;')}"
+        onchange="saveDirItem('${card}',${i},'desc',this.value)" onblur="saveDirItem('${card}',${i},'desc',this.value)">
+      <input class="di-val" type="text" inputmode="decimal" placeholder="0,00" value="${it.val||''}"
+        onchange="saveDirItem('${card}',${i},'val',this.value)" onblur="saveDirItem('${card}',${i},'val',this.value)">
+      <button class="dir-del-btn" onclick="removeDirItem('${card}',${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addDirItem(card){
+  const key  = document.getElementById('dir-month-sel').value;
+  if(!key) return;
+  const data = getDirData();
+  data[key].cards[card].push({ desc:'', val:'' });
+  saveDirData(data);
+  renderDirecao();
+  // Abrir card e focar no último campo descrição
+  const body = document.getElementById('dir-body-'+card);
+  if(body.style.display==='none') toggleDirCard(card);
+  setTimeout(()=>{
+    const rows = document.querySelectorAll(`#dir-items-${card} .dir-item-row`);
+    const last = rows[rows.length-1];
+    if(last) last.querySelector('.di-desc')?.focus();
+  }, 50);
+}
+
+function saveDirItem(card, idx, field, value){
+  const key  = document.getElementById('dir-month-sel').value;
+  if(!key) return;
+  const data = getDirData();
+  if(!data[key]?.cards[card]?.[idx]) return;
+  if(field==='val'){
+    value = value.replace(',','.').replace(/[^0-9.]/g,'');
+    const n = parseFloat(value);
+    data[key].cards[card][idx].val = isNaN(n) ? '' : n;
+  } else {
+    data[key].cards[card][idx][field] = value;
+  }
+  saveDirData(data);
+  // Atualizar só o total sem re-renderizar os itens (evita perda de foco)
+  const items = data[key].cards[card];
+  const total = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+  document.getElementById('dir-total-'+card).textContent = total > 0 ? fmt(total) : 'R$ —';
+}
+
+function removeDirItem(card, idx){
+  const key  = document.getElementById('dir-month-sel').value;
+  if(!key) return;
+  const data = getDirData();
+  data[key].cards[card].splice(idx, 1);
+  saveDirData(data);
+  renderDirecao();
+}
+
+function toggleDirCard(card){
+  const body  = document.getElementById('dir-body-'+card);
+  const arrow = document.getElementById('dir-arrow-'+card);
+  const open  = body.style.display === 'none';
+  body.style.display  = open ? '' : 'none';
+  arrow.classList.toggle('open', open);
+}
+
+// ═══════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════
 function switchTab(tab){
-  ['metrics','fixed','variable','compare','import'].forEach((t,i)=>{
+  ['metrics','fixed','variable','compare','import','direcao'].forEach((t,i)=>{
     document.getElementById('tab-'+t).style.display=t===tab?'':'none';
     document.querySelectorAll('.tab-btn')[i].classList.toggle('active',t===tab);
   });
   if(tab==='compare'){ populateCompareSelects(); renderCompare(); }
+  if(tab==='direcao'){ populateDirMonthSel(); renderDirecao(); }
 }
 
 // ═══════════════════════════════════════
