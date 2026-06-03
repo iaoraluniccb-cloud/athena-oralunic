@@ -3669,7 +3669,7 @@ function renderFechamento(){
     </tr>`;
     for(const r of g.rows){
       const tot = (r.d||0)+(r.t||0);
-      const isPending = r._pending && tot === 0;
+      const isPending = !!r._pending;
       const pendStyle = isPending ? 'color:#c0392b;font-style:italic;' : '';
       const pendBadge = isPending ? ' <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;vertical-align:middle;margin-left:4px;letter-spacing:.05em;">preencher</span>' : '';
       const dSpan = r.d>0 ? `<span class="fech-badge-dinheiro">${fmt(r.d)}</span>` : (isPending ? `<span style="color:#c0392b;font-size:11px;">—</span>` : '—');
