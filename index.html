@@ -3247,6 +3247,23 @@ const FECH_CATS = [
 function getFechData(){ try{ return JSON.parse(localStorage.getItem(FECH_KEY)||'{}'); }catch(e){ return {}; } }
 function saveFechData(d){ localStorage.setItem(FECH_KEY, JSON.stringify(d)); }
 
+const FECH_RESUMO = {
+  "2025-03": { bruto: 627339.91, fluxo: 419053.68, despesas: 377458.77, dinheiro: 46911.51, sobra_anterior: 970.19, sobra_atual: 3044.51 },
+  "2025-04": { bruto: 596745.75, fluxo: 437409.44, despesas: 341395.4, dinheiro: 32333.72, sobra_anterior: 4014.7, saque: 4000.0 },
+  "2025-05": { bruto: 585050.4, fluxo: 426982.41, despesas: 341395.4, dinheiro: 32370.02, sobra_anterior: 1984.15, saque: 14400.0 },
+  "2025-06": { bruto: 743003.67, fluxo: 462242.7, despesas: 367674.53, dinheiro: 27067.35, sobra_anterior: 31.56, saque: 12000.0 },
+  "2025-07": { bruto: 801554.91, fluxo: 493661.56, despesas: 417751.18, dinheiro: 41892.95, sobra_anterior: 188.94, saque: 14000.0 },
+  "2025-08": { bruto: 771238.88, fluxo: 535922.03, despesas: 390575.81, dinheiro: 38652.99, sobra_anterior: 3485.14, saque: 4000.0 },
+  "2025-09": { bruto: 625835.01, fluxo: 461925.36, despesas: 415764.79, dinheiro: 29259.6, sobra_anterior: 366.21, saque: 7000.0 },
+  "2025-10": { bruto: 592388.67, fluxo: 464350.25, despesas: 420867.03, dinheiro: 29517.09, sobra_anterior: 934.44, saque: 12000.0 },
+  "2025-11": { bruto: 649969.98, fluxo: 542727.79, despesas: 411388.1, dinheiro: 130957.63, sobra_anterior: 207.15 },
+  "2025-12": { fluxo: 624455.06, despesas: 403507.58, dinheiro: 92580.62, sobra_anterior: 23573.43 },
+  "2026-01": { bruto: 572004.58, fluxo: 471487.53, despesas: 390614.95, dinheiro: 137367.33, sobra_anterior: 12621.37 },
+  "2026-02": { bruto: 433029.99, fluxo: 481610.89, despesas: 359621.68, dinheiro: 102751.6, sobra_anterior: 68747.47, divisao: 28000.0 },
+  "2026-03": { bruto: 635940.0, fluxo: 508958.76, despesas: 344463.97, dinheiro: 103281.89, sobra_anterior: 99469.0, divisao: 50000.0 },
+  "2026-04": { bruto: 565009.89, fluxo: 449822.78, despesas: 406322.77, dinheiro: 69320.2, sobra_anterior: 21469.0 },
+};
+
 // Sincroniza FECH_REAL_DATA imediatamente (não espera DOMContentLoaded)
 { const _sf = getFechData();
   let _changed = false;
@@ -3369,6 +3386,7 @@ function renderFechamento(){
   // ── Fonte automática: Direção ──────────────────────────────────────────
   const dirData  = getDirData();
   const dirMonth = dirData[key];
+  const resumo   = FECH_RESUMO[key] || {};
   function getDirCardTotal(card){
     if(!dirMonth) return null;
     const items = dirMonth.cards[card]||[];
@@ -3376,9 +3394,10 @@ function renderFechamento(){
     return items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
   }
 
-  const faturamentoBrutoAuto = getDirCardTotal('faturamento');
-  const fluxoCaixaAuto       = getDirCardTotal('fluxo');
-  const despesasAuto         = totalG;
+  // Prioridade: FECH_RESUMO (planilha) > Direção > null
+  const faturamentoBrutoAuto = resumo.bruto    != null ? resumo.bruto    : getDirCardTotal('faturamento');
+  const fluxoCaixaAuto       = resumo.fluxo    != null ? resumo.fluxo    : getDirCardTotal('fluxo');
+  const despesasAuto         = resumo.despesas != null ? resumo.despesas : totalG;
 
   // Valores efetivos (manual sobrescreve automático)
   const faturamentoBruto = acardEffective('fat_bruto', faturamentoBrutoAuto);
@@ -3398,29 +3417,44 @@ function renderFechamento(){
     if(!mKey || depth > 24) return 0;
     const mData = getFechData()[mKey];
     if(!mData) return 0;
-    // Usa o valor efetivo do card fluxo desse mês
+    const mResumо = FECH_RESUMO[mKey] || {};
     const mAcards = mData.acards || {};
+    // Fluxo: manual > FECH_RESUMO > Direção
     const mFluxoItems = mAcards['fluxo'] || [];
     let mFluxo;
     if(mFluxoItems.length){
       mFluxo = mFluxoItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    } else if(mResumо.fluxo != null){
+      mFluxo = mResumо.fluxo;
     } else {
       const dirM = getDirData()[mKey];
       mFluxo = dirM ? (dirM.cards.fluxo||[]).reduce((s,it)=>s+(parseFloat(it.val)||0),0) : 0;
     }
+    // Dinheiro: manual > FECH_RESUMO > linhas individuais
     const mDinheiroItems = mAcards['dinheiro'] || [];
-    const mD = mDinheiroItems.length
-      ? mDinheiroItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0)
-      : (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
+    let mD;
+    if(mDinheiroItems.length){
+      mD = mDinheiroItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    } else if(mResumо.dinheiro != null){
+      mD = mResumо.dinheiro;
+    } else {
+      mD = (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
+    }
+    // Se esse mês tem sobra_anterior na planilha, usa como base (quebra a recursão)
+    if(mResumо.sobra_anterior != null && depth > 0){
+      return mResumо.sobra_anterior + mFluxo - mD;
+    }
     const allK  = Object.keys(getFechData()).sort();
     const idxM  = allK.indexOf(mKey);
     const prevM = idxM > 0 ? allK[idxM-1] : null;
     return calcSobra(prevM, depth+1) + mFluxo - mD;
   }
 
-  const sobraAnterior = calcSobra(prevKey, 0);
+  // Sobra anterior: usa FECH_RESUMO do mês atual se disponível, senão calcula recursivamente
+  const sobraAnterior = resumo.sobra_anterior != null ? resumo.sobra_anterior : calcSobra(prevKey, 0);
   const fluxoAtualNum = fluxoCaixa ?? 0;
-  const dinheiroEfetivo = acardEffective('dinheiro', totalD);
+  const dinheiroAutoVal = resumo.dinheiro != null ? resumo.dinheiro : totalD;
+  const dinheiroEfetivo = acardEffective('dinheiro', dinheiroAutoVal);
   const sobraAtualAuto  = sobraAnterior + fluxoAtualNum - dinheiroEfetivo;
   const sobraAtual      = acardEffective('sobra', sobraAtualAuto);
 
@@ -3437,11 +3471,11 @@ function renderFechamento(){
   // Cada card tem: key, label, autoVal (calculado), sub (legenda)
   // O usuário pode adicionar itens manuais; se existirem, substituem autoVal no total
   const FECH_ACARDS = [
-    { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBrutoAuto, sub:'da aba Direção', color:'total' },
-    { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixaAuto,       sub:'da aba Direção', color:'fixed' },
-    { key:'despesas',    label:'Despesas',             autoVal: despesasAuto,         sub:`${rows.length} pagamentos`, color:'variable' },
+    { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBrutoAuto, sub: resumo.bruto    != null ? 'da planilha' : 'da aba Direção', color:'total' },
+    { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixaAuto,       sub: resumo.fluxo    != null ? 'da planilha' : 'da aba Direção', color:'fixed' },
+    { key:'despesas',    label:'Despesas',             autoVal: despesasAuto,         sub: resumo.despesas != null ? 'da planilha' : `${rows.length} pagamentos`, color:'variable' },
     { key:'resultado',   label:'Resultado Gerencial',  autoVal: resultadoGerAuto,     sub:'Fluxo − Despesas', color:'total', signed:true },
-    { key:'dinheiro',    label:'Saídas em Dinheiro',   autoVal: totalD,               sub:`Transferência: ${fmt(totalT)}`, color:'fixed' },
+    { key:'dinheiro',    label:'Saídas em Dinheiro',   autoVal: dinheiroAutoVal,      sub: resumo.dinheiro != null ? `planilha · transf: ${fmt(totalT)}` : `Transferência: ${fmt(totalT)}`, color:'fixed' },
     { key:'sobra',       label:'Sobra de Caixa',       autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, color:'variable', signed:true },
   ];
 
