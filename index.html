@@ -1109,6 +1109,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <button class="tab-btn active" onclick="switchTab('metrics')">Métricas</button>
   <button class="tab-btn" onclick="switchTab('direcao')">Direção</button>
   <button class="tab-btn" id="tab-btn-fechamento" onclick="switchTab('fechamento')">Fechamento</button>
+  <button class="tab-btn" onclick="switchTab('calculadora')">Calculadora</button>
 </div>
 
 <main>
@@ -1498,6 +1499,16 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
       </div>
     </div>
 
+  </div>
+
+  <!-- ═══ CALCULADORA ═══ -->
+  <div id="tab-calculadora" style="display:none;padding:0;margin:-24px -24px 0;">
+    <iframe
+      id="calc-iframe"
+      src="https://deploy-vercel-brown-three.vercel.app/"
+      style="width:100%;height:calc(100vh - 110px);border:none;display:block;"
+      allow="clipboard-read; clipboard-write"
+    ></iframe>
   </div>
 
 </main>
@@ -4092,7 +4103,7 @@ function switchTab(tab){
   if(subMap[tab]){ switchTab('metrics'); switchSubTab(subMap[tab]); return; }
   // Bloquear Fechamento e Direção para Alexandre
   if(isAlexandre() && (tab==='fechamento'||tab==='direcao')) tab='metrics';
-  ['metrics','direcao','fechamento'].forEach((t,i)=>{
+  ['metrics','direcao','fechamento','calculadora'].forEach((t,i)=>{
     document.getElementById('tab-'+t).style.display=t===tab?'':'none';
     document.querySelectorAll('.tab-btn')[i]?.classList.toggle('active',t===tab);
   });
