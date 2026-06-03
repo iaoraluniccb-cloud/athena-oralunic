@@ -6291,7 +6291,15 @@ function aprovRenderSubAbas(){
       btn.style.borderColor = ativo ? 'var(--vinho)' : 'var(--border)';
       const abertos = aprovContarAbertos(id);
       const label = id === 'entradas' ? '💵 Entradas' : '🔄 Trocas';
-      btn.textContent = abertos > 0 ? `${label}  ${abertos}` : label;
+      // Clear and rebuild with badge span for real-time count
+      btn.innerHTML = '';
+      btn.appendChild(document.createTextNode(label + '\u00a0'));
+      if(abertos > 0){
+        const badge = document.createElement('span');
+        badge.style.cssText = 'background:#dc2626;color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 5px;margin-left:2px;vertical-align:middle;display:inline-block';
+        badge.textContent = abertos;
+        btn.appendChild(badge);
+      }
     }
   });
 }
@@ -6359,8 +6367,8 @@ function aprovRenderCol(col){
     ${!finalizado?`
     <button class="aprov-add-btn" onclick="aprovAbrirForm('${col.id}')">＋ Adicionar</button>
     <div class="aprov-add-form" id="aprov-form-${col.id}" style="display:none">
-      <input type="text" id="aprov-nome-${col.id}" placeholder="Nome do paciente *" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('aprov-ficha-${col.id}').focus();}" />
-      <input type="text" id="aprov-ficha-${col.id}" placeholder="Nº ficha (opcional)" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('aprov-valor-${col.id}').focus();}" />
+      <input type="text" id="aprov-nome-${col.id}" placeholder="Nome do paciente *" onkeydown="if(event.key==='Enter'){event.preventDefault();aprovSalvarItem('${col.id}');}" />
+      <input type="text" id="aprov-ficha-${col.id}" placeholder="Nº ficha (opcional)" onkeydown="if(event.key==='Enter'){event.preventDefault();aprovSalvarItem('${col.id}');}" />
       <input type="text" id="aprov-valor-${col.id}" placeholder="Valor (opcional, ex: R$ 500,00)" onkeydown="if(event.key==='Enter'){event.preventDefault();aprovSalvarItem('${col.id}');}" />
       <div class="aprov-add-form-btns">
         <button class="aprov-save-btn" onclick="aprovSalvarItem('${col.id}')">Salvar</button>
@@ -6398,7 +6406,7 @@ function aprovRenderRecados(){
           ${!podeConcluir?'disabled':''}
           onchange="aprovRecadoToggle(${idx},this.checked)">
         <div class="aprov-card-body" style="flex:1">
-          <div class="aprov-card-nome">${r.texto}${r.done?'<span class="aprov-card-done-tag">✓</span>':''}</div>
+          <div class="aprov-card-nome">${r.texto}${r.done?'<span class="aprov-card-done-tag">✓</span>':''}${badgeResp}</div>
           <div class="aprov-card-ficha">${r.autor?`${r.autor} · `:''}${r.criadoEm?new Date(r.criadoEm).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):''}</div>
         </div>
         ${!finalizado?`<button class="aprov-card-del" onclick="aprovRecadoDel(${idx})" title="Remover">×</button>`:''}
@@ -6406,7 +6414,7 @@ function aprovRenderRecados(){
       ${nResp>0?`
       <div style="width:100%;padding-left:26px">
         <button onclick="aprovToggleRespostas(${idx})" style="font-size:10px;color:var(--text2);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-body);display:flex;align-items:center;gap:2px">
-          <span id="aprov-resp-chev-${idx}">▶</span> ${nResp} resposta${nResp>1?'s':''}${badgeResp}
+          <span id="aprov-resp-chev-${idx}">▶</span> ${nResp} resposta${nResp>1?'s':''}
         </button>
         <div id="aprov-resp-list-${idx}" style="display:none">${respostasHtml}</div>
       </div>`:''}
@@ -6419,7 +6427,7 @@ function aprovRenderRecados(){
           <button onclick="aprovRecadoResponder(${idx})" title="Enviar" style="background:var(--vinho);color:var(--marfim);border:none;border-radius:5px;padding:3px 7px;font-size:12px;cursor:pointer;line-height:1">↩</button>
           <button onclick="document.getElementById('aprov-resp-form-${idx}').style.display='none'" style="background:none;border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:11px;color:var(--text2);cursor:pointer;line-height:1">×</button>
         </div>
-        <button style="font-size:10px;color:var(--text2);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-body)" onclick="document.getElementById('aprov-resp-form-${idx}').style.display='flex';document.getElementById('aprov-resp-txt-${idx}').focus()">↩ Responder${badgeResp}</button>
+        <button style="font-size:10px;color:var(--text2);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-body)" onclick="document.getElementById('aprov-resp-form-${idx}').style.display='flex';document.getElementById('aprov-resp-txt-${idx}').focus()">↩ Responder</button>
       </div>`:''}
     </div>`;
   }).join('');
@@ -6520,7 +6528,12 @@ function aprovSalvarItem(colId){
   if(!aprovData2[aprovMesAtivo].colunas) aprovData2[aprovMesAtivo].colunas = {};
   if(!aprovData2[aprovMesAtivo].colunas[colId]) aprovData2[aprovMesAtivo].colunas[colId] = [];
   aprovData2[aprovMesAtivo].colunas[colId].push({ nome, ficha, valor, done:false, criadoEm:new Date().toISOString() });
-  aprovSalvar(); aprovRenderBoard();
+  aprovSalvar(); aprovRenderBoard(); aprovRenderSubAbas();
+  // reopen form so user can add next item quickly; focus nome field
+  const form = document.getElementById(`aprov-form-${colId}`);
+  if(form){ form.style.display = 'flex'; }
+  const nomeEl = document.getElementById(`aprov-nome-${colId}`);
+  if(nomeEl){ nomeEl.focus(); }
 }
 
 function aprovToggle(colId, idx, checked){
@@ -6528,7 +6541,7 @@ function aprovToggle(colId, idx, checked){
   const col = aprovData2[aprovMesAtivo]?.colunas?.[colId];
   if(!col) return;
   col[idx].done = checked;
-  aprovSalvar(); aprovRenderBoard();
+  aprovSalvar(); aprovRenderBoard(); aprovRenderSubAbas();
 }
 
 function aprovConfirmarTodos(colId, checked){
@@ -6536,14 +6549,14 @@ function aprovConfirmarTodos(colId, checked){
   const col = aprovData2[aprovMesAtivo]?.colunas?.[colId];
   if(!col) return;
   col.forEach(i => i.done = checked);
-  aprovSalvar(); aprovRenderBoard();
+  aprovSalvar(); aprovRenderBoard(); aprovRenderSubAbas();
 }
 
 function aprovDel(colId, idx){
   const col = aprovData2[aprovMesAtivo]?.colunas?.[colId];
   if(!col) return;
   col.splice(idx, 1);
-  aprovSalvar(); aprovRenderBoard();
+  aprovSalvar(); aprovRenderBoard(); aprovRenderSubAbas();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
