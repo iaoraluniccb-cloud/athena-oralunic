@@ -1883,10 +1883,12 @@ async function loadFromSB(){
       catch(e) { ovObj[rec.desp][rec.field] = rec.value; }
     }
     localStorage.setItem('ou_athena_overrides', JSON.stringify(ovObj));
-    // Load fechamento
+    // Load fechamento — "cards" no Supabase = "acards" no app
     const fRes = await sbFetch('GET', '/rest/v1/fechamento?select=key,label,rows,cards');
     const fObj = {};
-    for(const rec of fRes){ fObj[rec.key] = rec; }
+    for(const rec of fRes){
+      fObj[rec.key] = { key: rec.key, label: rec.label, rows: rec.rows||[], acards: rec.cards||{} };
+    }
     if(Object.keys(fObj).length) localStorage.setItem('ou_athena_fechamento', JSON.stringify(fObj));
     // Load direcao
     const dRes = await sbFetch('GET', '/rest/v1/direcao?select=key,label,data');
@@ -3378,9 +3380,9 @@ const FECH_CATS = [
 function getFechData(){ try{ return JSON.parse(localStorage.getItem(FECH_KEY)||'{}'); }catch(e){ return {}; } }
 function saveFechData(d){
   localStorage.setItem(FECH_KEY, JSON.stringify(d));
-  // Sync cada mês modificado ao Supabase
+  // Sync cada mês ao Supabase — acards é o campo correto com os valores dos cards
   for(const [key, mes] of Object.entries(d)){
-    sbSaveFechamento(key, mes.label||key, mes.rows||[], mes.cards||{});
+    sbSaveFechamento(key, mes.label||key, mes.rows||[], mes.acards||mes.cards||{});
   }
 }
 
@@ -4251,13 +4253,14 @@ async function syncFromSBSilent(){
         mudouMes = true;
       }
     }
-    // Fechamento
+    // Fechamento — converte "cards" do SB para "acards" no app
     const fRes = await sbFetch('GET', '/rest/v1/fechamento?select=key,label,rows,cards');
     const fLocal = JSON.parse(localStorage.getItem('ou_athena_fechamento')||'{}');
     let mudouFech = false;
     for(const rec of fRes){
-      if(JSON.stringify(fLocal[rec.key]) !== JSON.stringify(rec)){
-        fLocal[rec.key] = rec; mudouFech = true;
+      const converted = { key: rec.key, label: rec.label, rows: rec.rows||[], acards: rec.cards||{} };
+      if(JSON.stringify(fLocal[rec.key]) !== JSON.stringify(converted)){
+        fLocal[rec.key] = converted; mudouFech = true;
       }
     }
     if(mudouFech) localStorage.setItem('ou_athena_fechamento', JSON.stringify(fLocal));
