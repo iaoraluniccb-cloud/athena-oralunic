@@ -7,8 +7,9 @@
 <title>Athena — Controle Financeiro</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  /* Oculta header interno — já está dentro do Athena */
+  /* Oculta header interno e tela de login — já está dentro do Athena */
   .header { display: none !important; }
+  #cob-login-wall { display: none !important; }
   :root {
     /* Athena brand palette */
     --vinho:    #8B2D42;
@@ -3617,7 +3618,9 @@ window.switchTab = function(name){
 
 // ==================== COBRANÇA STATE ====================
 let cobRecords = JSON.parse(localStorage.getItem('cobrancas') || '[]');
-let cobUser    = localStorage.getItem('cobUser') || null;
+// Pula login — entra direto como ADM
+let cobUser = 'ADM';
+localStorage.setItem('cobUser', 'ADM');
 
 const COB_USERS = { 'Alexandre': 'Ale84a84!', 'ADM': 'ximia123' };
 
