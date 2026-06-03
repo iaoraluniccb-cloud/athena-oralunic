@@ -3359,7 +3359,14 @@ function renderFechamento(){
   const totalT = rows.reduce((s,r)=>s+(r.t||0),0);
   const totalG = totalD + totalT;
 
-  // ── Dados da aba Direção para o mesmo mês ──────────────────────────────
+  // ── Valor efetivo de um acard: manual se existir, senão fonte automática ─
+  function acardEffective(acKey, autoVal){
+    const items = (month.acards||{})[acKey] || [];
+    if(items.length) return items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    return autoVal;
+  }
+
+  // ── Fonte automática: Direção ──────────────────────────────────────────
   const dirData  = getDirData();
   const dirMonth = dirData[key];
   function getDirCardTotal(card){
@@ -3369,38 +3376,53 @@ function renderFechamento(){
     return items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
   }
 
-  const faturamentoBruto = getDirCardTotal('faturamento');
-  const fluxoCaixa       = getDirCardTotal('fluxo');
-  const despesas         = totalG;
-  const resultadoGer     = (fluxoCaixa !== null) ? fluxoCaixa - despesas : null;
+  const faturamentoBrutoAuto = getDirCardTotal('faturamento');
+  const fluxoCaixaAuto       = getDirCardTotal('fluxo');
+  const despesasAuto         = totalG;
+
+  // Valores efetivos (manual sobrescreve automático)
+  const faturamentoBruto = acardEffective('fat_bruto', faturamentoBrutoAuto);
+  const fluxoCaixa       = acardEffective('fluxo',     fluxoCaixaAuto);
+  const despesas         = acardEffective('despesas',  despesasAuto);
+
+  // Resultado Gerencial: usa fluxo e despesas efetivos
+  const resultadoGerAuto = (fluxoCaixa !== null) ? fluxoCaixa - despesas : null;
+  const resultadoGer     = acardEffective('resultado', resultadoGerAuto);
 
   // ── Sobra de caixa encadeada ────────────────────────────────────────────
-  // Pega todos os meses ordenados, encontra o anterior ao atual
   const allFechKeys = Object.keys(getFechData()).sort();
   const idxCur      = allFechKeys.indexOf(key);
   const prevKey     = idxCur > 0 ? allFechKeys[idxCur - 1] : null;
 
-  // Sobra anterior é o valor calculado para o mês anterior (recursivo via cache)
   function calcSobra(mKey, depth){
     if(!mKey || depth > 24) return 0;
     const mData = getFechData()[mKey];
     if(!mData) return 0;
-    const mRows   = mData.rows || [];
-    const mD      = mRows.reduce((s,r)=>s+(r.d||0),0);
-    const dirM    = getDirData()[mKey];
-    // entradas em dinheiro = fluxo de caixa do mês (se lançado na Direção)
-    const mFluxo  = dirM ? (dirM.cards.fluxo||[]).reduce((s,it)=>s+(parseFloat(it.val)||0),0) : 0;
-    const allK    = Object.keys(getFechData()).sort();
-    const idxM    = allK.indexOf(mKey);
-    const prevM   = idxM > 0 ? allK[idxM-1] : null;
-    const sobraAnterior = calcSobra(prevM, depth+1);
-    return sobraAnterior + mFluxo - mD;
+    // Usa o valor efetivo do card fluxo desse mês
+    const mAcards = mData.acards || {};
+    const mFluxoItems = mAcards['fluxo'] || [];
+    let mFluxo;
+    if(mFluxoItems.length){
+      mFluxo = mFluxoItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    } else {
+      const dirM = getDirData()[mKey];
+      mFluxo = dirM ? (dirM.cards.fluxo||[]).reduce((s,it)=>s+(parseFloat(it.val)||0),0) : 0;
+    }
+    const mDinheiroItems = mAcards['dinheiro'] || [];
+    const mD = mDinheiroItems.length
+      ? mDinheiroItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0)
+      : (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
+    const allK  = Object.keys(getFechData()).sort();
+    const idxM  = allK.indexOf(mKey);
+    const prevM = idxM > 0 ? allK[idxM-1] : null;
+    return calcSobra(prevM, depth+1) + mFluxo - mD;
   }
 
   const sobraAnterior = calcSobra(prevKey, 0);
-  // Fluxo do mês atual (dinheiro que entrou) = valor de fluxo da Direção
-  const fluxoAtualNum = (fluxoCaixa !== null) ? fluxoCaixa : 0;
-  const sobraAtual    = sobraAnterior + fluxoAtualNum - totalD;
+  const fluxoAtualNum = fluxoCaixa ?? 0;
+  const dinheiroEfetivo = acardEffective('dinheiro', totalD);
+  const sobraAtualAuto  = sobraAnterior + fluxoAtualNum - dinheiroEfetivo;
+  const sobraAtual      = acardEffective('sobra', sobraAtualAuto);
 
   // ── Helpers de cor ────────────────────────────────────────────────────
   function fmtColor(v, showSign){
@@ -3415,12 +3437,12 @@ function renderFechamento(){
   // Cada card tem: key, label, autoVal (calculado), sub (legenda)
   // O usuário pode adicionar itens manuais; se existirem, substituem autoVal no total
   const FECH_ACARDS = [
-    { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBruto, sub:'da aba Direção', color:'total' },
-    { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixa,       sub:'da aba Direção', color:'fixed' },
-    { key:'despesas',    label:'Despesas',             autoVal: despesas,         sub:`${rows.length} pagamentos`, color:'variable' },
-    { key:'resultado',   label:'Resultado Gerencial',  autoVal: resultadoGer,     sub:'Fluxo − Despesas', color:'total', signed:true },
-    { key:'dinheiro',    label:'Saídas em Dinheiro',   autoVal: totalD,           sub:`Transferência: ${fmt(totalT)}`, color:'fixed' },
-    { key:'sobra',       label:'Sobra de Caixa',       autoVal: sobraAtual,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, color:'variable', signed:true },
+    { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBrutoAuto, sub:'da aba Direção', color:'total' },
+    { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixaAuto,       sub:'da aba Direção', color:'fixed' },
+    { key:'despesas',    label:'Despesas',             autoVal: despesasAuto,         sub:`${rows.length} pagamentos`, color:'variable' },
+    { key:'resultado',   label:'Resultado Gerencial',  autoVal: resultadoGerAuto,     sub:'Fluxo − Despesas', color:'total', signed:true },
+    { key:'dinheiro',    label:'Saídas em Dinheiro',   autoVal: totalD,               sub:`Transferência: ${fmt(totalT)}`, color:'fixed' },
+    { key:'sobra',       label:'Sobra de Caixa',       autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, color:'variable', signed:true },
   ];
 
   // Garante estrutura de cards no mês
@@ -3433,7 +3455,9 @@ function renderFechamento(){
     const items   = month.acards[ac.key] || [];
     const manualT = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
     const total   = items.length ? manualT : ac.autoVal;
-    const dispVal = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
+    // Para resultado gerencial sem manual, recalcula com valores efetivos dos outros cards
+    const effectiveTotal = ac.key==='resultado' && !items.length ? resultadoGerAuto : total;
+    const dispVal = ac.signed ? fmtColor(effectiveTotal, true) : fmtNeutral(effectiveTotal);
     const bodyId  = `facard-body-${ac.key}`;
     const arrowId = `facard-arrow-${ac.key}`;
     const itemsHtml = items.map((it,i)=>`
