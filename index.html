@@ -1329,6 +1329,21 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
           </div>
         </div>
 
+        <!-- CARD FLUXO DE CAIXA -->
+        <div class="dir-card" id="dir-card-fluxo">
+          <div class="dir-card-header" onclick="toggleDirCard('fluxo')">
+            <div>
+              <div class="dir-card-label">Fluxo de Caixa</div>
+              <div class="dir-card-total" id="dir-total-fluxo">R$ —</div>
+            </div>
+            <span class="dir-card-arrow" id="dir-arrow-fluxo">▾</span>
+          </div>
+          <div class="dir-card-body" id="dir-body-fluxo" style="display:none">
+            <div class="dir-items" id="dir-items-fluxo"></div>
+            <button class="dir-add-btn" onclick="addDirItem('fluxo')">+ Adicionar item</button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -3338,11 +3353,93 @@ function renderFechamento(){
   const totalT = rows.reduce((s,r)=>s+(r.t||0),0);
   const totalG = totalD + totalT;
 
-  // Cards de resumo (como na planilha: Dinheiro, Transferência, Total)
+  // ── Dados da aba Direção para o mesmo mês ──────────────────────────────
+  const dirData  = getDirData();
+  const dirMonth = dirData[key];
+  function getDirCardTotal(card){
+    if(!dirMonth) return null;
+    const items = dirMonth.cards[card]||[];
+    if(!items.length) return null;
+    return items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+  }
+
+  const faturamentoBruto = getDirCardTotal('faturamento');
+  const fluxoCaixa       = getDirCardTotal('fluxo');
+  const despesas         = totalG;
+  const resultadoGer     = (fluxoCaixa !== null) ? fluxoCaixa - despesas : null;
+
+  // ── Sobra de caixa encadeada ────────────────────────────────────────────
+  // Pega todos os meses ordenados, encontra o anterior ao atual
+  const allFechKeys = Object.keys(getFechData()).sort();
+  const idxCur      = allFechKeys.indexOf(key);
+  const prevKey     = idxCur > 0 ? allFechKeys[idxCur - 1] : null;
+
+  // Sobra anterior é o valor calculado para o mês anterior (recursivo via cache)
+  function calcSobra(mKey, depth){
+    if(!mKey || depth > 24) return 0;
+    const mData = getFechData()[mKey];
+    if(!mData) return 0;
+    const mRows   = mData.rows || [];
+    const mD      = mRows.reduce((s,r)=>s+(r.d||0),0);
+    const dirM    = getDirData()[mKey];
+    // entradas em dinheiro = fluxo de caixa do mês (se lançado na Direção)
+    const mFluxo  = dirM ? (dirM.cards.fluxo||[]).reduce((s,it)=>s+(parseFloat(it.val)||0),0) : 0;
+    const allK    = Object.keys(getFechData()).sort();
+    const idxM    = allK.indexOf(mKey);
+    const prevM   = idxM > 0 ? allK[idxM-1] : null;
+    const sobraAnterior = calcSobra(prevM, depth+1);
+    return sobraAnterior + mFluxo - mD;
+  }
+
+  const sobraAnterior = calcSobra(prevKey, 0);
+  // Fluxo do mês atual (dinheiro que entrou) = valor de fluxo da Direção
+  const fluxoAtualNum = (fluxoCaixa !== null) ? fluxoCaixa : 0;
+  const sobraAtual    = sobraAnterior + fluxoAtualNum - totalD;
+
+  // ── Helper para formatar com cor ───────────────────────────────────────
+  function fmtColor(v, showSign){
+    if(v === null) return '<span style="opacity:.4">—</span>';
+    const color = v >= 0 ? 'var(--cobre)' : '#c0392b';
+    const sign  = showSign && v > 0 ? '+' : '';
+    return `<span style="color:${color}">${sign}${fmt(v)}</span>`;
+  }
+  function fmtNeutral(v){
+    if(v === null) return '<span style="opacity:.4">—</span>';
+    return fmt(v);
+  }
+
+  // ── Cards analíticos ────────────────────────────────────────────────────
   document.getElementById('fech-summary-cards').innerHTML = `
-    <div class="s-card total"><label>Total Geral</label><div class="val">${fmt(totalG)}</div><div class="sub">${rows.length} beneficiários</div></div>
-    <div class="s-card fixed"><label>Dinheiro</label><div class="val" style="font-size:18px">${fmt(totalD)}</div><div class="sub">saídas em espécie</div></div>
-    <div class="s-card variable"><label>Transferência / Pix</label><div class="val" style="font-size:18px">${fmt(totalT)}</div><div class="sub">saídas digitais</div></div>
+    <div class="s-card total">
+      <label>Faturamento Bruto</label>
+      <div class="val">${fmtNeutral(faturamentoBruto)}</div>
+      <div class="sub">da aba Direção</div>
+    </div>
+    <div class="s-card fixed">
+      <label>Fluxo de Caixa</label>
+      <div class="val">${fmtNeutral(fluxoCaixa)}</div>
+      <div class="sub">da aba Direção</div>
+    </div>
+    <div class="s-card variable">
+      <label>Despesas</label>
+      <div class="val">${fmt(despesas)}</div>
+      <div class="sub">${rows.length} pagamentos</div>
+    </div>
+    <div class="s-card total">
+      <label>Resultado Gerencial</label>
+      <div class="val" style="font-size:18px">${fmtColor(resultadoGer, true)}</div>
+      <div class="sub">Fluxo − Despesas</div>
+    </div>
+    <div class="s-card fixed">
+      <label>Saídas em Dinheiro</label>
+      <div class="val" style="font-size:18px">${fmt(totalD)}</div>
+      <div class="sub">espécie + Pix = ${fmt(totalT)}</div>
+    </div>
+    <div class="s-card variable">
+      <label>Sobra de Caixa</label>
+      <div class="val" style="font-size:18px">${fmtColor(sobraAtual, true)}</div>
+      <div class="sub">anterior ${fmtColor(sobraAnterior, false)}</div>
+    </div>
   `;
 
   // Agrupar por categoria
@@ -3403,7 +3500,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ═══════════════════════════════════════
 // DIREÇÃO
 // ═══════════════════════════════════════
-const DIR_CARDS = ['faturamento','divisao','resultado','aplicacao'];
+const DIR_CARDS = ['faturamento','divisao','resultado','aplicacao','fluxo'];
 const DIR_KEY   = 'ou_athena_direcao';
 
 function getDirData(){ try{ return JSON.parse(localStorage.getItem(DIR_KEY)||'{}'); }catch(e){ return {}; } }
@@ -3425,7 +3522,7 @@ function addDirMonth(){
   const key = label.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
   const data = getDirData();
   if(!data[key]){
-    data[key] = { label: label.trim(), cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[] } };
+    data[key] = { label: label.trim(), cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[], fluxo:[] } };
     saveDirData(data);
   }
   populateDirMonthSel();
