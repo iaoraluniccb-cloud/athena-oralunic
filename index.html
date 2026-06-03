@@ -1406,8 +1406,8 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <!-- Conteúdo do fechamento -->
     <div id="fech-content" style="display:none">
 
-      <!-- Cards de resumo -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;" id="fech-summary-cards"></div>
+      <!-- Cards analíticos -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:24px;" id="fech-summary-cards"></div>
 
       <!-- Tabela de pagamentos -->
       <div class="section-divider"><span>Pagamentos do mês</span></div>
@@ -3402,51 +3402,70 @@ function renderFechamento(){
   const fluxoAtualNum = (fluxoCaixa !== null) ? fluxoCaixa : 0;
   const sobraAtual    = sobraAnterior + fluxoAtualNum - totalD;
 
-  // ── Helper para formatar com cor ───────────────────────────────────────
+  // ── Helpers de cor ────────────────────────────────────────────────────
   function fmtColor(v, showSign){
     if(v === null) return '<span style="opacity:.4">—</span>';
     const color = v >= 0 ? 'var(--cobre)' : '#c0392b';
     const sign  = showSign && v > 0 ? '+' : '';
     return `<span style="color:${color}">${sign}${fmt(v)}</span>`;
   }
-  function fmtNeutral(v){
-    if(v === null) return '<span style="opacity:.4">—</span>';
-    return fmt(v);
-  }
+  function fmtNeutral(v){ return v === null ? '<span style="opacity:.4">—</span>' : fmt(v); }
 
-  // ── Cards analíticos ────────────────────────────────────────────────────
-  document.getElementById('fech-summary-cards').innerHTML = `
-    <div class="s-card total">
-      <label>Faturamento Bruto</label>
-      <div class="val">${fmtNeutral(faturamentoBruto)}</div>
-      <div class="sub">da aba Direção</div>
-    </div>
-    <div class="s-card fixed">
-      <label>Fluxo de Caixa</label>
-      <div class="val">${fmtNeutral(fluxoCaixa)}</div>
-      <div class="sub">da aba Direção</div>
-    </div>
-    <div class="s-card variable">
-      <label>Despesas</label>
-      <div class="val">${fmt(despesas)}</div>
-      <div class="sub">${rows.length} pagamentos</div>
-    </div>
-    <div class="s-card total">
-      <label>Resultado Gerencial</label>
-      <div class="val" style="font-size:18px">${fmtColor(resultadoGer, true)}</div>
-      <div class="sub">Fluxo − Despesas</div>
-    </div>
-    <div class="s-card fixed">
-      <label>Saídas em Dinheiro</label>
-      <div class="val" style="font-size:18px">${fmt(totalD)}</div>
-      <div class="sub">espécie + Pix = ${fmt(totalT)}</div>
-    </div>
-    <div class="s-card variable">
-      <label>Sobra de Caixa</label>
-      <div class="val" style="font-size:18px">${fmtColor(sobraAtual, true)}</div>
-      <div class="sub">anterior ${fmtColor(sobraAnterior, false)}</div>
-    </div>
-  `;
+  // ── Definição dos 6 cards analíticos ────────────────────────────────────
+  // Cada card tem: key, label, autoVal (calculado), sub (legenda)
+  // O usuário pode adicionar itens manuais; se existirem, substituem autoVal no total
+  const FECH_ACARDS = [
+    { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBruto, sub:'da aba Direção', color:'total' },
+    { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixa,       sub:'da aba Direção', color:'fixed' },
+    { key:'despesas',    label:'Despesas',             autoVal: despesas,         sub:`${rows.length} pagamentos`, color:'variable' },
+    { key:'resultado',   label:'Resultado Gerencial',  autoVal: resultadoGer,     sub:'Fluxo − Despesas', color:'total', signed:true },
+    { key:'dinheiro',    label:'Saídas em Dinheiro',   autoVal: totalD,           sub:`Transferência: ${fmt(totalT)}`, color:'fixed' },
+    { key:'sobra',       label:'Sobra de Caixa',       autoVal: sobraAtual,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, color:'variable', signed:true },
+  ];
+
+  // Garante estrutura de cards no mês
+  if(!month.acards) month.acards = {};
+  for(const ac of FECH_ACARDS){ if(!month.acards[ac.key]) month.acards[ac.key] = []; }
+  saveFechData(data);
+
+  // ── Renderiza os cards ──────────────────────────────────────────────────
+  document.getElementById('fech-summary-cards').innerHTML = FECH_ACARDS.map(ac => {
+    const items   = month.acards[ac.key] || [];
+    const manualT = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    const total   = items.length ? manualT : ac.autoVal;
+    const dispVal = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
+    const bodyId  = `facard-body-${ac.key}`;
+    const arrowId = `facard-arrow-${ac.key}`;
+    const itemsHtml = items.map((it,i)=>`
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(139,90,60,.08)">
+        <input type="text" value="${(it.desc||'').replace(/"/g,'&quot;')}" placeholder="Descrição"
+          onchange="saveFechACard('${key}','${ac.key}',${i},'desc',this.value)"
+          style="flex:1;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:11px;color:var(--tinta);outline:none;padding:2px 4px;">
+        <input type="text" value="${it.val||''}" placeholder="0,00"
+          onchange="saveFechACard('${key}','${ac.key}',${i},'val',this.value)"
+          style="width:90px;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:600;color:var(--vinho);outline:none;padding:2px 4px;text-align:right;">
+        <button onclick="removeFechACard('${key}','${ac.key}',${i})"
+          style="background:none;border:none;cursor:pointer;color:var(--over-text);font-size:13px;padding:0 2px;line-height:1;">✕</button>
+      </div>`).join('');
+    const autoNote = items.length===0 && ac.autoVal!==null
+      ? `<div style="font-size:10px;opacity:.5;padding:4px 0;">calculado automaticamente</div>` : '';
+    return `<div class="dir-card" style="min-width:0">
+      <div class="dir-card-header" onclick="toggleFechACard('${ac.key}')">
+        <div>
+          <div class="dir-card-label">${ac.label}</div>
+          <div class="dir-card-total" id="facard-total-${ac.key}">${dispVal}</div>
+        </div>
+        <span class="dir-card-arrow" id="${arrowId}">▾</span>
+      </div>
+      <div class="dir-card-body" id="${bodyId}" style="display:none">
+        <div style="padding:6px 14px 4px">${autoNote}${itemsHtml}</div>
+        <div style="padding:4px 14px 10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="dir-add-btn" onclick="addFechACard('${key}','${ac.key}')">+ Adicionar</button>
+          ${items.length ? `<button class="dir-add-btn" style="color:var(--over-text);border-color:var(--over-text)" onclick="clearFechACard('${key}','${ac.key}')">↺ Usar automático</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 
   // Agrupar por categoria
   const groups = {};
@@ -3491,6 +3510,73 @@ function renderFechamento(){
   </tr>`;
 
   document.getElementById('fech-tbody').innerHTML = html;
+}
+
+// ── Cards analíticos do Fechamento (editar/excluir/adicionar) ────────────
+function toggleFechACard(cardKey){
+  const body  = document.getElementById('facard-body-'+cardKey);
+  const arrow = document.getElementById('facard-arrow-'+cardKey);
+  if(!body) return;
+  const open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  if(arrow) arrow.textContent = open ? '▴' : '▾';
+}
+
+function addFechACard(monthKey, cardKey){
+  const data = getFechData();
+  if(!data[monthKey]) return;
+  if(!data[monthKey].acards) data[monthKey].acards = {};
+  if(!data[monthKey].acards[cardKey]) data[monthKey].acards[cardKey] = [];
+  data[monthKey].acards[cardKey].push({ desc:'', val:'' });
+  saveFechData(data);
+  renderFechamento();
+  // Reabre o card após re-render
+  setTimeout(()=>{
+    const body = document.getElementById('facard-body-'+cardKey);
+    const arrow = document.getElementById('facard-arrow-'+cardKey);
+    if(body){ body.style.display=''; if(arrow) arrow.textContent='▴'; }
+    // Foca no último input de descrição do card
+    const inputs = body?.querySelectorAll('input[placeholder="Descrição"]');
+    if(inputs?.length) inputs[inputs.length-1].focus();
+  }, 30);
+}
+
+function saveFechACard(monthKey, cardKey, idx, field, value){
+  const data = getFechData();
+  const item = data[monthKey]?.acards?.[cardKey]?.[idx];
+  if(!item) return;
+  if(field === 'val'){
+    const cleaned = value.replace(',','.').replace(/[^0-9.]/g,'');
+    item.val = isNaN(parseFloat(cleaned)) ? '' : parseFloat(cleaned);
+  } else {
+    item[field] = value;
+  }
+  saveFechData(data);
+  renderFechamento();
+  setTimeout(()=>{
+    const body = document.getElementById('facard-body-'+cardKey);
+    const arrow = document.getElementById('facard-arrow-'+cardKey);
+    if(body){ body.style.display=''; if(arrow) arrow.textContent='▴'; }
+  }, 30);
+}
+
+function removeFechACard(monthKey, cardKey, idx){
+  const data = getFechData();
+  data[monthKey]?.acards?.[cardKey]?.splice(idx,1);
+  saveFechData(data);
+  renderFechamento();
+  setTimeout(()=>{
+    const body = document.getElementById('facard-body-'+cardKey);
+    const arrow = document.getElementById('facard-arrow-'+cardKey);
+    if(body){ body.style.display=''; if(arrow) arrow.textContent='▴'; }
+  }, 30);
+}
+
+function clearFechACard(monthKey, cardKey){
+  const data = getFechData();
+  if(data[monthKey]?.acards) data[monthKey].acards[cardKey] = [];
+  saveFechData(data);
+  renderFechamento();
 }
 
 // Drag & drop na aba fechamento
