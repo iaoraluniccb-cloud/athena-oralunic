@@ -3439,10 +3439,10 @@ function renderFechamento(){
     const itemsHtml = items.map((it,i)=>`
       <div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(139,90,60,.08)">
         <input type="text" value="${(it.desc||'').replace(/"/g,'&quot;')}" placeholder="Descrição"
-          onchange="saveFechACard('${key}','${ac.key}',${i},'desc',this.value)"
+          onblur="saveFechACard('${key}','${ac.key}',${i},'desc',this.value)"
           style="flex:1;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:11px;color:var(--tinta);outline:none;padding:2px 4px;">
         <input type="text" value="${it.val||''}" placeholder="0,00"
-          onchange="saveFechACard('${key}','${ac.key}',${i},'val',this.value)"
+          onblur="saveFechACard('${key}','${ac.key}',${i},'val',this.value)"
           style="width:90px;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:12px;font-weight:600;color:var(--vinho);outline:none;padding:2px 4px;text-align:right;">
         <button onclick="removeFechACard('${key}','${ac.key}',${i})"
           style="background:none;border:none;cursor:pointer;color:var(--over-text);font-size:13px;padding:0 2px;line-height:1;">✕</button>
@@ -3552,12 +3552,11 @@ function saveFechACard(monthKey, cardKey, idx, field, value){
     item[field] = value;
   }
   saveFechData(data);
-  renderFechamento();
-  setTimeout(()=>{
-    const body = document.getElementById('facard-body-'+cardKey);
-    const arrow = document.getElementById('facard-arrow-'+cardKey);
-    if(body){ body.style.display=''; if(arrow) arrow.textContent='▴'; }
-  }, 30);
+  // Atualiza só o total do card sem re-renderizar tudo (evita perda de foco)
+  const items = data[monthKey].acards[cardKey] || [];
+  const manualT = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+  const totalEl = document.getElementById('facard-total-'+cardKey);
+  if(totalEl && manualT > 0) totalEl.textContent = fmt(manualT);
 }
 
 function removeFechACard(monthKey, cardKey, idx){
