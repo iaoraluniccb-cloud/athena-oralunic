@@ -4215,6 +4215,60 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
   }
 });
+
+// ── Sync em tempo real via polling (15s) ─────────────────────────────────────
+async function syncFromSBSilent(){
+  if(!pbToken) return;
+  try {
+    // Meses
+    const mRes = await sbFetch('GET', '/rest/v1/months?select=key,label,rows&order=key.asc');
+    let mudouMes = false;
+    for(const rec of mRes){
+      const local = getAll()[rec.key];
+      if(!local || JSON.stringify(local.rows) !== JSON.stringify(rec.rows)){
+        const a = getAll(); a[rec.key]={key:rec.key,label:rec.label,rows:rec.rows};
+        localStorage.setItem('ou_athena_v2',JSON.stringify(a));
+        mudouMes = true;
+      }
+    }
+    // Fechamento
+    const fRes = await sbFetch('GET', '/rest/v1/fechamento?select=key,label,rows,cards');
+    const fLocal = JSON.parse(localStorage.getItem('ou_athena_fechamento')||'{}');
+    let mudouFech = false;
+    for(const rec of fRes){
+      if(JSON.stringify(fLocal[rec.key]) !== JSON.stringify(rec)){
+        fLocal[rec.key] = rec; mudouFech = true;
+      }
+    }
+    if(mudouFech) localStorage.setItem('ou_athena_fechamento', JSON.stringify(fLocal));
+    // Direção
+    const dRes = await sbFetch('GET', '/rest/v1/direcao?select=key,label,data');
+    const dLocal = JSON.parse(localStorage.getItem('ou_athena_direcao')||'{}');
+    let mudouDir = false;
+    for(const rec of dRes){
+      if(JSON.stringify(dLocal[rec.key]) !== JSON.stringify(rec.data)){
+        dLocal[rec.key] = rec.data; mudouDir = true;
+      }
+    }
+    if(mudouDir) localStorage.setItem('ou_athena_direcao', JSON.stringify(dLocal));
+    // Re-renderiza se algo mudou
+    if(mudouMes){
+      const keys = Object.keys(getAll()).sort().reverse();
+      if(keys.length && currentMonth){ currentMonth = getAll()[currentMonth.key] || getAll()[keys[0]]; }
+      renderAll();
+    }
+    if(mudouFech){
+      const activeTab = document.querySelector('.tab-btn.active')?.textContent?.trim();
+      if(activeTab === 'Fechamento') renderFechamento();
+    }
+    if(mudouDir){
+      const activeTab = document.querySelector('.tab-btn.active')?.textContent?.trim();
+      if(activeTab === 'Direção') renderDirecao();
+    }
+  } catch(e){ /* silencioso */ }
+}
+
+setInterval(syncFromSBSilent, 15000);
 </script>
 </body>
 </html>

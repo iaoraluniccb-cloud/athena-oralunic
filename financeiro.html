@@ -6624,6 +6624,34 @@ aprovInit();
 document.querySelectorAll('.modal-overlay').forEach(o=>{
   o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); });
 });
+
+// ── Sync em tempo real via polling ───────────────────────────────────────────
+async function syncAprovFromSB(){
+  try {
+    const r = await fetch(SB_URL_F + '/rest/v1/aprovacoes?select=key,label,data', {
+      headers: { 'apikey': SB_KEY_F, 'Authorization': `Bearer ${SB_KEY_F}` }
+    });
+    if(!r.ok) return;
+    const rows = await r.json();
+    if(!rows.length) return;
+    let mudou = false;
+    for(const rec of rows){
+      const atual = JSON.stringify(aprovData2[rec.key] || {});
+      const novo  = JSON.stringify({ label: rec.label, ...rec.data });
+      if(atual !== novo){
+        aprovData2[rec.key] = { label: rec.label, ...rec.data };
+        mudou = true;
+      }
+    }
+    if(mudou){
+      try{ localStorage.setItem('aprovData2', JSON.stringify(aprovData2)); }catch(e){}
+      aprovRender();
+    }
+  } catch(e){ /* silencioso */ }
+}
+
+// Polling a cada 15 segundos
+setInterval(syncAprovFromSB, 15000);
 </script>
 </body>
 </html>
