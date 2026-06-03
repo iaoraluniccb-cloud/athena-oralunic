@@ -57,12 +57,12 @@
   .logo-sub { font-family: var(--font-body); font-size: 11px; font-weight: 300; color: var(--warm); letter-spacing: 0.28em; text-transform: uppercase; margin-left: 10px; opacity: .8; }
   .logo-divider { width: 1px; height: 28px; background: var(--vinho-c); margin: 0 12px; opacity: .5; }
 
-  /* MAIN TABS */
-  .tabs { display: flex; gap: 2px; margin-left: auto; }
-  .tab { padding: 8px 20px; border-radius: 6px; border: none; background: transparent; color: var(--warm); font-family: var(--font-body); font-size: 12px; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-  .tab:hover { background: rgba(255,255,255,.08); color: var(--marfim); }
-  .tab.active { background: var(--cobre); color: var(--tinta); font-weight: 400; }
-  .tab-badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 10px; padding: 1px 7px; font-size: 10px; margin-left: 6px; }
+  /* MAIN TABS — estilo Athena month-pill */
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tab { padding: 5px 14px; border-radius: 14px; border: 1px solid var(--warm); background: transparent; color: var(--moka); font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+  .tab:hover { background: var(--creme); border-color: var(--cobre); color: var(--vinho); }
+  .tab.active { background: var(--cobre); color: var(--marfim); border-color: var(--cobre); font-weight: 600; }
+  .tab-badge { display: inline-block; background: rgba(139,45,66,0.15); color: var(--vinho); border-radius: 10px; padding: 1px 7px; font-size: 10px; margin-left: 4px; }
 
   /* MAIN */
   .main { padding: 24px 28px; }
@@ -538,15 +538,17 @@
   <button onclick="openBackupModal()" title="Backup / Restaurar dados" style="margin-left:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--marfim);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.04em;display:flex;align-items:center;gap:6px">💾 Backup</button>
 </div>
 
-<!-- BARRA DE ABAS — fora do header para aparecer sempre -->
-<div style="background:var(--vinho-p);padding:0 24px;display:flex;align-items:center;gap:2px;border-bottom:2px solid var(--cobre);flex-wrap:wrap;">
-  <button class="tab active" onclick="switchTab('cobranca')">Cobrança <span class="tab-badge" id="badge-cobranca">0</span></button>
-  <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
-  <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
-  <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
-  <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
-  <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
-  <button onclick="openBackupModal()" style="margin-left:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--marfim);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.04em;display:flex;align-items:center;gap:6px">💾 Backup</button>
+<!-- BARRA DE ABAS — estilo Athena -->
+<div style="background:var(--marfim);padding:12px 24px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--warm);flex-wrap:wrap;">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('cobranca')">Cobrança <span class="tab-badge" id="badge-cobranca">0</span></button>
+    <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
+    <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
+    <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
+    <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
+    <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
+  </div>
+  <button onclick="openBackupModal()" style="margin-left:auto;background:transparent;border:1px solid var(--warm);color:var(--moka);border-radius:14px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.08em;display:flex;align-items:center;gap:6px;opacity:.7">💾 Backup</button>
 </div>
 
 <!-- MAIN -->
