@@ -49,6 +49,10 @@
 <style>
 /* Oculta header interno — já está dentro do Athena */
 header { display: none !important; }
+/* Cards mais largos, badges em linha sem sobreposição */
+.cadastro-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important; }
+.cad-card { padding-right: 72px !important; }
+.badge { white-space: nowrap; }
 :root{
   --vinho:#8B2D42;--vinho-p:#6A1F30;--vinho-c:#B85C72;
   --cobre:#C4955A;--marfim:#FDF9F4;--creme:#F5EDE2;
