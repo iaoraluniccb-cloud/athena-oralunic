@@ -1388,7 +1388,39 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
         <option value="">— Selecione —</option>
       </select>
       <button onclick="showFechImport()" style="font-size:10px;letter-spacing:.15em;background:var(--vinho);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">↑ Importar mês</button>
+      <button onclick="showFechNewMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:3px;padding:7px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
       <button id="fech-del-btn" onclick="deleteFechMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:3px;padding:6px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
+    </div>
+
+    <!-- Painel de novo mês -->
+    <div id="fech-new-panel" style="display:none;margin-bottom:24px;">
+      <div class="import-card" style="max-width:480px;">
+        <h2>Criar novo mês</h2>
+        <p>Selecione o mês e escolha se deseja copiar as linhas do mês anterior.</p>
+        <div class="month-select">
+          <label>Mês</label>
+          <select id="fech-new-month">
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5">Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12" selected>Dezembro</option>
+          </select>
+          <label>Ano</label>
+          <input type="number" id="fech-new-year" value="2026" min="2024" max="2030" style="width:80px;border:1px solid var(--warm);border-radius:3px;padding:6px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;color:var(--tinta);background:var(--marfim);outline:none;">
+        </div>
+        <div style="margin:14px 0 6px;display:flex;gap:10px;align-items:center;">
+          <label style="font-size:11px;color:var(--moka);display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="fech-new-copy" checked style="accent-color:var(--vinho);">
+            Copiar linhas do mês anterior (valores em vermelho para preencher)
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button class="btn-primary" onclick="createFechNewMonth()">Criar mês</button>
+          <button class="btn-secondary" onclick="hideFechNewMonth()">Cancelar</button>
+        </div>
+      </div>
     </div>
 
     <!-- Painel de importação -->
@@ -3306,8 +3338,62 @@ function populateFechMonthSel(){
   if(cur && data[cur]) sel.value = cur;
 }
 
-function showFechImport(){ document.getElementById('fech-import-panel').style.display=''; }
+function showFechImport(){ document.getElementById('fech-import-panel').style.display=''; hideFechNewMonth(); }
 function hideFechImport(){ document.getElementById('fech-import-panel').style.display='none'; }
+
+function showFechNewMonth(){
+  hideFechImport();
+  // Pré-selecionar próximo mês após o último existente
+  const data = getFechData();
+  const keys = Object.keys(data).sort();
+  if(keys.length){
+    const last = keys[keys.length-1];
+    const [ly, lm] = last.split('-').map(Number);
+    let nm = lm + 1, ny = ly;
+    if(nm > 12){ nm = 1; ny++; }
+    document.getElementById('fech-new-month').value = nm;
+    document.getElementById('fech-new-year').value  = ny;
+  }
+  document.getElementById('fech-new-panel').style.display='';
+}
+function hideFechNewMonth(){ document.getElementById('fech-new-panel').style.display='none'; }
+
+function createFechNewMonth(){
+  const m   = parseInt(document.getElementById('fech-new-month').value);
+  const y   = parseInt(document.getElementById('fech-new-year').value);
+  const copy = document.getElementById('fech-new-copy').checked;
+  const key  = monthKey(m, y);
+  const label= monthLabel(m, y);
+  const data = getFechData();
+
+  if(data[key]){
+    if(!confirm(`${label} já existe. Deseja substituir?`)) return;
+  }
+
+  let rows = [];
+  if(copy){
+    // Encontra o mês anterior mais recente
+    const keys = Object.keys(data).sort();
+    const prevKey = keys.filter(k => k < key).pop();
+    if(prevKey && data[prevKey]?.rows){
+      // Copia linhas com valores zerados, marca como pendente (_pending)
+      rows = data[prevKey].rows.map(r => ({
+        b: r.b,
+        d: 0,
+        t: 0,
+        _cat: r._cat || null,
+        _pending: true   // sinaliza que veio copiado e ainda não foi preenchido
+      }));
+    }
+  }
+
+  data[key] = { label, rows };
+  saveFechData(data);
+  hideFechNewMonth();
+  populateFechMonthSel();
+  document.getElementById('fech-month-sel').value = key;
+  renderFechamento();
+}
 
 function fechLog(msg){ const el=document.getElementById('fech-import-log'); el.classList.add('visible'); el.innerHTML+=msg+'<br>'; el.scrollTop=el.scrollHeight; }
 function fechLogClear(){ const el=document.getElementById('fech-import-log'); el.innerHTML=''; }
@@ -3573,13 +3659,16 @@ function renderFechamento(){
     </tr>`;
     for(const r of g.rows){
       const tot = (r.d||0)+(r.t||0);
-      const dSpan = r.d>0 ? `<span class="fech-badge-dinheiro">${fmt(r.d)}</span>` : '—';
-      const tSpan = r.t>0 ? `<span class="fech-badge-pix">${fmt(r.t)}</span>` : '—';
-      html += `<tr class="fech-data-row" id="frow-${r._idx}">
-        <td class="label-col">${r.b}</td>
+      const isPending = r._pending && tot === 0;
+      const pendStyle = isPending ? 'color:#c0392b;font-style:italic;' : '';
+      const pendBadge = isPending ? ' <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;vertical-align:middle;margin-left:4px;letter-spacing:.05em;">preencher</span>' : '';
+      const dSpan = r.d>0 ? `<span class="fech-badge-dinheiro">${fmt(r.d)}</span>` : (isPending ? `<span style="color:#c0392b;font-size:11px;">—</span>` : '—');
+      const tSpan = r.t>0 ? `<span class="fech-badge-pix">${fmt(r.t)}</span>` : (isPending ? `<span style="color:#c0392b;font-size:11px;">—</span>` : '—');
+      html += `<tr class="fech-data-row${isPending?' frow-pending':''}" id="frow-${r._idx}" style="${isPending?'background:rgba(192,57,43,.04);':''}">
+        <td class="label-col" style="${pendStyle}">${r.b}${pendBadge}</td>
         <td class="right">${dSpan}</td>
         <td class="right">${tSpan}</td>
-        <td class="right">${tot>0?fmt(tot):'—'}</td>
+        <td class="right" style="${isPending?'color:#c0392b;':''}">${tot>0?fmt(tot):'—'}</td>
         <td class="frow-actions">
           <button class="frow-btn" title="Editar" onclick="editFechRow('${key}',${r._idx})">✎</button>
           <button class="frow-btn frow-del" title="Excluir" onclick="deleteFechRow('${key}',${r._idx})">✕</button>
@@ -3699,7 +3788,11 @@ function saveFechRowEdit(monthKey, idx){
   const b = document.getElementById('frow-b-'+idx)?.value.trim() || rows[idx].b;
   const dRaw = document.getElementById('frow-d-'+idx)?.value.replace(',','.') || '0';
   const tRaw = document.getElementById('frow-t-'+idx)?.value.replace(',','.') || '0';
+  const prevCat = rows[idx]?._cat || null;
   rows[idx] = { b, d: parseFloat(dRaw)||0, t: parseFloat(tRaw)||0 };
+  if(prevCat) rows[idx]._cat = prevCat;
+  // Remove flag pendente ao salvar qualquer valor
+  delete rows[idx]._pending;
   saveFechData(data);
   renderFechamento();
 }
