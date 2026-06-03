@@ -6178,16 +6178,24 @@ async function sbSyncAprov(key, mesObj){
   try {
     const label = mesObj.label || key;
     const { label: _l, ...data } = mesObj;
-    await fetch(SB_URL_F + '/rest/v1/aprovacoes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SB_KEY_F,
-        'Authorization': `Bearer ${SB_KEY_F}`,
-        'Prefer': 'return=representation,resolution=merge-duplicates'
-      },
-      body: JSON.stringify({ key, label, data })
+    // Upsert via PATCH se existir, POST se não existir
+    const check = await fetch(SB_URL_F + `/rest/v1/aprovacoes?key=eq.${key}&select=id`, {
+      headers: { 'apikey': SB_KEY_F, 'Authorization': `Bearer ${SB_KEY_F}` }
     });
+    const existing = await check.json();
+    if(existing && existing.length > 0){
+      await fetch(SB_URL_F + `/rest/v1/aprovacoes?key=eq.${key}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type':'application/json', 'apikey': SB_KEY_F, 'Authorization': `Bearer ${SB_KEY_F}` },
+        body: JSON.stringify({ label, data })
+      });
+    } else {
+      await fetch(SB_URL_F + '/rest/v1/aprovacoes', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'apikey': SB_KEY_F, 'Authorization': `Bearer ${SB_KEY_F}` },
+        body: JSON.stringify({ key, label, data })
+      });
+    }
   } catch(e){ console.warn('sbSyncAprov error:', e); }
 }
 

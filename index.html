@@ -1909,11 +1909,29 @@ async function loadFromSB(){
   }
 }
 
+// Upsert genérico: tenta PATCH, se não existir faz POST
+async function sbUpsert(table, keyCol, keyVal, body){
+  if(!pbToken) return;
+  try {
+    const check = await sbFetch('GET', `/rest/v1/${table}?${keyCol}=eq.${encodeURIComponent(keyVal)}&select=id`, null, true);
+    if(check && check.length > 0){
+      await sbFetch('PATCH', `/rest/v1/${table}?${keyCol}=eq.${encodeURIComponent(keyVal)}`, body, true);
+    } else {
+      await sbFetch('POST', `/rest/v1/${table}`, body, true);
+    }
+  } catch(e){ console.warn(`sbUpsert ${table} error:`, e); }
+}
+
 async function pbSaveOverride(desp, field, val){
   if(!pbToken) return;
   try {
     const valueStr = JSON.stringify(val);
-    await sbFetch('POST', '/rest/v1/overrides', {desp, field, value: valueStr}, true);
+    const check = await sbFetch('GET', `/rest/v1/overrides?desp=eq.${encodeURIComponent(desp)}&field=eq.${encodeURIComponent(field)}&select=id`, null, true);
+    if(check && check.length > 0){
+      await sbFetch('PATCH', `/rest/v1/overrides?desp=eq.${encodeURIComponent(desp)}&field=eq.${encodeURIComponent(field)}`, {value: valueStr}, true);
+    } else {
+      await sbFetch('POST', '/rest/v1/overrides', {desp, field, value: valueStr}, true);
+    }
   } catch(e){ console.warn('sbSaveOverride error:', e); }
 }
 
@@ -1925,31 +1943,19 @@ async function pbDeleteOverrideField(desp, field){
 }
 
 async function pbSaveMonth(key, label, rows){
-  if(!pbToken) return;
-  try {
-    await sbFetch('POST', '/rest/v1/months', {key, label, rows}, true);
-  } catch(e){ console.warn('sbSaveMonth error:', e); }
+  await sbUpsert('months', 'key', key, {key, label, rows});
 }
 
 async function sbSaveFechamento(key, label, rows, cards){
-  if(!pbToken) return;
-  try {
-    await sbFetch('POST', '/rest/v1/fechamento', {key, label, rows, cards}, true);
-  } catch(e){ console.warn('sbSaveFechamento error:', e); }
+  await sbUpsert('fechamento', 'key', key, {key, label, rows, cards});
 }
 
 async function sbSaveDirecao(key, label, data){
-  if(!pbToken) return;
-  try {
-    await sbFetch('POST', '/rest/v1/direcao', {key, label, data}, true);
-  } catch(e){ console.warn('sbSaveDirecao error:', e); }
+  await sbUpsert('direcao', 'key', key, {key, label, data});
 }
 
 async function sbSaveAprovacoes(key, label, data){
-  if(!pbToken) return;
-  try {
-    await sbFetch('POST', '/rest/v1/aprovacoes', {key, label, data}, true);
-  } catch(e){ console.warn('sbSaveAprovacoes error:', e); }
+  await sbUpsert('aprovacoes', 'key', key, {key, label, data});
 }
 
 // ═══════════════════════════════════════
