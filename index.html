@@ -1100,6 +1100,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <div class="user-pill" id="user-pill" style="display:none">
       <span id="user-name-label"></span>
       <span class="sync-dot" id="sync-dot" title="Status sincronização"></span>
+      <button id="save-btn" onclick="doSaveAll()" title="Salvar todos os dados agora" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3)">💾 Salvar</button>
       <button onclick="doLogout()">Sair</button>
     </div>
   </div>
@@ -4288,6 +4289,46 @@ async function syncFromSBSilent(){
 }
 
 setInterval(syncFromSBSilent, 15000);
+
+// ── Salvar tudo manualmente ───────────────────────────────────────────────────
+async function doSaveAll(){
+  const btn = document.getElementById('save-btn');
+  if(btn){ btn.textContent = '⏳ Salvando...'; btn.disabled = true; }
+  setSyncDot('spin');
+  try {
+    // Meses
+    const all = getAll();
+    for(const [k, m] of Object.entries(all)){
+      await pbSaveMonth(k, m.label, m.rows);
+    }
+    // Overrides
+    const ovs = getOverrides();
+    for(const [desp, fields] of Object.entries(ovs)){
+      for(const [field, val] of Object.entries(fields)){
+        await pbSaveOverride(desp, field, val);
+      }
+    }
+    // Fechamento
+    const fData = getFechData();
+    for(const [k, mes] of Object.entries(fData)){
+      await sbSaveFechamento(k, mes.label||k, mes.rows||[], mes.cards||mes.acards||{});
+    }
+    // Direção
+    const dData = getDirData();
+    for(const [k, mes] of Object.entries(dData)){
+      const label = mes.label || k;
+      const { label: _l, ...data } = mes;
+      await sbSaveDirecao(k, label, data);
+    }
+    setSyncDot('ok');
+    if(btn){ btn.textContent = '✓ Salvo!'; }
+    setTimeout(()=>{ if(btn){ btn.textContent = '💾 Salvar'; btn.disabled = false; } }, 2000);
+  } catch(e){
+    setSyncDot('err');
+    if(btn){ btn.textContent = '✗ Erro'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '💾 Salvar'; }, 2000);
+  }
+}
 </script>
 </body>
 </html>
