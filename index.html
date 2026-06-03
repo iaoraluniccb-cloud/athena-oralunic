@@ -1502,11 +1502,11 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   </div>
 
   <!-- ═══ CALCULADORA ═══ -->
-  <div id="tab-calculadora" style="display:none;padding:0;margin:-24px -24px 0;">
+  <div id="tab-calculadora" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:100;top:124px;">
     <iframe
       id="calc-iframe"
       src="calculadora.html"
-      style="width:100%;height:calc(100vh - 110px);border:none;display:block;"
+      style="width:100%;height:100%;border:none;display:block;"
       allow="clipboard-read; clipboard-write"
     ></iframe>
   </div>
@@ -4109,6 +4109,13 @@ function switchTab(tab){
   });
   if(tab==='direcao')   { populateDirMonthSel(); renderDirecao(); }
   if(tab==='fechamento'){ populateFechMonthSel(); renderFechamento(); }
+  if(tab==='calculadora'){
+    // Ajusta top dinamicamente baseado na altura real do header+tabs
+    const hdr = document.querySelector('header');
+    const tbs = document.querySelector('.tabs-bar');
+    const topPx = (hdr ? hdr.offsetHeight : 0) + (tbs ? tbs.offsetHeight : 0);
+    document.getElementById('tab-calculadora').style.top = topPx + 'px';
+  }
 }
 
 // ═══════════════════════════════════════
