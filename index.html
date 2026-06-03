@@ -1753,31 +1753,45 @@ const REAL_DATA = {
 };
 
 // ═══════════════════════════════════════
-// POCKETBASE API
+// SUPABASE API
 // ═══════════════════════════════════════
-const PB = 'https://oralunic-athena-pb-production.up.railway.app';
-let pbToken = null;
+const SB_URL = 'https://pxowoinzwumsezegzcrz.supabase.co';
+const SB_KEY = 'sb_publishable_zs62gTX1X9wShv6GU1koFg_P9rLXnSk';
+let pbToken = null; // JWT do usuário após login
 let pbUser  = null;
 let selectedEmail = null;
 
-function setSyncDot(state){ // 'spin'|'ok'|'err'
+function setSyncDot(state){
   const d = document.getElementById('sync-dot');
   if(!d) return;
   d.className = 'sync-dot ' + state;
 }
 
-async function pbFetch(method, path, body){
+async function sbFetch(method, path, body, useAuth){
   setSyncDot('spin');
   try {
-    const r = await fetch(PB + path, {
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SB_KEY,
+      'Authorization': useAuth && pbToken ? `Bearer ${pbToken}` : `Bearer ${SB_KEY}`
+    };
+    if(method === 'GET' || method === 'DELETE'){
+      headers['Prefer'] = 'return=representation';
+    } else {
+      headers['Prefer'] = 'return=representation,resolution=merge-duplicates';
+    }
+    const r = await fetch(SB_URL + path, {
       method,
-      headers: { 'Content-Type':'application/json', ...(pbToken ? {'Authorization': pbToken} : {}) },
+      headers,
       body: body ? JSON.stringify(body) : undefined
     });
-    const j = await r.json();
-    if(!r.ok) throw new Error(j.message || r.status);
+    if(!r.ok){
+      const txt = await r.text();
+      throw new Error(txt || r.status);
+    }
+    const txt = await r.text();
     setSyncDot('ok');
-    return j;
+    return txt ? JSON.parse(txt) : [];
   } catch(e) {
     setSyncDot('err');
     throw e;
@@ -1803,25 +1817,29 @@ async function doLogin(){
   if(!email){ errEl.textContent = 'Selecione seu nome.'; return; }
   if(!pass){ errEl.textContent = 'Digite a senha.'; return; }
   try {
-    const r = await fetch(PB + '/api/collections/users/auth-with-password', {
+    setSyncDot('spin');
+    const r = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({identity: email, password: pass})
+      headers: { 'Content-Type':'application/json', 'apikey': SB_KEY },
+      body: JSON.stringify({ email, password: pass })
     });
     const j = await r.json();
-    if(!r.ok) { errEl.textContent = 'E-mail ou senha incorretos.'; return; }
-    pbToken = j.token;
-    pbUser  = j.record;
+    if(!r.ok){ errEl.textContent = 'E-mail ou senha incorretos.'; setSyncDot('err'); return; }
+    pbToken = j.access_token;
+    pbUser  = j.user;
+    pbUser.email = pbUser.email || email;
+    pbUser.name  = pbUser.user_metadata?.name || email.split('@')[0];
     localStorage.setItem('ou_athena_token', pbToken);
     localStorage.setItem('ou_athena_user', JSON.stringify(pbUser));
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('user-pill').style.display = 'flex';
-    document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+    document.getElementById('user-name-label').textContent = pbUser.name;
     applyTabVisibility();
     setSyncDot('ok');
-    await loadFromPB();
+    await loadFromSB();
   } catch(e) {
     errEl.textContent = 'Servidor offline. Verifique conexão.';
+    setSyncDot('err');
   }
 }
 
@@ -1843,33 +1861,48 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('login-email')?.addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('login-pass').focus(); });
 });
 
-// ── PocketBase sync functions ──
-async function loadFromPB(){
+// ── Supabase sync functions ──
+async function loadFromSB(){
   try {
     // Load months
-    const mRes = await pbFetch('GET', '/api/collections/months/records?perPage=50&sort=-created');
+    const mRes = await sbFetch('GET', '/rest/v1/months?select=key,label,rows&order=key.asc');
     localStorage.removeItem('ou_athena_v2');
-    for(const rec of mRes.items){
-      saveMonth(rec.key, rec.label, rec.rows);
+    for(const rec of mRes){
+      const a = getAll(); a[rec.key]={key:rec.key,label:rec.label,rows:rec.rows}; localStorage.setItem('ou_athena_v2',JSON.stringify(a));
     }
-    // Preenche meses do REAL_DATA que o PB ainda não tem (e salva no PB)
+    // Preenche meses do REAL_DATA que o SB ainda não tem
     { const _s=getAll();
       for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]) saveMonth(k,o.label,o.rows); } }
     // Load overrides
-    const oRes = await pbFetch('GET', '/api/collections/overrides/records?perPage=500');
+    const oRes = await sbFetch('GET', '/rest/v1/overrides?select=desp,field,value');
     const ovObj = {};
-    for(const rec of oRes.items){
+    for(const rec of oRes){
       if(!ovObj[rec.desp]) ovObj[rec.desp] = {};
       try { ovObj[rec.desp][rec.field] = JSON.parse(rec.value); }
       catch(e) { ovObj[rec.desp][rec.field] = rec.value; }
     }
     localStorage.setItem('ou_athena_overrides', JSON.stringify(ovObj));
+    // Load fechamento
+    const fRes = await sbFetch('GET', '/rest/v1/fechamento?select=key,label,rows,cards');
+    const fObj = {};
+    for(const rec of fRes){ fObj[rec.key] = rec; }
+    if(Object.keys(fObj).length) localStorage.setItem('ou_athena_fechamento', JSON.stringify(fObj));
+    // Load direcao
+    const dRes = await sbFetch('GET', '/rest/v1/direcao?select=key,label,data');
+    const dObj = {};
+    for(const rec of dRes){ dObj[rec.key] = rec.data; }
+    if(Object.keys(dObj).length) localStorage.setItem('ou_athena_direcao', JSON.stringify(dObj));
+    // Load aprovacoes
+    const aRes = await sbFetch('GET', '/rest/v1/aprovacoes?select=key,label,data');
+    const aprovObj = {};
+    for(const rec of aRes){ aprovObj[rec.key] = { label: rec.label, ...rec.data }; }
+    if(Object.keys(aprovObj).length) localStorage.setItem('aprovData2', JSON.stringify(aprovObj));
     // Set current month to latest
     const keys = Object.keys(getAll()).sort().reverse();
     if(keys.length) currentMonth = getAll()[keys[0]];
     renderAll();
   } catch(e) {
-    console.warn('PB load error, using local data:', e);
+    console.warn('SB load error, using local data:', e);
     const keys = Object.keys(getAll()).sort().reverse();
     if(keys.length) currentMonth = getAll()[keys[0]];
     renderAll();
@@ -1879,42 +1912,44 @@ async function loadFromPB(){
 async function pbSaveOverride(desp, field, val){
   if(!pbToken) return;
   try {
-    // Check if record exists
-    const res = await pbFetch('GET',
-      `/api/collections/overrides/records?filter=(desp='${encodeURIComponent(desp)}'%26%26field='${encodeURIComponent(field)}')`
-    );
-    const existing = res.items?.[0];
     const valueStr = JSON.stringify(val);
-    if(existing){
-      await pbFetch('PATCH', `/api/collections/overrides/records/${existing.id}`, {value: valueStr});
-    } else {
-      await pbFetch('POST', '/api/collections/overrides/records', {desp, field, value: valueStr});
-    }
-  } catch(e){ console.warn('pbSaveOverride error:', e); }
+    await sbFetch('POST', '/rest/v1/overrides', {desp, field, value: valueStr}, true);
+  } catch(e){ console.warn('sbSaveOverride error:', e); }
 }
 
 async function pbDeleteOverrideField(desp, field){
   if(!pbToken) return;
   try {
-    const res = await pbFetch('GET',
-      `/api/collections/overrides/records?filter=(desp='${encodeURIComponent(desp)}'%26%26field='${encodeURIComponent(field)}')`
-    );
-    const existing = res.items?.[0];
-    if(existing) await pbFetch('DELETE', `/api/collections/overrides/records/${existing.id}`);
-  } catch(e){ console.warn('pbDeleteOverride error:', e); }
+    await sbFetch('DELETE', `/rest/v1/overrides?desp=eq.${encodeURIComponent(desp)}&field=eq.${encodeURIComponent(field)}`, null, true);
+  } catch(e){ console.warn('sbDeleteOverride error:', e); }
 }
 
 async function pbSaveMonth(key, label, rows){
   if(!pbToken) return;
   try {
-    const res = await pbFetch('GET', `/api/collections/months/records?filter=(key='${key}')`);
-    const existing = res.items?.[0];
-    if(existing){
-      await pbFetch('PATCH', `/api/collections/months/records/${existing.id}`, {key, label, rows});
-    } else {
-      await pbFetch('POST', '/api/collections/months/records', {key, label, rows});
-    }
-  } catch(e){ console.warn('pbSaveMonth error:', e); }
+    await sbFetch('POST', '/rest/v1/months', {key, label, rows}, true);
+  } catch(e){ console.warn('sbSaveMonth error:', e); }
+}
+
+async function sbSaveFechamento(key, label, rows, cards){
+  if(!pbToken) return;
+  try {
+    await sbFetch('POST', '/rest/v1/fechamento', {key, label, rows, cards}, true);
+  } catch(e){ console.warn('sbSaveFechamento error:', e); }
+}
+
+async function sbSaveDirecao(key, label, data){
+  if(!pbToken) return;
+  try {
+    await sbFetch('POST', '/rest/v1/direcao', {key, label, data}, true);
+  } catch(e){ console.warn('sbSaveDirecao error:', e); }
+}
+
+async function sbSaveAprovacoes(key, label, data){
+  if(!pbToken) return;
+  try {
+    await sbFetch('POST', '/rest/v1/aprovacoes', {key, label, data}, true);
+  } catch(e){ console.warn('sbSaveAprovacoes error:', e); }
 }
 
 // ═══════════════════════════════════════
@@ -3334,7 +3369,13 @@ const FECH_CATS = [
 ];
 
 function getFechData(){ try{ return JSON.parse(localStorage.getItem(FECH_KEY)||'{}'); }catch(e){ return {}; } }
-function saveFechData(d){ localStorage.setItem(FECH_KEY, JSON.stringify(d)); }
+function saveFechData(d){
+  localStorage.setItem(FECH_KEY, JSON.stringify(d));
+  // Sync cada mês modificado ao Supabase
+  for(const [key, mes] of Object.entries(d)){
+    sbSaveFechamento(key, mes.label||key, mes.rows||[], mes.cards||{});
+  }
+}
 
 const FECH_RESUMO = {
   "2025-03": { bruto: 627339.91, fluxo: 419053.68, despesas: 377458.77, dinheiro: 46911.51, sobra_anterior: 970.19, sobra_atual: 3044.51 },
@@ -3886,7 +3927,15 @@ const DIR_CARDS = ['faturamento','divisao','resultado','aplicacao','fluxo'];
 const DIR_KEY   = 'ou_athena_direcao';
 
 function getDirData(){ try{ return JSON.parse(localStorage.getItem(DIR_KEY)||'{}'); }catch(e){ return {}; } }
-function saveDirData(d){ localStorage.setItem(DIR_KEY, JSON.stringify(d)); }
+function saveDirData(d){
+  localStorage.setItem(DIR_KEY, JSON.stringify(d));
+  // Sync cada mês modificado ao Supabase
+  for(const [key, mes] of Object.entries(d)){
+    const label = mes.label || key;
+    const { label: _l, ...data } = mes;
+    sbSaveDirecao(key, label, data);
+  }
+}
 
 function populateDirMonthSel(){
   const data = getDirData();
@@ -4139,7 +4188,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   { const _s=getAll();
     for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]){ _s[k]={key:k,label:o.label,rows:o.rows}; } }
     localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
-  // Se já há sessão salva (token no localStorage), recarrega do PB direto
+  // Se já há sessão salva (token no localStorage), recarrega do SB direto
   const _savedToken = localStorage.getItem('ou_athena_token');
   const _savedUser  = localStorage.getItem('ou_athena_user');
   if(_savedToken && _savedUser){
@@ -4152,7 +4201,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
       applyTabVisibility();
       setSyncDot('ok');
-      await loadFromPB();
+      await loadFromSB();
     } catch(e) {
       // token inválido — mostra login
       localStorage.removeItem('ou_athena_token');

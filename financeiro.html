@@ -6171,8 +6171,32 @@ let aprovUsuario = localStorage.getItem('aprovUsuario') || '';
 let aprovMesAtivo = '';
 let aprovSubAba   = 'entradas'; // 'entradas' | 'trocas'
 
+const SB_URL_F = 'https://pxowoinzwumsezegzcrz.supabase.co';
+const SB_KEY_F = 'sb_publishable_zs62gTX1X9wShv6GU1koFg_P9rLXnSk';
+
+async function sbSyncAprov(key, mesObj){
+  try {
+    const label = mesObj.label || key;
+    const { label: _l, ...data } = mesObj;
+    await fetch(SB_URL_F + '/rest/v1/aprovacoes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY_F,
+        'Authorization': `Bearer ${SB_KEY_F}`,
+        'Prefer': 'return=representation,resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ key, label, data })
+    });
+  } catch(e){ console.warn('sbSyncAprov error:', e); }
+}
+
 function aprovSalvar(){
   try{ localStorage.setItem('aprovData2', JSON.stringify(aprovData2)); }catch(e){}
+  // Sync mês ativo ao Supabase
+  if(aprovMesAtivo && aprovData2[aprovMesAtivo]){
+    sbSyncAprov(aprovMesAtivo, aprovData2[aprovMesAtivo]);
+  }
 }
 
 // ── Mês ──────────────────────────────────────────────────────────────────────
