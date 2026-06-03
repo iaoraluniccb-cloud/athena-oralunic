@@ -3500,8 +3500,7 @@ function renderFechamento(){
     { key:'fat_bruto',   label:'Faturamento Bruto',   autoVal: faturamentoBrutoAuto, sub: resumo.bruto    != null ? 'da planilha' : 'da aba Direção', color:'total' },
     { key:'fluxo',       label:'Fluxo de Caixa',      autoVal: fluxoCaixaAuto,       sub: resumo.fluxo    != null ? 'da planilha' : 'da aba Direção', color:'fixed' },
     { key:'despesas',    label:'Despesas',             autoVal: despesasAuto,         sub: resumo.despesas != null ? 'da planilha' : `${rows.length} pagamentos`, color:'variable' },
-    { key:'resultado',   label:'Resultado Gerencial',  autoVal: resultadoGerAuto,     sub:'Fluxo − Despesas', color:'total', signed:true },
-    { key:'dinheiro',    label:'Saídas em Dinheiro',   autoVal: dinheiroAutoVal,      sub: resumo.dinheiro != null ? `planilha · transf: ${fmt(totalT)}` : `Transferência: ${fmt(totalT)}`, color:'fixed' },
+    { key:'dinheiro',    label:'Dinheiro',             autoVal: dinheiroAutoVal,      sub: resumo.dinheiro != null ? 'da planilha' : `${rows.filter(r=>r.d>0).length} saídas`, color:'fixed' },
     { key:'sobra',       label:'Sobra de Caixa',       autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, color:'variable', signed:true },
   ];
 
@@ -3515,9 +3514,7 @@ function renderFechamento(){
     const items   = month.acards[ac.key] || [];
     const manualT = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
     const total   = items.length ? manualT : ac.autoVal;
-    // Para resultado gerencial sem manual, recalcula com valores efetivos dos outros cards
-    const effectiveTotal = ac.key==='resultado' && !items.length ? resultadoGerAuto : total;
-    const dispVal = ac.signed ? fmtColor(effectiveTotal, true) : fmtNeutral(effectiveTotal);
+    const dispVal = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
     const bodyId  = `facard-body-${ac.key}`;
     const arrowId = `facard-arrow-${ac.key}`;
     const itemsHtml = items.map((it,i)=>`
