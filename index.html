@@ -109,20 +109,27 @@ header {
 .month-pill {
   font-family: 'Josefin Sans', sans-serif;
   font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  background: rgba(255,255,255,0.1);
-  color: rgba(253,249,244,0.6);
-  border: 1px solid rgba(255,255,255,0.15);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--moka);
+  border: 1px solid var(--warm);
   border-radius: 14px;
-  padding: 4px 12px;
+  padding: 5px 14px;
   cursor: pointer;
   transition: all .2s;
 }
-.month-pill:hover, .month-pill.active {
+.month-pill:hover {
+  background: var(--creme);
+  border-color: var(--cobre);
+  color: var(--vinho);
+}
+.month-pill.active {
   background: var(--cobre);
   color: var(--marfim);
   border-color: var(--cobre);
+  font-weight: 600;
 }
 
 /* ── TABS ── */
