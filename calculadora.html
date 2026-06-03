@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oral Unic — Calculadora Financeira</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<script type="module">
+  import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import{getFirestore,doc,getDoc,setDoc,onSnapshot}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const fbCfg={apiKey:"AIzaSyBi19VA29AjnAWC1Dm1aIGtwp9uTtshAZw",authDomain:"athena-calculadora.firebaseapp.com",projectId:"athena-calculadora",storageBucket:"athena-calculadora.firebasestorage.app",messagingSenderId:"1011963451590",appId:"1:1011963451590:web:f9bdd7a7eaa1dec0335fc7"};
+  const app=initializeApp(fbCfg);
+  const db=getFirestore(app);
+  const REF=doc(db,'ou_calc','data');
+  const DEF={procs:[],labs:[],profs:[],fixos:[],dep:[],folha:[],bon:[],engs:[],infAcum:0,custoMinAdj:0};
+  let _dbCache=null;
+  let _saving=false;
+  window._fbReady=false;
+
+  window.getDB=function(){return _dbCache?JSON.parse(JSON.stringify(_dbCache)):JSON.parse(JSON.stringify(DEF));};
+
+  window.saveDB=async function(data){
+    _dbCache=JSON.parse(JSON.stringify(data));
+    _saving=true;
+    try{await setDoc(REF,data);}catch(e){console.error('saveDB error',e);}
+    _saving=false;
+  };
+
+  // Carrega inicial
+  try{
+    const snap=await getDoc(REF);
+    _dbCache=snap.exists()?Object.assign({},JSON.parse(JSON.stringify(DEF)),snap.data()):JSON.parse(JSON.stringify(DEF));
+  }catch(e){_dbCache=JSON.parse(JSON.stringify(DEF));}
+
+  window._fbReady=true;
+  window.dispatchEvent(new Event('fb-ready'));
+
+  // Sync em tempo real — ignora mudanças que acabei de salvar
+  onSnapshot(REF,snap=>{
+    if(_saving)return;
+    if(!snap.exists())return;
+    _dbCache=Object.assign({},JSON.parse(JSON.stringify(DEF)),snap.data());
+    if(typeof renderProcCards==='function'){renderProcCards();renderLabCards();renderProfCards();renderCF();renderCFDep();renderCFFolha();renderCFBon();renderEngCards();}
+  });
+</script>
+<style>
+:root{
+  --vinho:#8B2D42;--vinho-p:#6A1F30;--vinho-c:#B85C72;
+  --cobre:#C4955A;--marfim:#FDF9F4;--creme:#F5EDE2;
+  --blush:#EDDDD4;--warm:#E0C9B8;--moka:#3D2A20;--tinta:#1A0F0A;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--marfim);color:var(--tinta);min-height:100vh;}
+
+/* HEADER */
+header{background:linear-gradient(135deg,var(--vinho-p),var(--vinho));color:white;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 16px rgba(106,31,48,.35);position:sticky;top:0;z-index:200;}
+header h1{font-family:'Cormorant SC',serif;font-size:1.35rem;font-weight:400;letter-spacing:.15em;}
+header .sub{font-size:.6rem;letter-spacing:.22em;opacity:.7;text-transform:uppercase;margin-top:2px;}
+
+/* TABS */
+.tabs-bar{background:var(--creme);padding:0 28px;display:flex;gap:0;border-bottom:2px solid var(--warm);overflow-x:auto;scrollbar-width:none;}
+.tabs-bar::-webkit-scrollbar{display:none;}
+.tab-btn{padding:11px 18px;font-size:.72rem;font-weight:600;letter-spacing:.1em;border:none;background:none;color:var(--moka);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.tab-btn:hover{color:var(--vinho);}
+.tab-btn.active{color:var(--vinho);border-bottom-color:var(--vinho);}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+
+/* LAYOUT */
+.page{padding:24px 28px;max-width:1140px;}
+.section-title{font-family:'Cormorant SC',serif;font-size:1.1rem;font-weight:400;color:var(--vinho);letter-spacing:.12em;margin-bottom:4px;}
+.section-sub{font-size:.7rem;color:var(--moka);opacity:.7;letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
+.divider{height:1px;background:var(--blush);margin:24px 0;}
+
+/* GRID */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.four-col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+@media(max-width:720px){.two-col,.three-col,.four-col{grid-template-columns:1fr;}}
+
+/* CARDS */
+.card{background:white;border:1px solid var(--blush);border-radius:12px;padding:20px 22px;box-shadow:0 2px 10px rgba(106,31,48,.07);}
+.card.bg-creme{background:var(--creme);border-color:var(--warm);}
+.card-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:var(--moka);opacity:.7;margin-bottom:12px;font-weight:600;}
+
+/* RESULT CARDS */
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:18px;}
+.result-card{border-radius:11px;padding:14px 16px;border:1px solid;}
+.result-card.vinho{background:linear-gradient(135deg,var(--vinho),var(--vinho-p));color:white;border:none;}
+.result-card.cobre{background:linear-gradient(135deg,var(--cobre),#a07840);color:white;border:none;}
+.result-card.verde{background:linear-gradient(135deg,#1e8449,#27ae60);color:white;border:none;}
+.result-card.blush{background:var(--blush);border-color:var(--warm);}
+.result-card.creme{background:var(--creme);border-color:var(--warm);}
+.result-card.alerta{background:#fff4e5;border-color:#f39c12;}
+.result-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.16em;opacity:.8;margin-bottom:4px;}
+.result-value{font-size:1.5rem;font-weight:700;line-height:1;font-family:'Josefin Sans',sans-serif;}
+.result-sub{font-size:.65rem;margin-top:3px;opacity:.75;}
+.result-card.blush .result-label,.result-card.creme .result-label{color:var(--moka);}
+.result-card.blush .result-value,.result-card.creme .result-value{color:var(--vinho);}
+.result-card.alerta .result-label{color:#7d5500;}
+.result-card.alerta .result-value{color:#c0392b;}
+
+/* FORM */
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.form-group label{font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--vinho-p);font-weight:600;}
+.form-group input,.form-group select,.form-group textarea{padding:8px 11px;border:1.5px solid var(--warm);border-radius:7px;font-family:'Josefin Sans',sans-serif;font-size:.83rem;color:var(--tinta);outline:none;transition:border .2s;background:var(--marfim);}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--vinho-c);}
+.form-group input[readonly]{background:var(--blush);color:var(--vinho);font-weight:600;}
+.hint{font-size:.63rem;color:var(--moka);opacity:.65;margin-top:2px;}
+
+/* BOTÕES */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Josefin Sans',sans-serif;font-weight:600;letter-spacing:.06em;cursor:pointer;border:none;border-radius:9px;transition:all .15s;font-size:.78rem;}
+.btn-primary{background:var(--vinho);color:white;padding:10px 24px;box-shadow:0 2px 10px rgba(106,31,48,.28);}
+.btn-primary:hover{background:var(--vinho-p);}
+.btn-sec{background:var(--creme);color:var(--vinho);border:1.5px solid var(--warm);padding:7px 16px;}
+.btn-sec:hover{background:var(--blush);}
+.btn-sm{padding:5px 12px;font-size:.72rem;}
+.btn-ghost{background:none;color:var(--vinho);border:1.5px dashed var(--vinho-c);padding:7px 14px;width:100%;justify-content:center;margin-top:6px;}
+.btn-ghost:hover{background:var(--blush);}
+.btn-danger{background:#fee2e2;color:#c0392b;border:none;padding:4px 8px;border-radius:6px;font-size:.78rem;cursor:pointer;}
+.btn-danger:hover{background:#fca5a5;}
+.btn-icon{background:none;border:none;cursor:pointer;padding:3px 6px;border-radius:5px;color:#94a3b8;font-size:.9rem;transition:all .12s;}
+.btn-icon:hover{color:#ef4444;background:#fee2e2;}
+
+/* TABELAS */
+table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;border-radius:10px;overflow:hidden;box-shadow:0 1px 8px rgba(106,31,48,.07);}
+.tbl thead tr{background:linear-gradient(135deg,var(--vinho-p),var(--vinho));color:white;}
+.tbl th{padding:9px 11px;text-align:left;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;font-weight:600;}
+.tbl td{padding:8px 11px;border-bottom:1px solid var(--blush);}
+.tbl tbody tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover{background:var(--creme);}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums;}
+.tbl tfoot td{background:var(--creme);font-weight:700;color:var(--vinho);}
+.tbl tbody tr.hl{background:var(--blush);font-weight:700;}
+
+/* ITEM ROWS */
+.item-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.item-row{display:grid;gap:7px;align-items:center;background:var(--creme);border:1px solid var(--warm);border-radius:7px;padding:7px 9px;}
+.item-row input,.item-row select{padding:5px 7px;border:1px solid var(--warm);border-radius:5px;font-family:'Josefin Sans',sans-serif;font-size:.79rem;background:white;color:var(--tinta);outline:none;}
+.item-row input:focus{border-color:var(--vinho-c);}
+.col-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6;text-align:center;margin-bottom:1px;}
+
+/* BUSCA */
+.busca-dropdown{max-height:200px;overflow-y:auto;border:1px solid var(--warm);border-radius:8px;background:white;margin-top:4px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.busca-item{padding:8px 12px;cursor:pointer;font-size:.8rem;display:flex;justify-content:space-between;align-items:center;transition:background .1s;}
+.busca-item:hover{background:var(--blush);}
+.busca-nome{font-weight:600;color:var(--tinta);}
+.busca-preco{color:var(--vinho);font-weight:700;}
+
+/* BADGE / TAG */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.65rem;font-weight:700;letter-spacing:.05em;}
+.badge-green{background:#d5f5e3;color:#1e8449;}
+.badge-yellow{background:#fdebd0;color:#d35400;}
+.badge-red{background:#fadbd8;color:#c0392b;}
+.badge-blue{background:#dbeafe;color:#1d4ed8;}
+.badge-vinho{background:var(--blush);color:var(--vinho);}
+
+/* CADASTRO CARDS */
+.cadastro-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.cad-card{background:white;border:1px solid var(--blush);border-radius:11px;padding:16px 18px;box-shadow:0 1px 6px rgba(106,31,48,.06);position:relative;}
+.cad-card-title{font-weight:700;font-size:.85rem;color:var(--tinta);margin-bottom:4px;}
+.cad-card-sub{font-size:.72rem;color:var(--moka);opacity:.65;}
+.cad-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,15,10,.45);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:white;border-radius:16px;padding:28px 28px 24px;max-width:600px;width:calc(100%-32px);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(106,31,48,.2);transform:translateY(20px);transition:transform .2s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-title{font-family:'Cormorant SC',serif;font-size:1.1rem;color:var(--vinho);letter-spacing:.1em;margin-bottom:4px;}
+.modal-sub{font-size:.68rem;color:var(--moka);opacity:.65;letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--blush);}
+
+/* ACCORDION */
+.accordion{border:1px solid var(--blush);border-radius:9px;margin-bottom:8px;overflow:hidden;}
+.acc-header{padding:11px 14px;background:var(--creme);cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.79rem;font-weight:600;color:var(--vinho);}
+.acc-header:hover{background:var(--blush);}
+.acc-body{display:none;padding:14px;background:white;}
+.acc-body.open{display:block;}
+
+/* NOTE */
+.note{background:var(--creme);border-left:3px solid var(--cobre);border-radius:6px;padding:9px 13px;font-size:.73rem;color:var(--moka);margin-bottom:14px;line-height:1.55;}
+.note b{color:var(--vinho-p);}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--vinho);color:white;padding:11px 18px;border-radius:9px;font-size:.8rem;font-weight:600;z-index:999;box-shadow:0 4px 20px rgba(106,31,48,.4);transform:translateY(70px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* INFLATION BARS */
+.inf-bar{height:5px;border-radius:3px;min-width:3px;}
+.inf-bar.pos{background:var(--cobre);}
+.inf-bar.neg{background:var(--vinho-c);}
+
+/* SECTION HEADER ROW */
+.sec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+
+/* STATUS */
+.status-ok{color:#1e8449;font-weight:700;}
+.status-warn{color:#d68910;font-weight:700;}
+.status-bad{color:#c0392b;font-weight:700;}
+
+/* SELECT CARD */
+.sel-card{border:2px solid var(--warm);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .15s;background:white;}
+.sel-card:hover{border-color:var(--vinho-c);background:var(--creme);}
+.sel-card.selected{border-color:var(--vinho);background:var(--blush);}
+.sel-card-name{font-weight:700;font-size:.85rem;color:var(--tinta);}
+.sel-card-info{font-size:.7rem;color:var(--moka);opacity:.7;margin-top:2px;}
+
+/* IMPOSTOS TABLE */
+.imp-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--blush);}
+.imp-row:last-child{border-bottom:none;}
+.imp-nome{font-size:.8rem;color:var(--tinta);}
+.imp-hint{font-size:.65rem;color:var(--moka);opacity:.6;}
+.imp-val{padding:5px 8px;border:1.5px solid var(--warm);border-radius:6px;font-family:'Josefin Sans',sans-serif;font-size:.82rem;width:70px;text-align:right;outline:none;background:var(--marfim);}
+.imp-val:focus{border-color:var(--vinho-c);}
+.imp-pct{font-size:.75rem;color:var(--moka);width:14px;}
+</style>
+</head>
+<body>
+
+<!-- ── TELA DE LOGIN ──────────────────────────────────────────────────── -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;z-index:999999;background:var(--marfim);display:flex;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="text-align:center;margin-bottom:32px">
+    <div style="font-size:2rem;margin-bottom:6px">🦷</div>
+    <div style="font-family:'Cormorant SC',serif;font-size:1.15rem;color:var(--vinho);font-weight:600;letter-spacing:.08em">ORAL UNIC</div>
+    <div style="font-size:.68rem;color:var(--moka);letter-spacing:.16em;text-transform:uppercase;opacity:.7">Calculadora Financeira</div>
+  </div>
+  <!-- Cards de usuário -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:28px" id="login-cards">
+    <div onclick="selecionarUsuario('dra mone','Dra. Mone','👩‍⚕️')" class="login-card" data-user="dra mone" style="cursor:pointer;background:#fff;border:2px solid var(--warm);border-radius:14px;padding:24px 20px;width:130px;text-align:center;transition:border-color .2s,box-shadow .2s">
+      <div style="font-size:2.2rem;margin-bottom:8px">👩‍⚕️</div>
+      <div style="font-family:'Cormorant SC',serif;font-size:.9rem;color:var(--vinho);font-weight:600">Dra. Mone</div>
+    </div>
+    <div onclick="selecionarUsuario('adm','ADM','🗂️')" class="login-card" data-user="adm" style="cursor:pointer;background:#fff;border:2px solid var(--warm);border-radius:14px;padding:24px 20px;width:130px;text-align:center;transition:border-color .2s,box-shadow .2s">
+      <div style="font-size:2.2rem;margin-bottom:8px">🗂️</div>
+      <div style="font-family:'Cormorant SC',serif;font-size:.9rem;color:var(--vinho);font-weight:600">ADM</div>
+    </div>
+    <div onclick="selecionarUsuario('alexandre','Alexandre','👨‍💼')" class="login-card" data-user="alexandre" style="cursor:pointer;background:#fff;border:2px solid var(--warm);border-radius:14px;padding:24px 20px;width:130px;text-align:center;transition:border-color .2s,box-shadow .2s">
+      <div style="font-size:2.2rem;margin-bottom:8px">👨‍💼</div>
+      <div style="font-family:'Cormorant SC',serif;font-size:.9rem;color:var(--vinho);font-weight:600">Alexandre</div>
+    </div>
+  </div>
+  <!-- Painel de senha (aparece após selecionar) -->
+  <div id="login-senha-panel" style="display:none;background:#fff;border:1px solid var(--warm);border-radius:12px;padding:28px 32px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(26,15,10,.1)">
+    <div id="login-avatar" style="font-size:2rem;margin-bottom:4px"></div>
+    <div id="login-nome-sel" style="font-family:'Cormorant SC',serif;font-size:1rem;color:var(--vinho);font-weight:600;margin-bottom:16px"></div>
+    <input id="login-senha" type="password" placeholder="Senha" style="width:100%;padding:10px 14px;border:1px solid var(--warm);border-radius:6px;font-family:inherit;font-size:.85rem;margin-bottom:6px;background:var(--marfim);outline:none" onkeydown="if(event.key==='Enter')fazerLogin()">
+    <div id="login-erro" style="font-size:.75rem;color:#c0392b;min-height:18px;margin-bottom:8px"></div>
+    <button onclick="fazerLogin()" style="width:100%;background:var(--vinho);color:#fff;border:none;border-radius:6px;padding:11px;font-family:'Josefin Sans',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.08em;cursor:pointer;margin-bottom:8px">ENTRAR</button>
+    <button onclick="voltarCards()" style="width:100%;background:transparent;color:var(--moka);border:none;font-family:inherit;font-size:.75rem;cursor:pointer;opacity:.6">← Voltar</button>
+  </div>
+</div>
+
+<header>
+  <div>
+    <h1>🦷 Oral Unic — Calculadora Financeira</h1>
+    <div class="sub">Carlos Barbosa · Ferramenta de Gestão</div>
+  </div>
+  <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+    <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.2em;opacity:.7">Data</div>
+    <div style="font-size:.95rem;font-weight:600;color:var(--warm)" id="hdr-data"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+      <span id="hdr-usuario" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--warm);opacity:.85"></span>
+      <button onclick="fazerLogout()" style="font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;background:rgba(255,255,255,.15);color:var(--warm);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:2px 8px;cursor:pointer;font-family:inherit">Sair</button>
+    </div>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active"  onclick="tab('proc')">🔬 Procedimentos</button>
+  <button class="tab-btn"         onclick="tab('lab')">🦷 Etapas Lab</button>
+  <button class="tab-btn"         onclick="tab('prof')">👤 Dentistas / Protéticos</button>
+  <button class="tab-btn"         onclick="tab('fixos')">🏢 Custos Fixos</button>
+  <button class="tab-btn"         onclick="tab('eng')">⚙️ Engenharia do Produto</button>
+  <button class="tab-btn"         onclick="tab('prec')">💰 Precificação</button>
+  <button class="tab-btn"         onclick="tab('inf')">📈 Inflação / Reajuste</button>
+</div>
+
+<!-- ══════ ABA: PROCEDIMENTOS ══════ -->
+<div class="tab-panel active" id="panel-proc">
+<div class="page">
+  <div class="sec-row">
+    <div>
+      <div class="section-title">Cadastro de Procedimentos</div>
+      <div class="section-sub">Nome do procedimento + insumos com quantidade</div>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModalProc()">+ Novo Procedimento</button>
+  </div>
+  <div class="cadastro-grid" id="lista-proc-cards">
+    <div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhum procedimento cadastrado. Clique em "+ Novo" para começar.</div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ ABA: ETAPAS LAB ══════ -->
+<div class="tab-panel" id="panel-lab">
+<div class="page">
+  <div class="sec-row">
+    <div>
+      <div class="section-title">Cadastro de Etapas de Lab</div>
+      <div class="section-sub">Etapas, peças, insumos do estoque ou lab externo</div>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModalLab()">+ Nova Etapa Lab</button>
+  </div>
+  <div class="cadastro-grid" id="lista-lab-cards">
+    <div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhuma etapa cadastrada.</div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ ABA: PROFISSIONAIS ══════ -->
+<div class="tab-panel" id="panel-prof">
+<div class="page">
+  <div class="sec-row">
+    <div>
+      <div class="section-title">Dentistas & Protéticos</div>
+      <div class="section-sub">Nome e valor da hora de cada profissional</div>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModalProf()">+ Novo Profissional</button>
+  </div>
+  <div class="cadastro-grid" id="lista-prof-cards">
+    <div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhum profissional cadastrado.</div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ ABA: CUSTOS FIXOS ══════ -->
+<div class="tab-panel" id="panel-fixos">
+<div class="page">
+  <div class="section-title">Custos Fixos & Rateio da Clínica</div>
+  <div class="section-sub">Componentes do custo/min — base para a Engenharia do Produto</div>
+
+  <div class="note">
+    <b>Custo/min = (Custos Fixos + Depreciação + Folha + Bonificações + Ocorrências + Marketing) ÷ Minutos disponíveis</b><br>
+    Ajustado pela taxa de ocupação real da clínica.
+  </div>
+
+  <div class="two-col">
+    <!-- COLUNA ESQUERDA: categorias -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <div class="card">
+        <div class="card-title">🏢 Custos Fixos (aluguel, contas, sistemas...)</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Descrição</span><span class="col-label">R$/mês</span><span></span>
+        </div>
+        <div class="item-list" id="cf-list"></div>
+        <button class="btn btn-ghost" onclick="addCF()">+ Adicionar Linha</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:7px 10px;background:var(--blush);border-radius:7px">
+          <span style="font-size:.75rem;font-weight:600;color:var(--moka)">Subtotal Custos Fixos</span>
+          <span style="font-weight:700;color:var(--vinho)" id="cf-subtotal">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📉 Depreciação Mensal</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Equipamento</span><span class="col-label">R$/mês</span><span></span>
+        </div>
+        <div class="item-list" id="cf-dep-list"></div>
+        <button class="btn btn-ghost" onclick="addCFDep()">+ Adicionar Equipamento</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:7px 10px;background:var(--blush);border-radius:7px">
+          <span style="font-size:.75rem;font-weight:600;color:var(--moka)">Subtotal Depreciação</span>
+          <span style="font-weight:700;color:var(--vinho)" id="cf-dep-subtotal">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👥 Folha de Pagamento + Encargos</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Colaborador / Cargo</span><span class="col-label">R$/mês</span><span></span>
+        </div>
+        <div class="item-list" id="cf-folha-list"></div>
+        <button class="btn btn-ghost" onclick="addCFFolha()">+ Adicionar Colaborador</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:7px 10px;background:var(--blush);border-radius:7px">
+          <span style="font-size:.75rem;font-weight:600;color:var(--moka)">Subtotal Folha</span>
+          <span style="font-weight:700;color:var(--vinho)" id="cf-folha-subtotal">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🎁 Bonificações + Ocorrências Financeiras</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Descrição</span><span class="col-label">R$/mês</span><span></span>
+        </div>
+        <div class="item-list" id="cf-bon-list"></div>
+        <button class="btn btn-ghost" onclick="addCFBon()">+ Adicionar</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:7px 10px;background:var(--blush);border-radius:7px">
+          <span style="font-size:.75rem;font-weight:600;color:var(--moka)">Subtotal Bonif. + Ocorrências</span>
+          <span style="font-weight:700;color:var(--vinho)" id="cf-bon-subtotal">R$ 0,00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📣 Marketing <span style="font-weight:400;opacity:.6">(opcional)</span></div>
+        <div class="form-group">
+          <label>Gasto de Marketing / mês (R$)</label>
+          <input type="number" id="cf-mkt" placeholder="Ex: 2000" step="0.01" min="0" oninput="recalcCF()">
+          <div class="hint">Pode usar o real gasto ou a média dos últimos 3 meses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUNA DIREITA: parâmetros e resultado -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <div class="card bg-creme">
+        <div class="card-title">⏱️ Minutos Disponíveis da Clínica / Mês</div>
+        <div class="two-col" style="gap:10px">
+          <div class="form-group">
+            <label>Cadeiras / consultórios</label>
+            <input type="number" id="cf-cadeiras" placeholder="Ex: 3" min="1" value="1" oninput="recalcCF()">
+          </div>
+          <div class="form-group">
+            <label>Dias úteis / mês</label>
+            <input type="number" id="cf-dias" placeholder="Ex: 22" min="1" value="22" oninput="recalcCF()">
+          </div>
+          <div class="form-group">
+            <label>Horas de atendimento / dia</label>
+            <input type="number" id="cf-horas-dia" placeholder="Ex: 8" min="1" value="8" step="0.5" oninput="recalcCF()">
+          </div>
+          <div class="form-group">
+            <label>Minutos disponíveis / mês</label>
+            <input type="number" id="cf-min-disp" readonly style="background:var(--blush);color:var(--vinho);font-weight:700">
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-creme">
+        <div class="card-title">📊 Taxa de Ocupação</div>
+        <p style="font-size:.72rem;color:var(--moka);line-height:1.5;margin-bottom:12px">Em odontologia, a cadeira raramente ocupa 100% do tempo. Quanto menor a ocupação, maior o custo por minuto produtivo.</p>
+        <div class="form-group">
+          <label>Taxa de ocupação média (%)</label>
+          <input type="number" id="cf-ocupacao" placeholder="Ex: 70" min="1" max="100" value="70" oninput="recalcCF()">
+          <div class="hint">60–75% é típico em clínicas odontológicas</div>
+        </div>
+        <div id="cf-custo-min-res" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Resumo Geral</div>
+        <div id="cf-resumo-geral">
+          <div class="result-card vinho" style="margin-bottom:10px">
+            <div class="result-label">Total Geral / Mês</div>
+            <div class="result-value" id="cf-total-val">R$ 0,00</div>
+          </div>
+        </div>
+        <div id="cf-rateio-resultado"></div>
+        <div class="form-group" style="margin-top:12px">
+          <label>Atendimentos médios / mês <span style="font-weight:400;opacity:.6">(alternativo)</span></label>
+          <input type="number" id="cf-atend" placeholder="Ex: 200" min="1" oninput="recalcCF()">
+          <div class="hint">Rateio simples por atendimento — alternativa ao custo/min</div>
+        </div>
+      </div>
+
+      <div class="note">
+        💡 O <b>custo/min ajustado</b> é preenchido automaticamente na <b>Engenharia do Produto</b> conforme a duração do tratamento.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ ABA: ENGENHARIA DO PRODUTO ══════ -->
+<div class="tab-panel" id="panel-eng">
+<div class="page">
+  <div class="sec-row">
+    <div>
+      <div class="section-title">Engenharia do Produto</div>
+      <div class="section-sub">Monte o custo completo combinando procedimento + lab + profissional</div>
+    </div>
+    <button class="btn btn-primary" onclick="salvarEngenharia()">💾 Salvar Engenharia</button>
+  </div>
+
+  <div class="note">Selecione os componentes abaixo. O custo total será calculado automaticamente.</div>
+
+  <div class="two-col">
+    <div>
+      <!-- Seleção procedimento -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">1. Procedimento</div>
+        <div class="form-group">
+          <label>Escolha o procedimento</label>
+          <select id="eng-sel-proc" onchange="onEngChange()">
+            <option value="">— Selecione —</option>
+          </select>
+        </div>
+        <div id="eng-proc-detalhe" style="display:none">
+          <div class="badge badge-vinho" id="eng-proc-badge"></div>
+        </div>
+      </div>
+
+      <!-- Seleção lab (opcional) -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">2. Etapa Lab <span style="font-weight:400;opacity:.6">(opcional)</span></div>
+        <div class="form-group">
+          <label>Escolha a etapa de lab</label>
+          <select id="eng-sel-lab" onchange="onEngChange()">
+            <option value="">— Sem lab —</option>
+          </select>
+        </div>
+        <div id="eng-lab-detalhe" style="display:none">
+          <div class="badge badge-vinho" id="eng-lab-badge"></div>
+        </div>
+      </div>
+
+      <!-- Seleção profissional -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">3. Dentista / Protético</div>
+        <div class="form-group">
+          <label>Escolha o profissional</label>
+          <select id="eng-sel-prof" onchange="onEngChange()">
+            <option value="">— Selecione —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tempo de atendimento (minutos)</label>
+          <input type="number" id="eng-tempo" placeholder="Ex: 45" min="1" oninput="onEngChange()">
+        </div>
+      </div>
+
+      <!-- Custos adicionais -->
+      <div class="card">
+        <div class="card-title">4. Outros Custos</div>
+        <div class="two-col" style="gap:10px">
+          <div class="form-group">
+            <label>Descartáveis (R$)</label>
+            <input type="number" id="eng-desc" placeholder="0,00" step="0.01" min="0" oninput="onEngChange()">
+          </div>
+          <div class="form-group">
+            <label>Esterilização (R$)</label>
+            <input type="number" id="eng-ester" placeholder="0,00" step="0.01" min="0" oninput="onEngChange()">
+          </div>
+        </div>
+        <div style="background:var(--creme);border:1px solid var(--warm);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:var(--vinho-p);font-weight:600;margin-bottom:6px">Rateio Clínica (custo/min × duração)</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="font-size:.78rem;color:var(--moka)">Custo/min: <b id="eng-custo-min-label">R$ 0,00</b></div>
+            <div style="font-size:.78rem;color:var(--moka)">× <span id="eng-tempo-label">0</span> min</div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--vinho)">=</div>
+            <div class="badge badge-vinho" id="eng-rateio-label">R$ 0,00</div>
+          </div>
+          <div class="hint" id="eng-fixo-hint" style="margin-top:4px">Preenchido automaticamente dos Custos Fixos</div>
+        </div>
+        <div class="form-group">
+          <label>Ajuste manual do rateio (R$) <span style="font-weight:400;opacity:.5">— opcional</span></label>
+          <input type="number" id="eng-fixo" placeholder="0,00 — ou deixe auto" step="0.01" min="0" oninput="onEngChange()">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div id="eng-resultado">
+        <div class="card bg-creme" style="text-align:center;padding:40px 20px;color:#94a3b8;font-size:.8rem">
+          Selecione os componentes para ver o custo total
+        </div>
+      </div>
+
+      <!-- Lista de engenharias salvas -->
+      <div style="margin-top:16px">
+        <div class="card-title" style="margin-bottom:10px;font-size:.65rem;text-transform:uppercase;letter-spacing:.2em;color:var(--moka);opacity:.7;font-weight:600">Engenharias Salvas</div>
+        <div class="cadastro-grid" id="lista-eng-cards" style="grid-template-columns:1fr">
+          <div style="font-size:.78rem;color:#94a3b8;padding:12px;text-align:center">Nenhuma salva ainda</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ ABA: PRECIFICAÇÃO ══════ -->
+<div class="tab-panel" id="panel-prec">
+<div class="page">
+  <div class="section-title">Precificação</div>
+  <div class="section-sub">Escolha a engenharia e defina margem para gerar o preço final</div>
+
+  <div class="two-col">
+    <div>
+      <!-- Escolher engenharia -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Engenharia do Produto</div>
+        <div class="form-group">
+          <label>Selecione a engenharia</label>
+          <select id="prec-sel-eng" onchange="onPrecChange()">
+            <option value="">— Selecione —</option>
+          </select>
+        </div>
+        <div id="prec-eng-resumo" style="display:none">
+          <div class="result-card creme" style="margin-top:8px">
+            <div class="result-label">Custo Base</div>
+            <div class="result-value" id="prec-custo-base-val">R$ 0,00</div>
+            <div class="result-sub" id="prec-custo-base-sub"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impostos + encargos -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Impostos + Encargos sobre Venda</div>
+          <span class="badge badge-red" id="prec-carga-badge">0,00%</span>
+        </div>
+
+        <div style="margin-bottom:10px">
+          <div class="imp-row">
+            <div><div class="imp-nome">Royalty</div></div>
+            <input class="imp-val" id="imp-royalty" type="number" step="0.01" value="7" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">FNP</div></div>
+            <input class="imp-val" id="imp-fnp" type="number" step="0.01" value="2" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">PIS</div></div>
+            <input class="imp-val" id="imp-pis" type="number" step="0.01" value="0.65" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">COFINS</div></div>
+            <input class="imp-val" id="imp-cofins" type="number" step="0.01" value="3" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">ISS</div></div>
+            <input class="imp-val" id="imp-iss" type="number" step="0.01" value="3" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">IRPJ</div><div class="imp-hint">15% × 32%</div></div>
+            <input class="imp-val" id="imp-irpj" type="number" step="0.01" value="4.80" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">CSLL</div><div class="imp-hint">9% × 32%</div></div>
+            <input class="imp-val" id="imp-csll" type="number" step="0.01" value="2.88" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+          <div class="imp-row">
+            <div><div class="imp-nome">Taxa Cartão</div></div>
+            <input class="imp-val" id="imp-cartao" type="number" step="0.01" value="2.50" oninput="onPrecChange()">
+            <div class="imp-pct">%</div>
+          </div>
+        </div>
+
+        <div style="background:var(--blush);border-radius:7px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.72rem;font-weight:600;color:var(--moka)">Carga tributária total:</span>
+          <span style="font-size:.9rem;font-weight:700;color:#c0392b" id="prec-carga-total">25,83%</span>
+        </div>
+      </div>
+
+      <!-- Margem + Inflação -->
+      <div class="card">
+        <div class="card-title">Margem & Inflação</div>
+        <div class="form-group">
+          <label>Margem de lucro desejada (%)</label>
+          <input type="number" id="prec-margem" placeholder="Ex: 30" step="0.1" min="0" oninput="onPrecChange()">
+        </div>
+        <div class="form-group">
+          <label>Inflação acumulada — automática (%)</label>
+          <input type="number" id="prec-inflacao" placeholder="Calculada na aba Inflação" step="0.01" oninput="onPrecChange()">
+          <div class="hint">Preenchida automaticamente se você calcular na aba Inflação/Reajuste</div>
+        </div>
+        <div class="form-group">
+          <label>Preço de mercado / concorrência (R$) <span style="font-weight:400;opacity:.6">(opcional)</span></label>
+          <input type="number" id="prec-mercado" placeholder="Para comparação" step="0.01" min="0" oninput="onPrecChange()">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px;justify-content:center" onclick="onPrecChange()">Calcular Preço</button>
+      </div>
+    </div>
+
+    <div>
+      <div id="prec-resultado">
+        <div class="card bg-creme" style="text-align:center;padding:40px 20px;color:#94a3b8;font-size:.8rem">
+          Selecione uma engenharia e informe a margem
+        </div>
+      </div>
+      <div id="prec-cenarios-wrap" style="margin-top:16px;display:none">
+        <div class="section-title" style="font-size:.95rem;margin-bottom:12px">Simulação de Cenários</div>
+        <table class="tbl">
+          <thead><tr>
+            <th>Cenário</th><th class="num">Preço</th><th class="num">Lucro Unit.</th><th class="num">Markup</th><th>Status</th>
+          </tr></thead>
+          <tbody id="prec-cenarios-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ ABA: INFLAÇÃO / REAJUSTE ══════ -->
+<div class="tab-panel" id="panel-inf">
+<div class="page">
+  <div class="section-title">Inflação & Reajuste</div>
+  <div class="section-sub">Calcule inflação acumulada e reajuste de preços</div>
+
+  <div class="two-col">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📅 Reajuste Simples</div>
+        <div class="form-group">
+          <label>Preço / Custo Atual (R$)</label>
+          <input type="number" id="inf-atual" placeholder="Ex: 250,00" step="0.01" oninput="calcInfSimples()">
+        </div>
+        <div class="form-group">
+          <label>Inflação acumulada (%)</label>
+          <input type="number" id="inf-pct" placeholder="Ex: 8.50" step="0.01" oninput="calcInfSimples()">
+          <div class="hint">IPCA, INPC, IGP-M ou calculada pelo histórico abaixo</div>
+        </div>
+        <div class="form-group">
+          <label>Índice de referência</label>
+          <select id="inf-indice" onchange="calcInfSimples()">
+            <option value="IPCA">IPCA</option><option value="INPC">INPC</option>
+            <option value="IGP-M">IGP-M</option><option value="IGP-DI">IGP-DI</option>
+            <option value="IPCA-E">IPCA-E</option><option value="Personalizado">Personalizado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Margem adicional de proteção (%)</label>
+          <input type="number" id="inf-extra" placeholder="Ex: 2" step="0.1" min="0" value="0" oninput="calcInfSimples()">
+        </div>
+        <div id="inf-res-simples"></div>
+      </div>
+
+      <!-- Histórico mensal -->
+      <div class="card">
+        <div class="card-title">📊 Histórico Mensal (cálculo composto)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 2px">
+          <span class="col-label">Mês/Ano</span><span class="col-label">% Inflação</span><span></span>
+        </div>
+        <div class="item-list" id="inf-hist-list"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-ghost" style="flex:1;margin-top:0" onclick="addMesInf()">+ Mês</button>
+          <button class="btn btn-sec btn-sm" onclick="preencherIPCA2025()">↙ IPCA 2025</button>
+          <button class="btn btn-sec btn-sm" onclick="preencherIPCA2026()">↙ IPCA 2026</button>
+        </div>
+        <div id="inf-res-hist" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Simulador lista -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">💊 Simulador — Lista de Preços</div>
+        <div class="note">Aplique o reajuste a uma lista e veja os novos preços.</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px;margin-bottom:6px;padding:0 2px">
+          <span class="col-label">Item</span><span class="col-label">Preço Atual</span><span></span>
+        </div>
+        <div class="item-list" id="inf-lista-list"></div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn btn-ghost" style="flex:1;margin-top:0" onclick="addItemLista()">+ Item</button>
+          <button class="btn btn-sec btn-sm" onclick="importarEstoqueLista()">⬇ Estoque</button>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px" onclick="aplicarReajusteLista()">Aplicar Reajuste</button>
+      </div>
+
+      <div id="inf-lista-resultado" style="display:none">
+        <div class="section-title" style="font-size:.95rem;margin-bottom:8px">Resultado do Reajuste</div>
+        <table class="tbl">
+          <thead><tr>
+            <th>Item</th><th class="num">Atual</th><th class="num">Novo</th><th class="num">+R$</th>
+          </tr></thead>
+          <tbody id="inf-lista-tbody"></tbody>
+          <tfoot id="inf-lista-tfoot"></tfoot>
+        </table>
+        <button class="btn btn-sec btn-sm" style="margin-top:10px" onclick="exportCSV()">⬇ Exportar CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ MODAIS ══════ -->
+
+<!-- MODAL PROCEDIMENTO -->
+<div class="modal-overlay" id="modal-proc-overlay" onclick="fecharModal('modal-proc-overlay')">
+<div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-title" id="modal-proc-titulo">Novo Procedimento</div>
+  <div class="modal-sub">Cadastro de procedimento + insumos</div>
+  <input type="hidden" id="modal-proc-id">
+  <div class="form-group">
+    <label>Nome do Procedimento</label>
+    <input type="text" id="mp-nome" placeholder="Ex: Extração Simples, Restauração A2, Clareamento...">
+  </div>
+  <div class="form-group">
+    <label>Tempo médio (minutos)</label>
+    <input type="number" id="mp-tempo" placeholder="Ex: 45" min="1">
+  </div>
+  <div class="divider" style="margin:16px 0"></div>
+  <div class="card-title">Insumos utilizados</div>
+  <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
+    <span class="col-label">Insumo</span><span class="col-label">Qtd</span><span class="col-label">R$ unit.</span><span class="col-label">Total</span><span></span>
+  </div>
+  <div class="item-list" id="mp-insumos-list"></div>
+  <div style="margin-bottom:8px">
+    <div class="form-group" style="margin-bottom:4px">
+      <input type="text" id="mp-busca" placeholder="🔍 Buscar insumo do estoque..." oninput="buscaEstoque('mp-busca','mp-busca-drop',addInsumoProc)">
+    </div>
+    <div id="mp-busca-drop"></div>
+  </div>
+  <button class="btn btn-ghost" onclick="addInsumoProc()">+ Adicionar linha manual</button>
+  <div class="modal-footer">
+    <button class="btn btn-sec" onclick="fecharModal('modal-proc-overlay')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarProc()">Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL LAB -->
+<div class="modal-overlay" id="modal-lab-overlay" onclick="fecharModal('modal-lab-overlay')">
+<div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-title" id="modal-lab-titulo">Nova Etapa de Lab</div>
+  <div class="modal-sub">Etapas, peças e insumos laboratoriais</div>
+  <input type="hidden" id="modal-lab-id">
+  <div class="form-group">
+    <label>Nome da Etapa</label>
+    <input type="text" id="ml-nome" placeholder="Ex: Coroa Metalocerâmica, Moldagem, Prótese Total...">
+  </div>
+  <div class="two-col" style="gap:10px">
+    <div class="form-group">
+      <label>Tempo de produção (horas)</label>
+      <input type="number" id="ml-horas" placeholder="Ex: 3.5" step="0.5" min="0">
+    </div>
+    <div class="form-group">
+      <label>Custo Lab Externo (R$)</label>
+      <input type="number" id="ml-labext" placeholder="0,00" step="0.01" min="0">
+    </div>
+  </div>
+  <div class="divider" style="margin:14px 0"></div>
+  <div class="card-title">Insumos / Peças</div>
+  <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
+    <span class="col-label">Insumo / Peça</span><span class="col-label">Qtd</span><span class="col-label">R$ unit.</span><span class="col-label">Total</span><span></span>
+  </div>
+  <div class="item-list" id="ml-insumos-list"></div>
+  <div style="margin-bottom:8px">
+    <div class="form-group" style="margin-bottom:4px">
+      <input type="text" id="ml-busca" placeholder="🔍 Buscar insumo do estoque..." oninput="buscaEstoque('ml-busca','ml-busca-drop',addInsumoLab)">
+    </div>
+    <div id="ml-busca-drop"></div>
+  </div>
+  <button class="btn btn-ghost" onclick="addInsumoLab()">+ Adicionar linha manual</button>
+  <div class="modal-footer">
+    <button class="btn btn-sec" onclick="fecharModal('modal-lab-overlay')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarLab()">Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL PROFISSIONAL -->
+<div class="modal-overlay" id="modal-prof-overlay" onclick="fecharModal('modal-prof-overlay')">
+<div class="modal" onclick="event.stopPropagation()">
+  <div class="modal-title" id="modal-prof-titulo">Novo Profissional</div>
+  <div class="modal-sub">Dentista ou Protético</div>
+  <input type="hidden" id="modal-prof-id">
+  <div class="form-group">
+    <label>Nome</label>
+    <input type="text" id="mpr-nome" placeholder="Ex: Dr. Carlos, Francieli, Junior...">
+  </div>
+  <div class="form-group">
+    <label>Tipo</label>
+    <select id="mpr-tipo">
+      <option value="Dentista">Dentista</option>
+      <option value="Protético">Protético</option>
+      <option value="Auxiliar">Auxiliar</option>
+      <option value="Outro">Outro</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Valor da hora (R$)</label>
+    <input type="number" id="mpr-hora" placeholder="Ex: 80,00" step="0.01" min="0">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-sec" onclick="fecharModal('modal-prof-overlay')">Cancelar</button>
+    <button class="btn btn-primary" onclick="salvarProf()">Salvar</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── UTILS ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function fmt(n){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(+n||0);}
+function fmtP(n){return (+n||0).toFixed(2).replace('.',',')+'%';}
+function uid(){return Date.now()+Math.random().toString(36).slice(2);}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+$('hdr-data').textContent=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+const TABS=['proc','lab','prof','fixos','eng','prec','inf'];
+function tab(id){
+  TABS.forEach((t,i)=>{
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active',t===id);
+    $('panel-'+t).classList.toggle('active',t===id);
+  });
+  if(id==='eng'){populateEngSelects();}
+  if(id==='prec'){populatePrecSelects();onPrecChange();}
+}
+
+// ── ESTOQUE (localStorage externo) ────────────────────────────────────────
+const ESTOQUE_KEY='ou_estoque_v1';
+function getEstoque(){try{return JSON.parse(localStorage.getItem(ESTOQUE_KEY))||[];}catch{return[];}}
+
+// Auto-seed: popula estoque na primeira vez e merge novos itens
+(function seedEstoque(){
+  const _jaExiste=localStorage.getItem(ESTOQUE_KEY);
+  const seed=[
+  {"nome":"106.208","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":1},
+  {"nome":"106.209","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":2},
+  {"nome":"106.210","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":3},
+  {"nome":"106.211","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":4},
+  {"nome":"106.213","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":5},
+  {"nome":"106.214","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":6},
+  {"nome":"106.215","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":7},
+  {"nome":"106.216","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":8},
+  {"nome":"106.217","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":9},
+  {"nome":"106.218","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":10},
+  {"nome":"106.221 — Cilindro de Proteção do Pilar","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":11},
+  {"nome":"106.225","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":12},
+  {"nome":"106.226","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":13},
+  {"nome":"106.229","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":14},
+  {"nome":"106.230","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":15},
+  {"nome":"106.267 — Cilindro de Proteção Micro Pilar","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":16},
+  {"nome":"106.268 — Cilindro Proteção Mini Pilar Cônico","unidade":"unid","preco":26.60,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":17},
+  {"nome":"106.270","unidade":"unid","preco":9.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":18},
+  {"nome":"108.070 — Transfer Micro Pilar Mold Aberta","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":19},
+  {"nome":"108.160 — Transfer do Implante","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":20},
+  {"nome":"108.173 — Transfer Munhão Univ Click 3.3x6","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":21},
+  {"nome":"108.176 — Transfer Mini Pilar Mold Aberta Slim","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":22},
+  {"nome":"108.179 — Transfer Pilar Moldeira Fechada","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":23},
+  {"nome":"108.207 — Transfer Escaneamento Implante","unidade":"unid","preco":93.10,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":24},
+  {"nome":"108.218 — Transfer Escaneamento Mini Pilar","unidade":"unid","preco":93.10,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":25},
+  {"nome":"108.219 — Transfer Escaneamento Micro Pilar","unidade":"unid","preco":93.10,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":26},
+  {"nome":"108.220 — Transfer Escaneamento Pilar","unidade":"unid","preco":93.10,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":27},
+  {"nome":"109.906","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":28},
+  {"nome":"109.943","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":29},
+  {"nome":"109.944","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":30},
+  {"nome":"109.945","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":31},
+  {"nome":"109.946","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":32},
+  {"nome":"109.947","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":33},
+  {"nome":"109.948","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":34},
+  {"nome":"109.949","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":35},
+  {"nome":"109.950","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":36},
+  {"nome":"109.951","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":37},
+  {"nome":"109.952","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":38},
+  {"nome":"109.953","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":39},
+  {"nome":"109.954","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":40},
+  {"nome":"109.955","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":41},
+  {"nome":"109.976","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":42},
+  {"nome":"109.977","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":43},
+  {"nome":"109.978","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":44},
+  {"nome":"109.979","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":45},
+  {"nome":"109.980","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":46},
+  {"nome":"109.981","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":47},
+  {"nome":"109.982","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":48},
+  {"nome":"109.983","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":49},
+  {"nome":"109.984","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":50},
+  {"nome":"109.985","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":51},
+  {"nome":"109.986","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":52},
+  {"nome":"109.987","unidade":"unid","preco":125.50,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":53},
+  {"nome":"1091043","unidade":"unid","preco":192.64,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":54},
+  {"nome":"1091044","unidade":"unid","preco":192.64,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":55},
+  {"nome":"114.305 — Munhão 3.3x6x1.5 17°","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":56},
+  {"nome":"114.386 — Munhão 3.3x4x3.5 17°","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":57},
+  {"nome":"114.398 — Munhão 3.3x4x3.5 30°","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":58},
+  {"nome":"114.806 — Munhão 3.3x6x2.5 17°","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":59},
+  {"nome":"114.807 — Munhão 3.3x6x3.5 17°","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":60},
+  {"nome":"114.817","unidade":"unid","preco":98.42,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":61},
+  {"nome":"114.828 — Munhão 3.3x4x2.5","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":62},
+  {"nome":"114.829 — Munhão 3.3x4x3.5","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":63},
+  {"nome":"114.833 — Munhão Univ GM 3.3x6x1.5","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":64},
+  {"nome":"114.834 — Munhão Univ GM 3.3x6x2.5","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":65},
+  {"nome":"114.835 — Munhão Univ GM 3.3x6x3.5","unidade":"unid","preco":76.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":66},
+  {"nome":"115.243 — Mini Pilar Cônico GM Alt 0.8","unidade":"unid","preco":54.53,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":67},
+  {"nome":"115.244 — Mini Pilar Cônico GM Alt 1.5","unidade":"unid","preco":54.53,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":68},
+  {"nome":"115.245 — Mini Pilar Cônico GM Alt 2.5","unidade":"unid","preco":54.53,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":69},
+  {"nome":"115.246 — Mini Pilar Cônico GM Alt 3.5","unidade":"unid","preco":54.53,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":70},
+  {"nome":"115.247 — Mini Pilar Cônico GM Alt 4.5","unidade":"unid","preco":54.53,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":71},
+  {"nome":"115.248","unidade":"unid","preco":54.53,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":72},
+  {"nome":"115.255 — Micro Pilar 0.8","unidade":"unid","preco":85.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":73},
+  {"nome":"115.256 — Micro Pilar 1.5","unidade":"unid","preco":85.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":74},
+  {"nome":"115.257 — Micro Pilar 2.5","unidade":"unid","preco":85.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":75},
+  {"nome":"115.258 — Micro Pilar 3.5","unidade":"unid","preco":85.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":76},
+  {"nome":"115.269 — Pilar GM 4.8 Paraf Rem 0.8","unidade":"unid","preco":95.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":77},
+  {"nome":"115.270 — Pilar GM 4.8 Paraf Rem 1.5","unidade":"unid","preco":95.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":78},
+  {"nome":"115.271 — Pilar GM 4.8 Paraf Rem 2.5","unidade":"unid","preco":95.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":79},
+  {"nome":"115.272 — Pilar GM 4.8 Paraf Rem 3.5","unidade":"unid","preco":95.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":80},
+  {"nome":"115.273 — Pilar GM 4.8 Paraf Rem Alt 4.5","unidade":"unid","preco":95.38,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":81},
+  {"nome":"115.275 — Mini Pilar Com GM 17° Paraf Rem 1.5","unidade":"unid","preco":73.03,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":82},
+  {"nome":"115.276 — Mini Pilar Com GM 17° Paraf Rem 2.5","unidade":"unid","preco":73.03,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":83},
+  {"nome":"115.277","unidade":"unid","preco":73.03,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":84},
+  {"nome":"115.278 — Mini Pilar Com GM 30° Paraf Rem 1.5","unidade":"unid","preco":73.03,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":85},
+  {"nome":"115.279 — Mini Pilar Com GM 30° Paraf Rem 2.5","unidade":"unid","preco":73.03,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":86},
+  {"nome":"115.280","unidade":"unid","preco":73.03,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":87},
+  {"nome":"115.282","unidade":"unid","preco":74.49,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":88},
+  {"nome":"115.285","unidade":"unid","preco":111.49,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":89},
+  {"nome":"115.286","unidade":"unid","preco":111.49,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":90},
+  {"nome":"115.291","unidade":"unid","preco":90.82,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":91},
+  {"nome":"115.292","unidade":"unid","preco":90.82,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":92},
+  {"nome":"115.296","unidade":"unid","preco":90.82,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":93},
+  {"nome":"115.300","unidade":"unid","preco":74.49,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":94},
+  {"nome":"115.302","unidade":"unid","preco":74.49,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":95},
+  {"nome":"115.303","unidade":"unid","preco":74.49,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":96},
+  {"nome":"116.224","unidade":"unid","preco":14.82,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":97},
+  {"nome":"116.266 — Parafuso do Pilar","unidade":"unid","preco":14.82,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":98},
+  {"nome":"116.270","unidade":"unid","preco":19.76,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":99},
+  {"nome":"117.021","unidade":"unid","preco":9.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":100},
+  {"nome":"117.022","unidade":"unid","preco":9.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":101},
+  {"nome":"117.025","unidade":"unid","preco":9.88,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":102},
+  {"nome":"118.180","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":103},
+  {"nome":"118.182 — Calcinável do Munhão","unidade":"unid","preco":11.82,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":104},
+  {"nome":"118.297 — Cilindro Micro Pilar GM","unidade":"unid","preco":38.76,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":105},
+  {"nome":"118.298 — Cilindro Calc. Pilar Antirr.","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":106},
+  {"nome":"118.304 — Cilindro Prov. Munhão Univ 3.3x4","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":107},
+  {"nome":"118.305 — Cilindro Prov. Munhão Univ 3.3x6","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":108},
+  {"nome":"118.323","unidade":"unid","preco":23.94,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":109},
+  {"nome":"118.345","unidade":"unid","preco":27.26,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":110},
+  {"nome":"118.346","unidade":"unid","preco":27.26,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":111},
+  {"nome":"118.353","unidade":"unid","preco":27.26,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":112},
+  {"nome":"118.354","unidade":"unid","preco":27.26,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":113},
+  {"nome":"118.382","unidade":"unid","preco":38.76,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":114},
+  {"nome":"135.356 — Base Titânio 3.5x4x1.5","unidade":"unid","preco":50.54,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":115},
+  {"nome":"135.357 — Base Titânio 3.5x4x2.5","unidade":"unid","preco":50.54,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":116},
+  {"nome":"135.362 — Base Titânio 3.5x6x1.5","unidade":"unid","preco":50.54,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":117},
+  {"nome":"135.363 — Base Titânio 3.5x6x2.5","unidade":"unid","preco":50.54,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":118},
+  {"nome":"135.368 — Base Titânio 4.5x4x1.5","unidade":"unid","preco":50.54,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":119},
+  {"nome":"135.369 — Base Titânio 4.5x4x2.5","unidade":"unid","preco":50.54,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":120},
+  {"nome":"1401066","unidade":"unid","preco":168.91,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":121},
+  {"nome":"1401067","unidade":"unid","preco":168.91,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":122},
+  {"nome":"1401082","unidade":"unid","preco":168.91,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":123},
+  {"nome":"1401083","unidade":"unid","preco":168.91,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":124},
+  {"nome":"1401084","unidade":"unid","preco":168.91,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":125},
+  {"nome":"CALCINAVEL 118.301","unidade":"unid","preco":28.72,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":126},
+  {"nome":"CILINDRO 118.302","unidade":"unid","preco":23.12,"categoria":"Implantodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":127},
+  {"nome":"Ácido 10%","unidade":"unid","preco":10.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":128},
+  {"nome":"Ácido 37%","unidade":"unid","preco":14.58,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":129},
+  {"nome":"Ácido Fluorídrico Gel 10% (Angelus)","unidade":"unid","preco":9.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":130},
+  {"nome":"Ácido Fosfórico 37%","unidade":"unid","preco":14.58,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":131},
+  {"nome":"Acrílico Clássico M2","unidade":"frasco","preco":181.38,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":132},
+  {"nome":"Acrílico Clássico VM5","unidade":"frasco","preco":181.38,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":133},
+  {"nome":"Adesivo 3M","unidade":"frasco","preco":255.00,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":134},
+  {"nome":"Adesivo Ambar","unidade":"frasco","preco":75.49,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":135},
+  {"nome":"Adesivo pra Silicona","unidade":"frasco","preco":116.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":136},
+  {"nome":"Agulha 1,20x40mm","unidade":"unid","preco":21.50,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":137},
+  {"nome":"Agulha Longa","unidade":"caixa","preco":35.90,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":138},
+  {"nome":"Agulha Média","unidade":"caixa","preco":35.90,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":139},
+  {"nome":"Agulha para Irrigação Saída Lateral MK Life","unidade":"pacote","preco":15.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":140},
+  {"nome":"AH Plus Endo","unidade":"unid","preco":399.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":141},
+  {"nome":"Alginato Comum","unidade":"pacote","preco":31.03,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":142},
+  {"nome":"Alginato Hydrogum","unidade":"pacote","preco":132.27,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":143},
+  {"nome":"Algodão Rolete","unidade":"pacote","preco":3.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":144},
+  {"nome":"Alicate Meia Cana","unidade":"unid","preco":242.40,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":145},
+  {"nome":"All Cem Core Dual","unidade":"unid","preco":210.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":146},
+  {"nome":"Ampola de Teste Biológico","unidade":"unid","preco":49.90,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":147},
+  {"nome":"Androcortil 500MG","unidade":"unid","preco":3.40,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":148},
+  {"nome":"Anestésico Articaína","unidade":"caixa","preco":233.40,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":149},
+  {"nome":"Anestésico Lidocaína","unidade":"caixa","preco":115.00,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":150},
+  {"nome":"Anestésico Tópico","unidade":"frasco","preco":19.98,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":151},
+  {"nome":"Antibolhas Asfer","unidade":"frasco","preco":14.45,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":152},
+  {"nome":"Arco de Ostby","unidade":"unid","preco":15.42,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":153},
+  {"nome":"Atropina 0,25MG/ML","unidade":"unid","preco":1.44,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":154},
+  {"nome":"Babador","unidade":"pct","preco":16.60,"categoria":"EPI","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":155},
+  {"nome":"Banda 0,5","unidade":"rolo","preco":4.10,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":156},
+  {"nome":"Banda 0,7","unidade":"rolo","preco":4.10,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":157},
+  {"nome":"Barreira Gengival","unidade":"unid","preco":46.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":158},
+  {"nome":"Bengalinha Transparente (Elástico Modular Morelli)","unidade":"pct","preco":16.40,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":159},
+  {"nome":"Bioplic","unidade":"unid","preco":14.58,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":160},
+  {"nome":"Bisacrílica Protemp A1 3M","unidade":"unid","preco":841.78,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":161},
+  {"nome":"Bisacrílica Protemp A2 3M","unidade":"unid","preco":841.78,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":162},
+  {"nome":"Bisacrílica Protemp Bleach 3M","unidade":"unid","preco":841.78,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":163},
+  {"nome":"Blister Limas Série Especial 25mm","unidade":"blister","preco":16.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":164},
+  {"nome":"Blood Stop","unidade":"caixa","preco":2.12,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":165},
+  {"nome":"Botão Colagem Côncavo (Morelli)","unidade":"unid","preco":10.66,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":166},
+  {"nome":"Botão Colagem Reto (Morelli)","unidade":"unid","preco":10.99,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":167},
+  {"nome":"Braquete Autoligado (kit caso)","unidade":"kit","preco":182.50,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":168},
+  {"nome":"Braquete de Safira Conjunto (kit caso Orthometric)","unidade":"kit","preco":853.50,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":169},
+  {"nome":"Braquete Reposição Autoligado 11","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":170},
+  {"nome":"Braquete Reposição Autoligado 12","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":171},
+  {"nome":"Braquete Reposição Autoligado 13","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":172},
+  {"nome":"Braquete Reposição Autoligado 15/14","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":173},
+  {"nome":"Braquete Reposição Autoligado 21","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":174},
+  {"nome":"Braquete Reposição Autoligado 22","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":175},
+  {"nome":"Braquete Reposição Autoligado 23","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":176},
+  {"nome":"Braquete Reposição Autoligado 24/25","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":177},
+  {"nome":"Braquete Reposição Autoligado 31/32/41/42","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":178},
+  {"nome":"Braquete Reposição Autoligado 33","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":179},
+  {"nome":"Braquete Reposição Autoligado 34/35","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":180},
+  {"nome":"Braquete Reposição Autoligado 43","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":181},
+  {"nome":"Braquete Reposição Autoligado 44/45","unidade":"unid","preco":26.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":182},
+  {"nome":"Broca 1012","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":183},
+  {"nome":"Broca 1014","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":184},
+  {"nome":"Broca 1016","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":185},
+  {"nome":"Broca 2134","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":186},
+  {"nome":"Broca 2135","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":187},
+  {"nome":"Broca 2143","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":188},
+  {"nome":"Broca 2200","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":189},
+  {"nome":"Broca 2214","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":190},
+  {"nome":"Broca 2215","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":191},
+  {"nome":"Broca 3053","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":192},
+  {"nome":"Broca 3071","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":193},
+  {"nome":"Broca 3072","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":194},
+  {"nome":"Broca 3118","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":195},
+  {"nome":"Broca 3123","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":196},
+  {"nome":"Broca 3145","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":197},
+  {"nome":"Broca 3168","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":198},
+  {"nome":"Broca 3195","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":199},
+  {"nome":"Broca 3203","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":200},
+  {"nome":"Broca 3205","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":201},
+  {"nome":"Broca 3215","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":202},
+  {"nome":"Broca 4138","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":203},
+  {"nome":"Broca 4141","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":204},
+  {"nome":"Broca 4142","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":205},
+  {"nome":"Broca 701","unidade":"unid","preco":16.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":206},
+  {"nome":"Broca 708","unidade":"unid","preco":53.90,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":207},
+  {"nome":"Broca 709","unidade":"unid","preco":53.90,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":208},
+  {"nome":"Broca Carbide 8","unidade":"unid","preco":13.90,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":209},
+  {"nome":"Broca Endo Z","unidade":"unid","preco":34.70,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":210},
+  {"nome":"Broca Esférica 3 BR","unidade":"unid","preco":41.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":211},
+  {"nome":"Broca Esférica 4 BR","unidade":"unid","preco":41.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":212},
+  {"nome":"Broca Esférica 5 BR","unidade":"unid","preco":41.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":213},
+  {"nome":"Broca Esférica 6 BR","unidade":"unid","preco":41.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":214},
+  {"nome":"Broca FG 7901-4","unidade":"unid","preco":24.72,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":215},
+  {"nome":"Broca Maxicut","unidade":"unid","preco":76.62,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":216},
+  {"nome":"Broca Minicut","unidade":"unid","preco":72.74,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":217},
+  {"nome":"Broca Multilaminada","unidade":"unid","preco":30.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":218},
+  {"nome":"Broca Multilaminada Cônica","unidade":"unid","preco":30.00,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":219},
+  {"nome":"Broca Transmetal","unidade":"unid","preco":18.90,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":220},
+  {"nome":"Broca Zecry","unidade":"unid","preco":34.70,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":221},
+  {"nome":"Cabo de Espelho","unidade":"unid","preco":7.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":222},
+  {"nome":"Campo Cirúrgico","unidade":"caixa","preco":22.00,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":223},
+  {"nome":"Cefazolina 1G","unidade":"unid","preco":4.90,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":224},
+  {"nome":"Cera 7","unidade":"caixa","preco":21.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":225},
+  {"nome":"Cera 9","unidade":"caixa","preco":19.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":226},
+  {"nome":"Cera Gengiwax Rosa Claro","unidade":"pote","preco":77.50,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":227},
+  {"nome":"Cera Ortodôntica","unidade":"caixa","preco":20.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":228},
+  {"nome":"Cera Utilidade","unidade":"caixa","preco":26.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":229},
+  {"nome":"CERABONE Enxerto Ósseo AW-1521 1x1,0cc","unidade":"unid","preco":196.40,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":230},
+  {"nome":"CERABONE Enxerto Ósseo AW-1522 1x2,0cc","unidade":"unid","preco":288.00,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":231},
+  {"nome":"CERABONE Enxerto Ósseo AW-1525 1x5,0cc","unidade":"unid","preco":699.60,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":232},
+  {"nome":"Cetoprofeno 50MG/ML","unidade":"unid","preco":5.80,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":233},
+  {"nome":"Cimento All Cem Core","unidade":"unid","preco":210.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":234},
+  {"nome":"Cimento Hidróxido de Cálcio","unidade":"frasco","preco":59.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":235},
+  {"nome":"Cimento Try In A1","unidade":"unid","preco":452.01,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":236},
+  {"nome":"Cimento Try In TR","unidade":"unid","preco":452.01,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":237},
+  {"nome":"Cimento Venner A1","unidade":"unid","preco":595.34,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":238},
+  {"nome":"Cimento Venner TR","unidade":"unid","preco":595.34,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":239},
+  {"nome":"Clareamento 10%","unidade":"caixa","preco":109.00,"categoria":"Clareamento","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":240},
+  {"nome":"Clareamento 22%","unidade":"caixa","preco":109.00,"categoria":"Clareamento","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":241},
+  {"nome":"Clareamento de Consultório","unidade":"caixa","preco":178.40,"categoria":"Clareamento","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":242},
+  {"nome":"Clorexidina 2%","unidade":"frasco","preco":29.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":243},
+  {"nome":"Cone Acessório F1","unidade":"caixa","preco":38.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":244},
+  {"nome":"Cone Guta Percha 1ª Série Tanari","unidade":"caixa","preco":41.50,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":245},
+  {"nome":"Cone Guta Percha R25","unidade":"caixa","preco":101.76,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":246},
+  {"nome":"Cone Guta Percha R40","unidade":"caixa","preco":78.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":247},
+  {"nome":"Corega","unidade":"frasco","preco":24.05,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":248},
+  {"nome":"Cotosol","unidade":"frasco","preco":9.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":249},
+  {"nome":"Cunha de Madeira","unidade":"unid","preco":14.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":250},
+  {"nome":"DELARA 30L A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":251},
+  {"nome":"DELARA 30L A2","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":252},
+  {"nome":"DELARA 30L A3","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":253},
+  {"nome":"DELARA 32L A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":254},
+  {"nome":"DELARA 32L A2","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":255},
+  {"nome":"DELARA 32L A3","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":256},
+  {"nome":"DELARA 32U A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":257},
+  {"nome":"DELARA 34L A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":258},
+  {"nome":"DELARA 34L A2","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":259},
+  {"nome":"DELARA 34U A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":260},
+  {"nome":"DELARA 36L A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":261},
+  {"nome":"DELARA 36U A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":262},
+  {"nome":"DELARA L33 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":263},
+  {"nome":"DELARA L35 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":264},
+  {"nome":"DELARA L36 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":265},
+  {"nome":"DELARA L38 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":266},
+  {"nome":"DELARA L39 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":267},
+  {"nome":"DELARA O43 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":268},
+  {"nome":"DELARA O47 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":269},
+  {"nome":"DELARA O51 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":270},
+  {"nome":"DELARA R45 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":271},
+  {"nome":"DELARA R46 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":272},
+  {"nome":"DELARA R47 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":273},
+  {"nome":"DELARA R48 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":274},
+  {"nome":"DELARA R49 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":275},
+  {"nome":"DELARA S43 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":276},
+  {"nome":"DELARA S44 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":277},
+  {"nome":"DELARA S48 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":278},
+  {"nome":"DELARA S50 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":279},
+  {"nome":"DELARA T42 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":280},
+  {"nome":"DELARA T44 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":281},
+  {"nome":"DELARA T45 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":282},
+  {"nome":"DELARA T46 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":283},
+  {"nome":"DELARA T49 A1","unidade":"unid","preco":42.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":284},
+  {"nome":"Desencrostante","unidade":"fr","preco":76.53,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":285},
+  {"nome":"Dessensibilizante","unidade":"unid","preco":36.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":286},
+  {"nome":"Detergente Enzimático","unidade":"fr","preco":24.00,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":287},
+  {"nome":"Dexametaxona 4MG/ML","unidade":"unid","preco":5.99,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":288},
+  {"nome":"Dipirona 500MG/ML","unidade":"unid","preco":0.89,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":289},
+  {"nome":"Disco Ninja","unidade":"caixa","preco":189.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":290},
+  {"nome":"EDTA Máquina 20ml","unidade":"frasco","preco":85.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":291},
+  {"nome":"Efedrina 50MG/ML","unidade":"unid","preco":6.50,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":292},
+  {"nome":"Elástico Bengalinha Cinza (Morelli)","unidade":"pct","preco":8.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":293},
+  {"nome":"Elástico Corrente Cinza 1,5m (Morelli)","unidade":"rolo","preco":12.30,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":294},
+  {"nome":"Elástico de Mordida 1/8 Leve (Morelli c/1000)","unidade":"pct","preco":10.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":295},
+  {"nome":"Elástico de Mordida 3/16 Médio (Morelli c/1000)","unidade":"pct","preco":12.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":296},
+  {"nome":"Endo Ice","unidade":"frasco","preco":79.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":297},
+  {"nome":"Enxaguante Bucal","unidade":"unid","preco":51.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":298},
+  {"nome":"Escova Interdental","unidade":"pacote","preco":11.10,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":299},
+  {"nome":"Escova Robson","unidade":"unid","preco":1.80,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":300},
+  {"nome":"Espaçador Bidigital","unidade":"unid","preco":24.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":301},
+  {"nome":"Espelho Clínico","unidade":"unid","preco":5.49,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":302},
+  {"nome":"Estipa Nervo","unidade":"unid","preco":4.15,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":303},
+  {"nome":"Fentanila 50MCG/ML","unidade":"unid","preco":32.55,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":304},
+  {"nome":"Filme Intra Oral Raio X","unidade":"pct","preco":294.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":305},
+  {"nome":"Fio Aço 12 Inferior (Morelli)","unidade":"unid","preco":9.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":306},
+  {"nome":"Fio Aço 14 Superior (Morelli)","unidade":"unid","preco":9.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":307},
+  {"nome":"Fio Aço 16x22 Superior (Morelli)","unidade":"unid","preco":10.40,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":308},
+  {"nome":"Fio Aço 17x25 Superior (Morelli)","unidade":"unid","preco":10.40,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":309},
+  {"nome":"Fio Aço 18x25 Superior (Morelli)","unidade":"unid","preco":10.40,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":310},
+  {"nome":"Fio de Amarrilho 0,25mm (Morelli)","unidade":"rolo","preco":21.50,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":311},
+  {"nome":"Fio de Sutura","unidade":"caixa","preco":70.90,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":312},
+  {"nome":"Fio Dental","unidade":"rolo","preco":19.70,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":313},
+  {"nome":"Fio NiTi 12 Inferior (Morelli)","unidade":"unid","preco":12.60,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":314},
+  {"nome":"Fio NiTi 16x22 Superior (Morelli)","unidade":"unid","preco":21.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":315},
+  {"nome":"Fio NiTi 17x25 Superior (Morelli)","unidade":"unid","preco":21.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":316},
+  {"nome":"Fio NiTi 18x25 Superior (Morelli)","unidade":"unid","preco":21.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":317},
+  {"nome":"Fio NiTi 19x25 Superior (Morelli)","unidade":"unid","preco":21.00,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":318},
+  {"nome":"Fio Retrator #000","unidade":"rolo","preco":119.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":319},
+  {"nome":"Fita de Autoclave","unidade":"rolo","preco":48.00,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":320},
+  {"nome":"Flumazenil 0,5MG/ML","unidade":"unid","preco":56.93,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":321},
+  {"nome":"Flúor Acidulado","unidade":"frasco","preco":7.10,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":322},
+  {"nome":"Flúor Neutro","unidade":"frasco","preco":7.10,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":323},
+  {"nome":"Gaze Avulsa","unidade":"pacote","preco":1.30,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":324},
+  {"nome":"Gengiva Artificial","unidade":"caixa","preco":212.42,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":325},
+  {"nome":"Gesso Comum 1kg","unidade":"pacote","preco":5.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":326},
+  {"nome":"Gesso Pedra 1kg","unidade":"pacote","preco":8.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":327},
+  {"nome":"Gesso Zero Arte 1kg","unidade":"pacote","preco":45.50,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":328},
+  {"nome":"Gesso Zero Stone 1kg","unidade":"pacote","preco":51.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":329},
+  {"nome":"Glaze Fotopolimerizável","unidade":"frasco","preco":89.00,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":330},
+  {"nome":"Godiva Verde Bastão","unidade":"caixa","preco":41.30,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":331},
+  {"nome":"HEAL BONE 15x40mm","unidade":"unid","preco":189.00,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":332},
+  {"nome":"HEAL BONE 20x30mm","unidade":"unid","preco":234.00,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":333},
+  {"nome":"Hemospon","unidade":"unid","preco":72.99,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":334},
+  {"nome":"Hemostático","unidade":"unid","preco":24.24,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":335},
+  {"nome":"Hipoclorito Sódico 2,5% 1L","unidade":"frasco","preco":10.57,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":336},
+  {"nome":"Hydro C","unidade":"frasco","preco":59.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":337},
+  {"nome":"Ionofast","unidade":"unid","preco":179.00,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":338},
+  {"nome":"Ionômero de Vidro","unidade":"unid","preco":85.35,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":339},
+  {"nome":"Isolante Cel Lac","unidade":"frasco","preco":56.60,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":340},
+  {"nome":"Ketamin 50MG/ML","unidade":"unid","preco":22.00,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":341},
+  {"nome":"Kit Borracha de Polimento","unidade":"pacote","preco":75.50,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":342},
+  {"nome":"Lâmina 11","unidade":"unid","preco":39.90,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":343},
+  {"nome":"Lâmina 15C","unidade":"caixa","preco":39.90,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":344},
+  {"nome":"Lençol de Borracha Madeitex Azul","unidade":"caixa","preco":26.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":345},
+  {"nome":"Lidocaína","unidade":"caixa","preco":115.00,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":346},
+  {"nome":"Lima C-Pilot 21mm 10","unidade":"blister","preco":83.99,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":347},
+  {"nome":"Lima C-Pilot 25mm 10","unidade":"blister","preco":83.99,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":348},
+  {"nome":"Lima Flexofile 1ª Série 25mm","unidade":"blister","preco":41.47,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":349},
+  {"nome":"Lima K-File 2ª Série 21mm","unidade":"blister","preco":29.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":350},
+  {"nome":"Lima Reciprocante R Blue R25","unidade":"blister","preco":501.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":351},
+  {"nome":"Lima Reciprocante R Blue R40","unidade":"blister","preco":501.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":352},
+  {"nome":"Limas Brancas","unidade":"unid","preco":4.15,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":353},
+  {"nome":"Limas Roxas","unidade":"unid","preco":16.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":354},
+  {"nome":"Líquido Auto Polimerizável 1L","unidade":"frasco","preco":149.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":355},
+  {"nome":"Líquido Termo Polimerizável 1L","unidade":"frasco","preco":139.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":356},
+  {"nome":"LUMINA-Coat Criteria 1x20x30","unidade":"unid","preco":110.00,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":357},
+  {"nome":"Luva P","unidade":"caixa","preco":28.90,"categoria":"EPI","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":358},
+  {"nome":"Luva PP","unidade":"caixa","preco":28.90,"categoria":"EPI","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":359},
+  {"nome":"Lyzanda","unidade":"caixa","preco":61.90,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":360},
+  {"nome":"Membrana JASON AW-681520 30x40mm","unidade":"unid","preco":476.00,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":361},
+  {"nome":"Membrana JASON AW-682030 20x30mm","unidade":"unid","preco":349.60,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":362},
+  {"nome":"Microbrush Fino","unidade":"caixa","preco":11.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":363},
+  {"nome":"Microbrush Regular","unidade":"caixa","preco":11.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":364},
+  {"nome":"Midazolam 5MG/ML","unidade":"unid","preco":3.12,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":365},
+  {"nome":"Mini Implante 10mm (Morelli)","unidade":"unid","preco":66.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":366},
+  {"nome":"Mini Implante 8mm (Morelli)","unidade":"unid","preco":66.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":367},
+  {"nome":"Mola Aberta CrNi (Morelli)","unidade":"unid","preco":10.90,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":368},
+  {"nome":"Mola Fechada CrNi (Morelli)","unidade":"unid","preco":13.20,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":369},
+  {"nome":"Naloxona 0,4MG/ML","unidade":"unid","preco":10.50,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":370},
+  {"nome":"NEW ACE L2 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":371},
+  {"nome":"NEW ACE L3 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":372},
+  {"nome":"NEW ACE L4 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":373},
+  {"nome":"NEW ACE L6 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":374},
+  {"nome":"NEW ACE L7 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":375},
+  {"nome":"NEW ACE M30I A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":376},
+  {"nome":"NEW ACE M32I A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":377},
+  {"nome":"NEW ACE M34I A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":378},
+  {"nome":"NEW ACE M36I A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":379},
+  {"nome":"NEW ACE O2 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":380},
+  {"nome":"NEW ACE O4 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":381},
+  {"nome":"NEW ACE S3 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":382},
+  {"nome":"NEW ACE S4 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":383},
+  {"nome":"NEW ACE S5 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":384},
+  {"nome":"NEW ACE SS2 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":385},
+  {"nome":"NEW ACE T1 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":386},
+  {"nome":"NEW ACE T2 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":387},
+  {"nome":"NEW ACE T3 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":388},
+  {"nome":"NEW ACE T4 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":389},
+  {"nome":"NEW ACE T5 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":390},
+  {"nome":"NEW ACE T6 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":391},
+  {"nome":"NEW ACE TL 4 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":392},
+  {"nome":"NEW ACE TL6 A1","unidade":"unid","preco":17.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":393},
+  {"nome":"Ondasetrona 2MG/ML","unidade":"unid","preco":3.13,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":394},
+  {"nome":"Opaco Rosa Claro DEFAMA","unidade":"frasco","preco":99.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":395},
+  {"nome":"Orthocem (Kit FGM)","unidade":"kit","preco":55.49,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":396},
+  {"nome":"Óxido Nitroso","unidade":"cilindro","preco":1353.24,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":397},
+  {"nome":"Oxigênio Grande","unidade":"cilindro","preco":428.94,"categoria":"Outros","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":398},
+  {"nome":"Pacote de Gaze","unidade":"pacote","preco":21.59,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":399},
+  {"nome":"Palabond Líquido","unidade":"frasco","preco":192.22,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":400},
+  {"nome":"Papel Articular","unidade":"cx","preco":5.29,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":401},
+  {"nome":"Pasta de Polimento","unidade":"unid","preco":5.70,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":402},
+  {"nome":"Pasta Profilática","unidade":"frasco","preco":5.70,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":403},
+  {"nome":"Pasta Universal (Ivo Clar)","unidade":"unid","preco":75.91,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":404},
+  {"nome":"Pattern Resin","unidade":"frasco","preco":759.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":405},
+  {"nome":"Pavio","unidade":"pacote","preco":16.50,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":406},
+  {"nome":"Pedra Pomes","unidade":"frasco","preco":7.49,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":407},
+  {"nome":"Perfil Leve","unidade":"frasco","preco":112.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":408},
+  {"nome":"Perfil Pesado","unidade":"frasco","preco":170.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":409},
+  {"nome":"Periogarde","unidade":"frasco","preco":93.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":410},
+  {"nome":"Pinça Clínica","unidade":"unid","preco":18.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":411},
+  {"nome":"Pino de Fibra de Vidro 1","unidade":"caixa","preco":34.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":412},
+  {"nome":"Pino de Fibra de Vidro 2","unidade":"caixa","preco":35.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":413},
+  {"nome":"Placas de Acetato 1,5mm","unidade":"unid","preco":49.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":414},
+  {"nome":"Placas de Acetato 2mm","unidade":"unid","preco":64.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":415},
+  {"nome":"Placas de Clareamento","unidade":"unid","preco":41.60,"categoria":"Clareamento","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":416},
+  {"nome":"PM 1 Fresa","unidade":"unid","preco":89.90,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":417},
+  {"nome":"Ponta de Papel Absorvente 1ª Série","unidade":"caixa","preco":42.00,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":418},
+  {"nome":"Ponta de Papel Absorvente 30","unidade":"caixa","preco":42.00,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":419},
+  {"nome":"Ponta de Papel Absorvente Protaper Gold F1F2F3","unidade":"caixa","preco":95.86,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":420},
+  {"nome":"Ponta de Papel Absorvente Reciproc","unidade":"caixa","preco":78.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":421},
+  {"nome":"Ponta Diamantada 3195","unidade":"unid","preco":3.22,"categoria":"Brocas","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":422},
+  {"nome":"Pontas Navitips Azul c/20","unidade":"caixa","preco":79.00,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":423},
+  {"nome":"Ponteira Bisacrílica Azul","unidade":"pacote","preco":30.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":424},
+  {"nome":"Propofol 10MG/ML","unidade":"unid","preco":42.19,"categoria":"Anestesia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":425},
+  {"nome":"Reembase Soft","unidade":"caixa","preco":149.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":426},
+  {"nome":"Relyx U200","unidade":"unid","preco":599.00,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":427},
+  {"nome":"Resina Auto Polimerizável Rosa 1kg","unidade":"frasco","preco":157.13,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":428},
+  {"nome":"Resina Composta A1","unidade":"unid","preco":40.87,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":429},
+  {"nome":"Resina Composta A2","unidade":"unid","preco":40.87,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":430},
+  {"nome":"Resina Composta A3","unidade":"unid","preco":40.87,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":431},
+  {"nome":"Resina Composta A3,5","unidade":"unid","preco":40.87,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":432},
+  {"nome":"Resina Flow","unidade":"unid","preco":19.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":433},
+  {"nome":"Resina Termo Polimerizável Incolor 1kg","unidade":"frasco","preco":125.16,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":434},
+  {"nome":"Resina Termo Polimerizável Rosa 1kg","unidade":"frasco","preco":149.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":435},
+  {"nome":"Revestimento Gilvest","unidade":"caixa","preco":499.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":436},
+  {"nome":"Rolo de Esterilização 10x100","unidade":"rolo","preco":59.90,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":437},
+  {"nome":"Rolo de Esterilização 15x100","unidade":"rolo","preco":89.90,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":438},
+  {"nome":"Rolo de Esterilização 20x100","unidade":"rolo","preco":124.90,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":439},
+  {"nome":"Silicona de Adição Leve","unidade":"frasco","preco":179.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":440},
+  {"nome":"Silicona de Adição Pesada","unidade":"frasco","preco":349.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":441},
+  {"nome":"Silicona Perfil Leve","unidade":"frasco","preco":112.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":442},
+  {"nome":"Silicona Perfil Pesada","unidade":"frasco","preco":170.90,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":443},
+  {"nome":"Soflex Laranja Escuro","unidade":"pacote","preco":200.89,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":444},
+  {"nome":"Sonda Clínica","unidade":"unid","preco":15.80,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":445},
+  {"nome":"STG Rosa Médio","unidade":"frasco","preco":175.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":446},
+  {"nome":"STG Rosa Roxo","unidade":"frasco","preco":175.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":447},
+  {"nome":"Sugador","unidade":"pct","preco":6.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":448},
+  {"nome":"Sugador Cirúrgico","unidade":"caixa","preco":29.90,"categoria":"Cirurgia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":449},
+  {"nome":"Sugador Endodôntico","unidade":"pacote","preco":6.99,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":450},
+  {"nome":"Teste Químico","unidade":"unid","preco":550.16,"categoria":"Esterilização","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":451},
+  {"nome":"Tira de Lixa Diamantada Serrilhada","unidade":"pacote","preco":97.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":452},
+  {"nome":"Tira de Poliéster","unidade":"pacote","preco":2.32,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":453},
+  {"nome":"Transamin 50MG/ML","unidade":"unid","preco":43.60,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":454},
+  {"nome":"Tricresol","unidade":"unid","preco":20.90,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":455},
+  {"nome":"Tubo Simples Colagem 16 (Morelli)","unidade":"unid","preco":26.78,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":456},
+  {"nome":"Tubo Simples Colagem 26 (Morelli)","unidade":"unid","preco":26.78,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":457},
+  {"nome":"Tubo Simples Colagem 36 (Morelli)","unidade":"unid","preco":26.78,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":458},
+  {"nome":"Tubo Simples Colagem 46 (Morelli)","unidade":"unid","preco":26.78,"categoria":"Ortodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":459},
+  {"nome":"Ultracal XS","unidade":"unid","preco":123.50,"categoria":"Endodontia","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":460},
+  {"nome":"Vaselina","unidade":"frasco","preco":6.90,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":461},
+  {"nome":"Vaselina Líquida","unidade":"frasco","preco":11.99,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":462},
+  {"nome":"Veia Vermelha","unidade":"frasco","preco":11.80,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":463},
+  {"nome":"Zetalabor 5kg","unidade":"balde","preco":850.00,"categoria":"Prótese","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":464},
+  {"nome":"Agulha 1,20x40mm","unidade":"unid","preco":21.50,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":465},
+  {"nome":"Androcortil 500MG","unidade":"unid","preco":3.40,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":466},
+  {"nome":"Atropina 0,25MG/ML","unidade":"unid","preco":1.44,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":467},
+  {"nome":"Blood Stop","unidade":"caixa","preco":2.12,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":468},
+  {"nome":"Campo Cirúrgico","unidade":"caixa","preco":22.00,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":469},
+  {"nome":"Cateter Solidor 22 – Azul","unidade":"unid","preco":1.25,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":470},
+  {"nome":"Cateter Solidor 24 – Amarelo","unidade":"unid","preco":1.25,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":471},
+  {"nome":"Cefazolina 1G","unidade":"unid","preco":4.90,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":472},
+  {"nome":"Cetoprofeno 50MG/ML","unidade":"unid","preco":5.80,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":473},
+  {"nome":"Clonidila 1G","unidade":"unid","preco":8.10,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":474},
+  {"nome":"Dexametaxona 4MG/ML","unidade":"unid","preco":5.99,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":475},
+  {"nome":"Dipirona 500MG/ML","unidade":"unid","preco":0.89,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":476},
+  {"nome":"Efedrina 50MG/ML","unidade":"unid","preco":6.50,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":477},
+  {"nome":"Eletrodo para Eletrocardiograma","unidade":"unid","preco":0.43,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":478},
+  {"nome":"Epinefrina 50MG/ML","unidade":"unid","preco":0.98,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":479},
+  {"nome":"Equipo com Lugas para Medicação","unidade":"unid","preco":1.56,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":480},
+  {"nome":"Extensor de Equipo","unidade":"unid","preco":3.38,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":481},
+  {"nome":"Fentanila 50MCG/ML","unidade":"unid","preco":32.55,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":482},
+  {"nome":"Flumazenil 0,5MG/ML","unidade":"unid","preco":56.93,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":483},
+  {"nome":"Ketamin 50MG/ML","unidade":"unid","preco":22.00,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":484},
+  {"nome":"Mangueira Oxigênio","unidade":"unid","preco":10.63,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":485},
+  {"nome":"Micropóre 1,25cm","unidade":"rolo","preco":3.10,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":486},
+  {"nome":"Micropóre 2,5cm","unidade":"rolo","preco":4.55,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":487},
+  {"nome":"Micropóre 5cm","unidade":"rolo","preco":10.23,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":488},
+  {"nome":"Midazolam 5MG/ML","unidade":"unid","preco":3.12,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":489},
+  {"nome":"Naloxona 0,4MG/ML","unidade":"unid","preco":10.50,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":490},
+  {"nome":"Óculas Nasal","unidade":"unid","preco":1.25,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":491},
+  {"nome":"Ondasetrona 2MG/ML","unidade":"unid","preco":3.13,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":492},
+  {"nome":"Óxido Nitroso","unidade":"cilindro","preco":1353.24,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":493},
+  {"nome":"Oxigênio Grande","unidade":"cilindro","preco":428.94,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":494},
+  {"nome":"Oxigênio Pequeno","unidade":"cilindro","preco":142.98,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":495},
+  {"nome":"Propofol 10MG/ML","unidade":"unid","preco":42.19,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":496},
+  {"nome":"Soro 500ml","unidade":"unid","preco":5.90,"categoria":"Medicamentos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":497},
+  {"nome":"Seringa 3ml","unidade":"unid","preco":0.45,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":498},
+  {"nome":"Seringa 5ml","unidade":"unid","preco":0.45,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":499},
+  {"nome":"Seringa 10ml","unidade":"unid","preco":0.45,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":500},
+  {"nome":"Seringa 20ml","unidade":"unid","preco":0.45,"categoria":"Materiais Clínicos","qtd":0,"estoqueMin":1,"fornecedor":"","obs":"","id":501}
+  ];
+  try{
+    const _n=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const atual=_jaExiste?(JSON.parse(localStorage.getItem(ESTOQUE_KEY))||[]):[];
+    const nomes=new Set(atual.map(i=>_n(i.nome)));
+    const novos=seed.filter(i=>!nomes.has(_n(i.nome)));
+    if(!_jaExiste||novos.length){
+      localStorage.setItem(ESTOQUE_KEY,JSON.stringify(atual.concat(novos)));
+    }
+  } catch(e){}
+})();
+
+// ── STORAGE — Firebase (definido no módulo ES acima, exposto em window) ────
+// getDB() e saveDB() são injetados pelo módulo Firebase antes do init()
+
+// ── MODAL ──────────────────────────────────────────────────────────────────
+function abrirModal(id){$(id).classList.add('open');document.body.style.overflow='hidden';}
+function fecharModal(id){$(id).classList.remove('open');document.body.style.overflow='';}
+
+// ── BUSCA ESTOQUE ──────────────────────────────────────────────────────────
+window._buscaState={};
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function buscaEstoque(inputId, dropId, onSelect){
+  const q=$(inputId).value.trim();
+  const drop=$(dropId);
+  if(!q){drop.innerHTML='';return;}
+  const items=getEstoque().filter(i=>norm(i.nome).includes(norm(q))).slice(0,10);
+  if(!items.length){drop.innerHTML='<div style="font-size:.75rem;color:#94a3b8;padding:8px 12px">Nenhum resultado</div>';return;}
+  const key=inputId;
+  window._buscaState[key]={items,onSelect,inputId,dropId};
+  drop.innerHTML=`<div class="busca-dropdown">${items.map((item,idx)=>`
+    <div class="busca-item" data-bkey="${key}" data-idx="${idx}" onmousedown="event.preventDefault();selecionarBusca('${key}',${idx})">
+      <span class="busca-nome">${item.nome}</span>
+      <span class="busca-preco">${fmt(item.preco)}</span>
+    </div>`).join('')}</div>`;
+}
+function selecionarBusca(key,idx){
+  const s=window._buscaState[key];
+  if(!s) return;
+  s.onSelect(s.items[idx]);
+  document.getElementById(s.inputId).value='';
+  document.getElementById(s.dropId).innerHTML='';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 1 — PROCEDIMENTOS
+// ══════════════════════════════════════════════════════════════════════════
+let mpInsumos=[];
+
+function abrirModalProc(id=null){
+  const db=getDB();
+  const p=id?db.procs.find(x=>x.id===id):null;
+  $('modal-proc-titulo').textContent=p?'Editar Procedimento':'Novo Procedimento';
+  $('modal-proc-id').value=id||'';
+  $('mp-nome').value=p?.nome||'';
+  $('mp-tempo').value=p?.tempo||'';
+  mpInsumos=p?JSON.parse(JSON.stringify(p.insumos)):[{id:uid(),nome:'',qtd:1,preco:0}];
+  renderMpInsumos();
+  abrirModal('modal-proc-overlay');
+}
+function renderMpInsumos(){
+  const el=$('mp-insumos-list');
+  if(!mpInsumos.length){el.innerHTML='';return;}
+  el.innerHTML=mpInsumos.map(i=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr 1fr 1fr auto">
+      <input type="text" placeholder="Nome" value="${i.nome}" oninput="mpInsumos.find(x=>x.id==='${i.id}').nome=this.value">
+      <input type="number" placeholder="Qtd" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
+      <input type="number" placeholder="R$" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
+      <span class="total-col" style="display:flex;align-items:center;font-size:.78rem;color:var(--vinho);font-weight:600">${fmt((i.qtd||1)*(i.preco||0))}</span>
+      <button class="btn-icon" onclick="mpInsumos=mpInsumos.filter(x=>x.id!=='${i.id}');renderMpInsumos()">✕</button>
+    </div>`).join('');
+}
+function addInsumoProc(item=null){
+  if(item){
+    // Preenche a primeira linha vazia, ou adiciona nova se não houver
+    const vazia=mpInsumos.find(x=>!x.nome);
+    if(vazia){
+      vazia.nome=item.nome;
+      vazia.preco=item.preco||0;
+    } else {
+      mpInsumos.push({id:uid(),nome:item.nome,qtd:1,preco:item.preco||0});
+    }
+  } else {
+    mpInsumos.push({id:uid(),nome:'',qtd:1,preco:0});
+  }
+  renderMpInsumos();
+  setTimeout(()=>{
+    const inp=$('mp-busca');
+    if(inp){
+      inp.value='';
+      document.getElementById('mp-busca-drop').innerHTML='';
+      inp.focus();
+      const modal=inp.closest('.modal');
+      if(modal) modal.scrollTop=Math.max(0,inp.offsetTop-60);
+    }
+  },50);
+}
+function salvarProc(){
+  const nome=$('mp-nome').value.trim();
+  if(!nome){toast('Informe o nome do procedimento.');return;}
+  const db=getDB();
+  const editId=$('modal-proc-id').value;
+  const obj={id:editId||uid(),nome,tempo:+$('mp-tempo').value||0,insumos:mpInsumos.filter(i=>i.nome)};
+  if(editId){const idx=db.procs.findIndex(x=>x.id===editId);db.procs[idx]=obj;}
+  else{db.procs.push(obj);}
+  saveDB(db);renderProcCards();fecharModal('modal-proc-overlay');toast('Procedimento salvo!');
+}
+function deletarProc(id){
+  if(!confirm('Excluir este procedimento?'))return;
+  const db=getDB();db.procs=db.procs.filter(x=>x.id!==id);saveDB(db);renderProcCards();toast('Excluído.');
+}
+function renderProcCards(){
+  const db=getDB();const el=$('lista-proc-cards');
+  if(!db.procs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhum procedimento cadastrado.</div>';return;}
+  el.innerHTML=db.procs.map(p=>{
+    const custoIns=p.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0);
+    return `<div class="cad-card">
+      <div class="cad-card-actions">
+        <button class="btn btn-sec btn-sm" onclick="abrirModalProc('${p.id}')">✏️</button>
+        <button class="btn-danger btn-sm" onclick="deletarProc('${p.id}')">✕</button>
+      </div>
+      <div class="cad-card-title">${p.nome}</div>
+      <div class="cad-card-sub">${p.tempo?p.tempo+' min · ':''} ${p.insumos.length} insumo(s) · Custo insumos: <b>${fmt(custoIns)}</b></div>
+      ${p.insumos.length?`<div style="margin-top:8px">${p.insumos.map(i=>`<span class="badge badge-vinho" style="margin:2px 2px 0 0">${i.nome} ×${i.qtd}</span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 2 — ETAPAS LAB
+// ══════════════════════════════════════════════════════════════════════════
+let mlInsumos=[];
+
+function abrirModalLab(id=null){
+  const db=getDB();
+  const l=id?db.labs.find(x=>x.id===id):null;
+  $('modal-lab-titulo').textContent=l?'Editar Etapa Lab':'Nova Etapa Lab';
+  $('modal-lab-id').value=id||'';
+  $('ml-nome').value=l?.nome||'';
+  $('ml-horas').value=l?.horas||'';
+  $('ml-labext').value=l?.labext||'';
+  mlInsumos=l?JSON.parse(JSON.stringify(l.insumos)):[{id:uid(),nome:'',qtd:1,preco:0}];
+  renderMlInsumos();
+  abrirModal('modal-lab-overlay');
+}
+function renderMlInsumos(){
+  const el=$('ml-insumos-list');
+  if(!mlInsumos.length){el.innerHTML='';return;}
+  el.innerHTML=mlInsumos.map(i=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr 1fr 1fr auto">
+      <input type="text" placeholder="Nome" value="${i.nome}" oninput="mlInsumos.find(x=>x.id==='${i.id}').nome=this.value">
+      <input type="number" placeholder="Qtd" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
+      <input type="number" placeholder="R$" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
+      <span class="total-col" style="display:flex;align-items:center;font-size:.78rem;color:var(--vinho);font-weight:600">${fmt((i.qtd||1)*(i.preco||0))}</span>
+      <button class="btn-icon" onclick="mlInsumos=mlInsumos.filter(x=>x.id!=='${i.id}');renderMlInsumos()">✕</button>
+    </div>`).join('');
+}
+function addInsumoLab(item=null){
+  if(item){
+    const vazia=mlInsumos.find(x=>!x.nome);
+    if(vazia){
+      vazia.nome=item.nome;
+      vazia.preco=item.preco||0;
+    } else {
+      mlInsumos.push({id:uid(),nome:item.nome,qtd:1,preco:item.preco||0});
+    }
+  } else {
+    mlInsumos.push({id:uid(),nome:'',qtd:1,preco:0});
+  }
+  renderMlInsumos();
+  setTimeout(()=>{
+    const inp=$('ml-busca');
+    if(inp){
+      inp.value='';
+      document.getElementById('ml-busca-drop').innerHTML='';
+      inp.focus();
+      const modal=inp.closest('.modal');
+      if(modal) modal.scrollTop=Math.max(0,inp.offsetTop-60);
+    }
+  },50);
+}
+function salvarLab(){
+  const nome=$('ml-nome').value.trim();
+  if(!nome){toast('Informe o nome da etapa.');return;}
+  const db=getDB();
+  const editId=$('modal-lab-id').value;
+  const obj={id:editId||uid(),nome,horas:+$('ml-horas').value||0,labext:+$('ml-labext').value||0,insumos:mlInsumos.filter(i=>i.nome)};
+  if(editId){const idx=db.labs.findIndex(x=>x.id===editId);db.labs[idx]=obj;}
+  else{db.labs.push(obj);}
+  saveDB(db);renderLabCards();fecharModal('modal-lab-overlay');toast('Etapa Lab salva!');
+}
+function deletarLab(id){
+  if(!confirm('Excluir esta etapa?'))return;
+  const db=getDB();db.labs=db.labs.filter(x=>x.id!==id);saveDB(db);renderLabCards();toast('Excluído.');
+}
+function custoLab(l,profHora=0){
+  const ins=l.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0);
+  const mo=l.horas*(profHora||0);
+  return ins+mo+(+l.labext||0);
+}
+function renderLabCards(){
+  const db=getDB();const el=$('lista-lab-cards');
+  if(!db.labs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhuma etapa cadastrada.</div>';return;}
+  el.innerHTML=db.labs.map(l=>{
+    const ins=l.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0);
+    return `<div class="cad-card">
+      <div class="cad-card-actions">
+        <button class="btn btn-sec btn-sm" onclick="abrirModalLab('${l.id}')">✏️</button>
+        <button class="btn-danger btn-sm" onclick="deletarLab('${l.id}')">✕</button>
+      </div>
+      <div class="cad-card-title">${l.nome}</div>
+      <div class="cad-card-sub">${l.horas?l.horas+'h produção · ':''}${l.insumos.length} insumo(s)${l.labext?` · Lab ext: ${fmt(l.labext)}`:''} · Custo insumos: <b>${fmt(ins)}</b></div>
+      ${l.insumos.length?`<div style="margin-top:8px">${l.insumos.map(i=>`<span class="badge badge-vinho" style="margin:2px 2px 0 0">${i.nome} ×${i.qtd}</span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 3 — PROFISSIONAIS
+// ══════════════════════════════════════════════════════════════════════════
+function abrirModalProf(id=null){
+  const db=getDB();
+  const p=id?db.profs.find(x=>x.id===id):null;
+  $('modal-prof-titulo').textContent=p?'Editar Profissional':'Novo Profissional';
+  $('modal-prof-id').value=id||'';
+  $('mpr-nome').value=p?.nome||'';
+  $('mpr-tipo').value=p?.tipo||'Dentista';
+  $('mpr-hora').value=p?.hora||'';
+  abrirModal('modal-prof-overlay');
+}
+function salvarProf(){
+  const nome=$('mpr-nome').value.trim();
+  if(!nome){toast('Informe o nome.');return;}
+  const db=getDB();
+  const editId=$('modal-prof-id').value;
+  const obj={id:editId||uid(),nome,tipo:$('mpr-tipo').value,hora:+$('mpr-hora').value||0};
+  if(editId){const idx=db.profs.findIndex(x=>x.id===editId);db.profs[idx]=obj;}
+  else{db.profs.push(obj);}
+  saveDB(db);renderProfCards();fecharModal('modal-prof-overlay');toast('Profissional salvo!');
+}
+function deletarProf(id){
+  if(!confirm('Excluir?'))return;
+  const db=getDB();db.profs=db.profs.filter(x=>x.id!==id);saveDB(db);renderProfCards();toast('Excluído.');
+}
+function renderProfCards(){
+  const db=getDB();const el=$('lista-prof-cards');
+  if(!db.profs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhum profissional cadastrado.</div>';return;}
+  el.innerHTML=db.profs.map(p=>`
+    <div class="cad-card">
+      <div class="cad-card-actions">
+        <button class="btn btn-sec btn-sm" onclick="abrirModalProf('${p.id}')">✏️</button>
+        <button class="btn-danger btn-sm" onclick="deletarProf('${p.id}')">✕</button>
+      </div>
+      <div class="cad-card-title">${p.nome}</div>
+      <div class="cad-card-sub"><span class="badge badge-blue">${p.tipo}</span> &nbsp; ${fmt(p.hora)}/hora</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 4 — CUSTOS FIXOS (com custo/min e taxa de ocupação)
+// ══════════════════════════════════════════════════════════════════════════
+function makeCFListRender(listKey, elId, subtotalId, addFn){
+  return function(){
+    const db=getDB();
+    if(!db[listKey]) db[listKey]=[];
+    const el=$(elId);
+    if(!db[listKey].length){
+      el.innerHTML=`<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>`;
+      recalcCF();return;
+    }
+    el.innerHTML=db[listKey].map(c=>`
+      <div class="item-row" style="grid-template-columns:2fr 1fr auto">
+        <input type="text" placeholder="Descrição" value="${c.nome||''}" oninput="(()=>{const db=getDB();db['${listKey}'].find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
+        <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
+          oninput="(()=>{const db=getDB();db['${listKey}'].find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
+        <button class="btn-icon" onclick="(()=>{const db=getDB();db['${listKey}']=db['${listKey}'].filter(x=>x.id!=='${c.id}');saveDB(db);${addFn.name}._render();})()">✕</button>
+      </div>`).join('');
+    recalcCF();
+  };
+}
+
+// Render functions para cada lista de CF
+function renderCF(){
+  const db=getDB();const el=$('cf-list');
+  if(!db.fixos||!db.fixos.length){
+    el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';
+    recalcCF();return;
+  }
+  el.innerHTML=db.fixos.map(c=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
+      <input type="text" placeholder="Descrição" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.fixos.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
+        oninput="(()=>{const db=getDB();db.fixos.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
+      <button class="btn-icon" onclick="(()=>{const db=getDB();db.fixos=db.fixos.filter(x=>x.id!=='${c.id}');saveDB(db);renderCF();})()">✕</button>
+    </div>`).join('');
+  recalcCF();
+}
+function renderCFDep(){
+  const db=getDB();const el=$('cf-dep-list');
+  if(!db.dep||!db.dep.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
+  el.innerHTML=db.dep.map(c=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
+      <input type="text" placeholder="Equipamento" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.dep.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
+        oninput="(()=>{const db=getDB();db.dep.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
+      <button class="btn-icon" onclick="(()=>{const db=getDB();db.dep=db.dep.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFDep();})()">✕</button>
+    </div>`).join('');
+  recalcCF();
+}
+function renderCFFolha(){
+  const db=getDB();const el=$('cf-folha-list');
+  if(!db.folha||!db.folha.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
+  el.innerHTML=db.folha.map(c=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
+      <input type="text" placeholder="Colaborador" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.folha.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
+        oninput="(()=>{const db=getDB();db.folha.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
+      <button class="btn-icon" onclick="(()=>{const db=getDB();db.folha=db.folha.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFFolha();})()">✕</button>
+    </div>`).join('');
+  recalcCF();
+}
+function renderCFBon(){
+  const db=getDB();const el=$('cf-bon-list');
+  if(!db.bon||!db.bon.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
+  el.innerHTML=db.bon.map(c=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
+      <input type="text" placeholder="Descrição" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.bon.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
+        oninput="(()=>{const db=getDB();db.bon.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
+      <button class="btn-icon" onclick="(()=>{const db=getDB();db.bon=db.bon.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFBon();})()">✕</button>
+    </div>`).join('');
+  recalcCF();
+}
+
+function addCF(){const db=getDB();if(!db.fixos)db.fixos=[];db.fixos.push({id:uid(),nome:'',valor:0});saveDB(db);renderCF();}
+function addCFDep(){const db=getDB();if(!db.dep)db.dep=[];db.dep.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFDep();}
+function addCFFolha(){const db=getDB();if(!db.folha)db.folha=[];db.folha.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFFolha();}
+function addCFBon(){const db=getDB();if(!db.bon)db.bon=[];db.bon.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFBon();}
+
+function getCustoMinClínica(){
+  // Retorna {custoMinBase, custoMinAjustado, totalGeral, minDisp}
+  const db=getDB();
+  const sFixos=(db.fixos||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sDep=(db.dep||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sFolha=(db.folha||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sBon=(db.bon||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sMkt=+($('cf-mkt')?.value)||0;
+  const totalGeral=sFixos+sDep+sFolha+sBon+sMkt;
+
+  const cadeiras=+($('cf-cadeiras')?.value)||1;
+  const dias=+($('cf-dias')?.value)||22;
+  const horasDia=+($('cf-horas-dia')?.value)||8;
+  const minDisp=cadeiras*dias*horasDia*60;
+
+  const ocupacao=(+($('cf-ocupacao')?.value)||70)/100;
+  const minProdutivos=minDisp*ocupacao;
+
+  const custoMinBase=minDisp>0?totalGeral/minDisp:0;
+  const custoMinAjustado=minProdutivos>0?totalGeral/minProdutivos:0;
+
+  return {custoMinBase,custoMinAjustado,totalGeral,minDisp,minProdutivos,sFixos,sDep,sFolha,sBon,sMkt};
+}
+
+function recalcCF(){
+  const db=getDB();
+  const sFixos=(db.fixos||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sDep=(db.dep||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sFolha=(db.folha||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sBon=(db.bon||[]).reduce((s,c)=>s+(+c.valor||0),0);
+  const sMkt=+($('cf-mkt')?.value)||0;
+  const total=sFixos+sDep+sFolha+sBon+sMkt;
+
+  if($('cf-subtotal'))$('cf-subtotal').textContent=fmt(sFixos);
+  if($('cf-dep-subtotal'))$('cf-dep-subtotal').textContent=fmt(sDep);
+  if($('cf-folha-subtotal'))$('cf-folha-subtotal').textContent=fmt(sFolha);
+  if($('cf-bon-subtotal'))$('cf-bon-subtotal').textContent=fmt(sBon);
+  if($('cf-total-val'))$('cf-total-val').textContent=fmt(total);
+
+  // Minutos disponíveis
+  const cadeiras=+($('cf-cadeiras')?.value)||1;
+  const dias=+($('cf-dias')?.value)||22;
+  const hd=+($('cf-horas-dia')?.value)||8;
+  const minDisp=cadeiras*dias*hd*60;
+  if($('cf-min-disp'))$('cf-min-disp').value=minDisp;
+
+  const ocupacao=(+($('cf-ocupacao')?.value)||70)/100;
+  const minProd=minDisp*ocupacao;
+  const custoMinBase=minDisp>0?total/minDisp:0;
+  const custoMinAdj=minProd>0?total/minProd:0;
+  const delta=custoMinBase>0?((custoMinAdj-custoMinBase)/custoMinBase*100):0;
+
+  const elMin=$('cf-custo-min-res');
+  if(elMin&&total){
+    elMin.innerHTML=`
+      <div class="result-card vinho" style="margin-bottom:8px">
+        <div class="result-label">Custo/min ajustado (${Math.round(ocupacao*100)}% ocupação)</div>
+        <div class="result-value">${fmt(custoMinAdj)}<span style="font-size:.75rem;font-weight:400">/min</span></div>
+        <div class="result-sub">Base: ${fmt(custoMinBase)}/min +${delta.toFixed(0)}% pela ociosidade</div>
+      </div>
+      <div style="font-size:.73rem;color:var(--moka);line-height:1.6">
+        ${fmt(total)}/mês ÷ ${minProd.toFixed(0)} min produtivos = <b>${fmt(custoMinAdj)}/min</b>
+      </div>`;
+  } else if(elMin){ elMin.innerHTML='';}
+
+  // Rateio por atendimento (alternativo)
+  const atend=+($('cf-atend')?.value)||0;
+  const elR=$('cf-rateio-resultado');
+  if(elR){
+    if(atend&&total){
+      elR.innerHTML=`<div class="result-card creme" style="margin-top:8px">
+        <div class="result-label">Custo Fixo / Atendimento</div>
+        <div class="result-value">${fmt(total/atend)}</div>
+        <div class="result-sub">${fmt(total)} ÷ ${atend} atend.</div>
+      </div>`;
+    } else { elR.innerHTML='';}
+  }
+
+  // Salvar custo/min no DB para uso em Engenharia
+  db.custoMinAdj=custoMinAdj;
+  saveDB(db);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 5 — ENGENHARIA DO PRODUTO
+// ══════════════════════════════════════════════════════════════════════════
+function populateEngSelects(){
+  const db=getDB();
+  const sp=$('eng-sel-proc');const sl=$('eng-sel-lab');const spr=$('eng-sel-prof');
+  const vp=sp.value,vl=sl.value,vpr=spr.value;
+  sp.innerHTML='<option value="">— Selecione —</option>'+db.procs.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  sl.innerHTML='<option value="">— Sem lab —</option>'+db.labs.map(l=>`<option value="${l.id}">${l.nome}</option>`).join('');
+  spr.innerHTML='<option value="">— Selecione —</option>'+db.profs.map(p=>`<option value="${p.id}">${p.nome} (${fmt(p.hora)}/h)</option>`).join('');
+  if(vp)sp.value=vp;if(vl)sl.value=vl;if(vpr)spr.value=vpr;
+  onEngChange();
+}
+function onEngChange(){
+  const db=getDB();
+  const proc=db.procs.find(x=>x.id===$('eng-sel-proc').value);
+  const lab=db.labs.find(x=>x.id===$('eng-sel-lab').value);
+  const prof=db.profs.find(x=>x.id===$('eng-sel-prof').value);
+
+  // Tempo: usa o do procedimento como padrão se não preenchido
+  if(proc&&proc.tempo&&!+$('eng-tempo').value){
+    $('eng-tempo').value=proc.tempo;
+  }
+  const tempo=+$('eng-tempo').value||0;
+  const desc=+$('eng-desc').value||0;
+  const ester=+$('eng-ester').value||0;
+
+  // Custo/min automático dos Custos Fixos
+  const custoMinAdj=db.custoMinAdj||0;
+  const custoClinicaAuto=custoMinAdj*tempo;
+
+  // Atualizar indicadores visuais do rateio
+  if($('eng-custo-min-label'))$('eng-custo-min-label').textContent=fmt(custoMinAdj)+'/min';
+  if($('eng-tempo-label'))$('eng-tempo-label').textContent=tempo||'0';
+  if($('eng-rateio-label'))$('eng-rateio-label').textContent=fmt(custoClinicaAuto);
+  if($('eng-fixo-hint')){
+    if(custoMinAdj>0) $('eng-fixo-hint').textContent=`Auto: ${fmt(custoMinAdj)}/min × ${tempo}min = ${fmt(custoClinicaAuto)}. Use o campo abaixo só para ajuste manual.`;
+    else $('eng-fixo-hint').textContent='Preencha os Custos Fixos para cálculo automático.';
+  }
+
+  // Rateio final: manual se preenchido, senão auto
+  const manualFixo=+$('eng-fixo').value||0;
+  const custoFixoUsado=manualFixo||custoClinicaAuto;
+
+  if(!proc&&!lab&&!prof){
+    $('eng-resultado').innerHTML='<div class="card bg-creme" style="text-align:center;padding:40px 20px;color:#94a3b8;font-size:.8rem">Selecione os componentes para ver o custo total</div>';
+    return;
+  }
+
+  const custoInsProc=proc?proc.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0):0;
+  const custoMO=prof&&tempo?prof.hora*(tempo/60):0;
+  const custoInsLab=lab?lab.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0):0;
+  const custoMOLab=lab&&prof?lab.horas*(prof.hora):0;
+  const custoLabExt=lab?(+lab.labext||0):0;
+  const total=custoInsProc+custoMO+custoInsLab+custoMOLab+custoLabExt+desc+ester+custoFixoUsado;
+
+  $('eng-resultado').innerHTML=`
+    <div class="card">
+      <div class="card-title">Custo Total do Produto</div>
+      <div class="result-grid">
+        <div class="result-card vinho">
+          <div class="result-label">Custo Total</div>
+          <div class="result-value">${fmt(total)}</div>
+          <div class="result-sub">por atendimento</div>
+        </div>
+        ${custoInsProc?`<div class="result-card cobre"><div class="result-label">Insumos Procedimento</div><div class="result-value" style="font-size:1.2rem">${fmt(custoInsProc)}</div></div>`:''}
+        ${custoMO?`<div class="result-card creme"><div class="result-label">M.O. Dentista</div><div class="result-value" style="font-size:1.2rem">${fmt(custoMO)}</div><div class="result-sub">${tempo}min × ${fmt(prof?.hora)}/h</div></div>`:''}
+        ${(custoInsLab+custoMOLab+custoLabExt)?`<div class="result-card blush"><div class="result-label">Lab Total</div><div class="result-value" style="font-size:1.2rem">${fmt(custoInsLab+custoMOLab+custoLabExt)}</div></div>`:''}
+        ${custoFixoUsado?`<div class="result-card creme"><div class="result-label">Custos Fixos Rateados</div><div class="result-value" style="font-size:1.2rem">${fmt(custoFixoUsado)}</div></div>`:''}
+        ${(desc+ester)?`<div class="result-card blush"><div class="result-label">Descartáveis + Esteril.</div><div class="result-value" style="font-size:1.2rem">${fmt(desc+ester)}</div></div>`:''}
+      </div>
+      <div style="margin-top:14px">
+        <table class="tbl">
+          <thead><tr><th>Componente</th><th class="num">Custo</th><th class="num">%</th></tr></thead>
+          <tbody>
+            ${proc?`<tr><td>Procedimento: <b>${proc.nome}</b></td><td class="num">${fmt(custoInsProc)}</td><td class="num">${fmtP(total?custoInsProc/total*100:0)}</td></tr>`:''}
+            ${custoMO?`<tr><td>M.O. ${prof?.nome} (${tempo} min)</td><td class="num">${fmt(custoMO)}</td><td class="num">${fmtP(total?custoMO/total*100:0)}</td></tr>`:''}
+            ${lab?`<tr><td>Lab: <b>${lab.nome}</b> (insumos)</td><td class="num">${fmt(custoInsLab)}</td><td class="num">${fmtP(total?custoInsLab/total*100:0)}</td></tr>`:''}
+            ${custoMOLab?`<tr><td>M.O. Lab ${prof?.nome} (${lab?.horas}h)</td><td class="num">${fmt(custoMOLab)}</td><td class="num">${fmtP(total?custoMOLab/total*100:0)}</td></tr>`:''}
+            ${custoLabExt?`<tr><td>Lab Externo</td><td class="num">${fmt(custoLabExt)}</td><td class="num">${fmtP(total?custoLabExt/total*100:0)}</td></tr>`:''}
+            ${desc?`<tr><td>Descartáveis</td><td class="num">${fmt(desc)}</td><td class="num">${fmtP(total?desc/total*100:0)}</td></tr>`:''}
+            ${ester?`<tr><td>Esterilização</td><td class="num">${fmt(ester)}</td><td class="num">${fmtP(total?ester/total*100:0)}</td></tr>`:''}
+            ${custoFixoUsado?`<tr><td>Custos Fixos Rateados</td><td class="num">${fmt(custoFixoUsado)}</td><td class="num">${fmtP(total?custoFixoUsado/total*100:0)}</td></tr>`:''}
+          </tbody>
+          <tfoot><tr><td><b>TOTAL</b></td><td class="num">${fmt(total)}</td><td class="num">100%</td></tr></tfoot>
+        </table>
+      </div>
+    </div>`;
+
+  // Guardar estado para salvar
+  window._engAtual={
+    procId:$('eng-sel-proc').value,
+    labId:$('eng-sel-lab').value,
+    profId:$('eng-sel-prof').value,
+    tempo,desc,ester,fixo:custoFixoUsado,custoTotal:total,
+    procNome:proc?.nome||'',labNome:lab?.nome||'',profNome:prof?.nome||''
+  };
+}
+function salvarEngenharia(){
+  if(!window._engAtual||!window._engAtual.custoTotal){toast('Monte a engenharia antes de salvar.');return;}
+  const nome=prompt('Nome para esta engenharia:');
+  if(!nome)return;
+  const db=getDB();
+  db.engs.push({id:uid(),nome,...window._engAtual});
+  saveDB(db);renderEngCards();toast('Engenharia salva!');
+}
+function deletarEng(id){
+  if(!confirm('Excluir?'))return;
+  const db=getDB();db.engs=db.engs.filter(x=>x.id!==id);saveDB(db);renderEngCards();toast('Excluída.');
+}
+function renderEngCards(){
+  const db=getDB();const el=$('lista-eng-cards');
+  if(!db.engs.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:12px;text-align:center">Nenhuma salva ainda</div>';return;}
+  el.innerHTML=db.engs.map(e=>`
+    <div class="cad-card">
+      <div class="cad-card-actions">
+        <button class="btn-danger btn-sm" onclick="deletarEng('${e.id}')">✕</button>
+      </div>
+      <div class="cad-card-title">${e.nome}</div>
+      <div class="cad-card-sub">
+        ${e.procNome?'📋 '+e.procNome:''} ${e.labNome?'· 🦷 '+e.labNome:''} ${e.profNome?'· 👤 '+e.profNome:''}<br>
+        Custo Total: <b>${fmt(e.custoTotal)}</b>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 6 — PRECIFICAÇÃO
+// ══════════════════════════════════════════════════════════════════════════
+function getImpostos(){
+  return (+$('imp-royalty').value||0)+(+$('imp-fnp').value||0)+(+$('imp-pis').value||0)
+    +(+$('imp-cofins').value||0)+(+$('imp-iss').value||0)+(+$('imp-irpj').value||0)
+    +(+$('imp-csll').value||0)+(+$('imp-cartao').value||0);
+}
+function atualizarCargaBadge(){
+  const t=getImpostos();
+  const s=fmtP(t);
+  $('prec-carga-badge').textContent=s;
+  $('prec-carga-total').textContent=s;
+}
+// Atualizar badge ao carregar
+['imp-royalty','imp-fnp','imp-pis','imp-cofins','imp-iss','imp-irpj','imp-csll','imp-cartao'].forEach(id=>{
+  $(id)?.addEventListener('input',atualizarCargaBadge);
+});
+
+function populatePrecSelects(){
+  const db=getDB();
+  const s=$('prec-sel-eng');const v=s.value;
+  s.innerHTML='<option value="">— Selecione —</option>'+db.engs.map(e=>`<option value="${e.id}">${e.nome} — ${fmt(e.custoTotal)}</option>`).join('');
+  if(v)s.value=v;
+}
+function onPrecChange(){
+  atualizarCargaBadge();
+  const db=getDB();
+  const eng=db.engs.find(x=>x.id===$('prec-sel-eng').value);
+  const margem=+$('prec-margem').value||0;
+  const inflacao=+$('prec-inflacao').value||0;
+  const mercado=+$('prec-mercado').value||0;
+  const impostos=getImpostos();
+
+  if(eng){
+    $('prec-eng-resumo').style.display='block';
+    $('prec-custo-base-val').textContent=fmt(eng.custoTotal);
+    $('prec-custo-base-sub').textContent=(eng.procNome||'')+(eng.labNome?' · '+eng.labNome:'')+(eng.profNome?' · '+eng.profNome:'');
+  } else {
+    $('prec-eng-resumo').style.display='none';
+  }
+
+  if(!eng||!margem){
+    $('prec-resultado').innerHTML='<div class="card bg-creme" style="text-align:center;padding:40px 20px;color:#94a3b8;font-size:.8rem">Selecione uma engenharia e informe a margem</div>';
+    $('prec-cenarios-wrap').style.display='none';
+    return;
+  }
+
+  // Custo base com inflação
+  const custoBase=eng.custoTotal*(1+inflacao/100);
+
+  // Markup divisor: Preço = Custo / (1 - impostos% - margem%)
+  const divisor=1-(impostos+margem)/100;
+  if(divisor<=0){
+    $('prec-resultado').innerHTML=`<div class="note">⚠️ Impostos (${fmtP(impostos)}) + Margem (${fmtP(margem)}) ultrapassam 100%. Ajuste os valores.</div>`;
+    return;
+  }
+
+  const preco=custoBase/divisor;
+  const impostoAbs=preco*(impostos/100);
+  const lucro=preco-custoBase-impostoAbs;
+  const markup=preco/custoBase;
+  const precoMin=custoBase/(1-impostos/100);
+  const margemReal=lucro/preco*100;
+
+  let compMerc='';
+  if(mercado){
+    const diff=(preco-mercado)/mercado*100;
+    compMerc=`<div class="result-card ${diff>15?'alerta':diff>0?'creme':'verde'}">
+      <div class="result-label">vs. Mercado</div>
+      <div class="result-value">${diff>=0?'+':''}${diff.toFixed(1)}%</div>
+      <div class="result-sub">${diff>15?'⚠️ Acima':diff>0?'Ligeiramente acima':'✅ Competitivo'}</div>
+    </div>`;
+  }
+
+  $('prec-resultado').innerHTML=`
+    <div class="card">
+      <div class="card-title">Resultado da Precificação</div>
+      ${inflacao?`<div class="note" style="margin-bottom:12px">🔄 Custo ajustado com <b>${fmtP(inflacao)}</b> de inflação: <b>${fmt(eng.custoTotal)}</b> → <b>${fmt(custoBase)}</b></div>`:''}
+      <div class="result-grid">
+        <div class="result-card vinho">
+          <div class="result-label">Preço Sugerido</div>
+          <div class="result-value">${fmt(preco)}</div>
+          <div class="result-sub">markup ${markup.toFixed(2)}×</div>
+        </div>
+        <div class="result-card cobre">
+          <div class="result-label">Custo Base</div>
+          <div class="result-value" style="font-size:1.2rem">${fmt(custoBase)}</div>
+        </div>
+        <div class="result-card verde">
+          <div class="result-label">Lucro Líquido</div>
+          <div class="result-value" style="font-size:1.2rem">${fmt(lucro)}</div>
+          <div class="result-sub">${fmtP(margemReal)} do preço</div>
+        </div>
+        <div class="result-card creme">
+          <div class="result-label">Preço Mínimo</div>
+          <div class="result-value" style="font-size:1.2rem">${fmt(precoMin)}</div>
+          <div class="result-sub">sem lucro, só impostos</div>
+        </div>
+        <div class="result-card blush">
+          <div class="result-label">Impostos / Encargos</div>
+          <div class="result-value" style="font-size:1.2rem">${fmt(impostoAbs)}</div>
+          <div class="result-sub">${fmtP(impostos)} do preço</div>
+        </div>
+        ${compMerc}
+      </div>
+      <div style="margin-top:14px">
+        <table class="tbl">
+          <thead><tr><th>Componente</th><th class="num">R$</th><th class="num">% do Preço</th></tr></thead>
+          <tbody>
+            <tr><td>Custo Base</td><td class="num">${fmt(custoBase)}</td><td class="num">${fmtP(custoBase/preco*100)}</td></tr>
+            <tr><td>Royalty ${fmtP(+$('imp-royalty').value)}</td><td class="num">${fmt(preco*(+$('imp-royalty').value)/100)}</td><td class="num">${fmtP(+$('imp-royalty').value)}</td></tr>
+            <tr><td>FNP ${fmtP(+$('imp-fnp').value)}</td><td class="num">${fmt(preco*(+$('imp-fnp').value)/100)}</td><td class="num">${fmtP(+$('imp-fnp').value)}</td></tr>
+            <tr><td>PIS + COFINS + ISS</td><td class="num">${fmt(preco*((+$('imp-pis').value||0)+(+$('imp-cofins').value||0)+(+$('imp-iss').value||0))/100)}</td><td class="num">${fmtP((+$('imp-pis').value||0)+(+$('imp-cofins').value||0)+(+$('imp-iss').value||0))}</td></tr>
+            <tr><td>IRPJ + CSLL</td><td class="num">${fmt(preco*((+$('imp-irpj').value||0)+(+$('imp-csll').value||0))/100)}</td><td class="num">${fmtP((+$('imp-irpj').value||0)+(+$('imp-csll').value||0))}</td></tr>
+            <tr><td>Taxa Cartão ${fmtP(+$('imp-cartao').value)}</td><td class="num">${fmt(preco*(+$('imp-cartao').value)/100)}</td><td class="num">${fmtP(+$('imp-cartao').value)}</td></tr>
+            <tr class="hl"><td><b>Lucro Líquido</b></td><td class="num"><b>${fmt(lucro)}</b></td><td class="num"><b>${fmtP(margemReal)}</b></td></tr>
+          </tbody>
+          <tfoot><tr><td><b>PREÇO FINAL</b></td><td class="num"><b>${fmt(preco)}</b></td><td class="num">100%</td></tr></tfoot>
+        </table>
+      </div>
+    </div>`;
+
+  // Cenários
+  const cenarios=[10,15,20,25,30,35,40,50];
+  $('prec-cenarios-body').innerHTML=cenarios.map(m=>{
+    const div2=1-(impostos+m)/100;if(div2<=0)return '';
+    const p=custoBase/div2;
+    const l=p-custoBase-p*(impostos/100);
+    const mk=p/custoBase;
+    const hl=m===margem;
+    return `<tr${hl?' class="hl"':''}>
+      <td>${hl?'★ ':''}${m}%${hl?' ←':''}</td>
+      <td class="num">${fmt(p)}</td>
+      <td class="num">${fmt(l)}</td>
+      <td class="num">${mk.toFixed(2)}×</td>
+      <td class="${l/p*100>25?'status-ok':l/p*100>10?'status-warn':'status-bad'}">${l/p*100>25?'✅ Bom':l/p*100>10?'⚠️ Regular':'❌ Baixo'}</td>
+    </tr>`;
+  }).join('');
+  $('prec-cenarios-wrap').style.display='block';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ABA 7 — INFLAÇÃO
+// ══════════════════════════════════════════════════════════════════════════
+let infHist=[];
+let infListaItens=[];
+let infAcumGlobal=0;
+
+function calcInfSimples(){
+  const atual=+$('inf-atual').value||0;
+  const pct=+$('inf-pct').value||0;
+  const extra=+$('inf-extra').value||0;
+  const indice=$('inf-indice').value;
+  const total=pct+extra;
+  const novo=atual*(1+total/100);
+  const diff=novo-atual;
+  const el=$('inf-res-simples');
+  if(!atual||!pct){el.innerHTML='';return;}
+  el.innerHTML=`
+    <div class="result-grid" style="margin-top:12px">
+      <div class="result-card vinho">
+        <div class="result-label">Preço Reajustado</div>
+        <div class="result-value">${fmt(novo)}</div>
+        <div class="result-sub">+${fmtP(total)} (${indice})</div>
+      </div>
+      <div class="result-card verde">
+        <div class="result-label">Diferença</div>
+        <div class="result-value" style="font-size:1.2rem">+${fmt(diff)}</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:10px">
+      ${fmt(atual)} × (1 + ${fmtP(pct)} ${extra?'+ '+fmtP(extra)+' proteção':''}) = <b>${fmt(novo)}</b>
+    </div>`;
+  infAcumGlobal=total;
+  // Preencher campo de inflação na aba de Precificação
+  const ip=$('prec-inflacao');if(ip)ip.value=total.toFixed(2);
+  // Salvar no DB
+  const db=getDB();db.infAcum=total;saveDB(db);
+}
+
+function addMesInf(){
+  const hoje=new Date();
+  infHist.push({id:uid(),mes:`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`,valor:0});
+  renderInfHist();calcAcumulado();
+}
+function renderInfHist(){
+  const el=$('inf-hist-list');
+  if(!infHist.length){el.innerHTML='<div style="font-size:.75rem;color:#94a3b8;padding:8px;text-align:center">Nenhum mês adicionado</div>';return;}
+  el.innerHTML=infHist.map(i=>`
+    <div class="item-row" style="grid-template-columns:1fr 1fr auto">
+      <input type="month" value="${i.mes}" oninput="infHist.find(x=>x.id==='${i.id}').mes=this.value;calcAcumulado()">
+      <input type="number" placeholder="%" value="${i.valor||''}" step="0.01" oninput="infHist.find(x=>x.id==='${i.id}').valor=+this.value;calcAcumulado()">
+      <button class="btn-icon" onclick="infHist=infHist.filter(x=>x.id!=='${i.id}');renderInfHist();calcAcumulado()">✕</button>
+    </div>`).join('');
+}
+function preencherIPCA2025(){
+  const ipca=[
+    {mes:'2025-01',valor:0.16},{mes:'2025-02',valor:1.31},{mes:'2025-03',valor:1.32},
+    {mes:'2025-04',valor:0.43},{mes:'2025-05',valor:0.43},{mes:'2025-06',valor:0.24},
+    {mes:'2025-07',valor:0.38},{mes:'2025-08',valor:0.44},{mes:'2025-09',valor:0.44},
+    {mes:'2025-10',valor:0.56},{mes:'2025-11',valor:0.39},{mes:'2025-12',valor:0.52},
+  ];
+  infHist=ipca.map((m,i)=>({id:uid()+i,...m}));
+  renderInfHist();calcAcumulado();toast('IPCA 2025 carregado!');
+}
+function preencherIPCA2026(){
+  // IPCA 2026 — dados parciais disponíveis
+  const ipca=[
+    {mes:'2026-01',valor:0.16},{mes:'2026-02',valor:1.23},{mes:'2026-03',valor:0.56},
+    {mes:'2026-04',valor:0.43},{mes:'2026-05',valor:0.38},
+  ];
+  infHist=[...infHist,...ipca.map((m,i)=>({id:uid()+i,...m}))];
+  renderInfHist();calcAcumulado();toast('IPCA 2026 (parcial) adicionado!');
+}
+function calcAcumulado(){
+  if(!infHist.length){$('inf-res-hist').innerHTML='';return;}
+  const sorted=[...infHist].sort((a,b)=>a.mes.localeCompare(b.mes));
+  let acum=sorted.reduce((acc,m)=>acc*(1+(+m.valor||0)/100),1)-1;
+  const acumP=acum*100;
+  const maxM=sorted.reduce((mx,m)=>+m.valor>+mx.valor?m:mx,sorted[0]);
+  infAcumGlobal=acumP;
+
+  // Preencher campo de inflação na aba Precificação e reajuste simples
+  const ip=$('prec-inflacao');if(ip&&!+$('inf-pct').value)ip.value=acumP.toFixed(2);
+  const db=getDB();db.infAcum=acumP;saveDB(db);
+
+  const maxV=Math.max(...sorted.map(m=>Math.abs(+m.valor||0.001)));
+  $('inf-res-hist').innerHTML=`
+    <div class="card bg-creme">
+      <div class="card-title">Inflação Acumulada — Composta</div>
+      <div class="result-grid">
+        <div class="result-card vinho">
+          <div class="result-label">Acumulado</div>
+          <div class="result-value">${fmtP(acumP)}</div>
+          <div class="result-sub">${infHist.length} meses</div>
+        </div>
+        <div class="result-card ${acumP>8?'alerta':acumP>4?'cobre':'verde'}">
+          <div class="result-label">Nível</div>
+          <div class="result-value" style="font-size:1.1rem">${acumP>8?'🔴 Alta':acumP>4?'🟡 Moderada':'🟢 Baixa'}</div>
+        </div>
+        <div class="result-card creme">
+          <div class="result-label">Maior Alta</div>
+          <div class="result-value" style="font-size:1.2rem">${fmtP(+maxM.valor)}</div>
+          <div class="result-sub">${maxM.mes}</div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        ${sorted.map(m=>{
+          const v=+m.valor||0;
+          const w=Math.min(Math.abs(v)/maxV*100,100);
+          return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;font-size:.75rem">
+            <span style="min-width:68px;color:var(--moka)">${m.mes}</span>
+            <div style="flex:1;background:var(--blush);border-radius:3px;height:5px">
+              <div class="inf-bar ${v>=0?'pos':'neg'}" style="width:${w}%"></div>
+            </div>
+            <span class="badge ${v>1?'badge-red':v>0.4?'badge-yellow':'badge-green'}">${v>=0?'+':''}${fmtP(v)}</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="note" style="margin-top:12px">
+        ✅ Acumulado de <b>${fmtP(acumP)}</b> preenchido automaticamente na aba <b>Precificação</b>.
+      </div>
+    </div>`;
+}
+
+// Simulador lista
+function addItemLista(item=null){
+  infListaItens.push({id:uid(),nome:item?.nome||'',preco:item?.preco||0});
+  renderInfLista();
+}
+function renderInfLista(){
+  const el=$('inf-lista-list');
+  if(!infListaItens.length){el.innerHTML='<div style="font-size:.75rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item</div>';return;}
+  el.innerHTML=infListaItens.map(i=>`
+    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
+      <input type="text" placeholder="Nome" value="${i.nome}" oninput="infListaItens.find(x=>x.id==='${i.id}').nome=this.value">
+      <input type="number" placeholder="R$" value="${i.preco||''}" min="0" step="0.01" oninput="infListaItens.find(x=>x.id==='${i.id}').preco=+this.value">
+      <button class="btn-icon" onclick="infListaItens=infListaItens.filter(x=>x.id!=='${i.id}');renderInfLista()">✕</button>
+    </div>`).join('');
+}
+function importarEstoqueLista(){
+  const items=getEstoque().slice(0,30);
+  if(!items.length){toast('Nenhum item no estoque.');return;}
+  infListaItens=[...infListaItens,...items.map(i=>({id:uid(),nome:i.nome,preco:i.preco||0}))];
+  renderInfLista();toast(`${items.length} itens importados!`);
+}
+function aplicarReajusteLista(){
+  const r=infAcumGlobal||+$('inf-pct').value||0;
+  if(!r){toast('Calcule a inflação antes.');return;}
+  if(!infListaItens.length){toast('Adicione itens à lista.');return;}
+  let ta=0,tn=0;
+  $('inf-lista-tbody').innerHTML=infListaItens.map(i=>{
+    const p=+i.preco||0;const novo=p*(1+r/100);ta+=p;tn+=novo;
+    return `<tr><td>${i.nome||'—'}</td><td class="num">${fmt(p)}</td><td class="num" style="color:var(--vinho);font-weight:700">${fmt(novo)}</td><td class="num" style="color:#c0392b">+${fmt(novo-p)}</td></tr>`;
+  }).join('');
+  $('inf-lista-tfoot').innerHTML=`<tr><td><b>TOTAL</b></td><td class="num">${fmt(ta)}</td><td class="num" style="color:var(--vinho)">${fmt(tn)}</td><td class="num" style="color:#c0392b">+${fmt(tn-ta)}</td></tr>`;
+  $('inf-lista-resultado').style.display='block';
+  $('inf-lista-resultado').scrollIntoView({behavior:'smooth',block:'start'});
+  toast('Reajuste aplicado!');
+}
+function exportCSV(){
+  const r=infAcumGlobal||+$('inf-pct').value||0;
+  const rows=[['Item','Preço Atual (R$)','Novo Preço (R$)','Diferença (R$)','Reajuste (%)']];
+  infListaItens.forEach(i=>{
+    const p=+i.preco||0,novo=p*(1+r/100);
+    rows.push([`"${i.nome}"`,p.toFixed(2).replace('.',','),novo.toFixed(2).replace('.',','),((novo-p)).toFixed(2).replace('.',','),fmtP(r)]);
+  });
+  const csv=rows.map(r=>r.join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`reajuste-oral-unic-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();toast('CSV exportado!');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════════════════
+const _USERS={
+  'dra mone'  :{senha:'cooper123',display:'Dra. Mone'},
+  'adm'       :{senha:'ximia123', display:'ADM'},
+  'alexandre' :{senha:'ale123',   display:'Alexandre'},
+};
+let _usuarioSelecionado=null;
+function selecionarUsuario(key,nome,avatar){
+  _usuarioSelecionado=key;
+  document.querySelectorAll('.login-card').forEach(c=>c.style.borderColor='var(--warm)');
+  const card=document.querySelector('.login-card[data-user="'+key+'"]');
+  if(card)card.style.borderColor='var(--vinho)';
+  document.getElementById('login-avatar').textContent=avatar;
+  document.getElementById('login-nome-sel').textContent=nome;
+  document.getElementById('login-cards').style.display='none';
+  document.getElementById('login-senha-panel').style.display='block';
+  document.getElementById('login-erro').textContent='';
+  document.getElementById('login-senha').value='';
+  setTimeout(()=>document.getElementById('login-senha').focus(),50);
+}
+function voltarCards(){
+  _usuarioSelecionado=null;
+  document.getElementById('login-senha-panel').style.display='none';
+  document.getElementById('login-cards').style.display='flex';
+}
+function _getSession(){try{return JSON.parse(sessionStorage.getItem('ou_session'))||null;}catch{return null;}}
+function _setSession(u){sessionStorage.setItem('ou_session',JSON.stringify(u));}
+function _clearSession(){sessionStorage.removeItem('ou_session');}
+function fazerLogin(){
+  const u=_usuarioSelecionado;
+  const s=document.getElementById('login-senha').value;
+  const erro=document.getElementById('login-erro');
+  if(!u||!_USERS[u]||_USERS[u].senha!==s){erro.textContent='Senha incorreta.';return;}
+  erro.textContent='';
+  _setSession({usuario:u,display:_USERS[u].display});
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('hdr-usuario').textContent=_USERS[u].display;
+  _iniciarApp();
+}
+function fazerLogout(){
+  _clearSession();
+  location.reload();
+}
+function _checarLogin(){
+  const sess=_getSession();
+  if(sess){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('hdr-usuario').textContent=sess.display;
+    return true;
+  }
+  document.getElementById('login-screen').style.display='flex';
+  return false;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+function _iniciarApp(){
+  if(window._fbReady){_initApp();}else{window.addEventListener('fb-ready',_initApp,{once:true});}
+}
+function _initApp(){
+  const db=getDB();
+  // Pré-popular se vazio
+  let changed=false;
+  if(!db.fixos.length){db.fixos=[{id:uid(),nome:'Aluguel',valor:0},{id:uid(),nome:'Energia elétrica',valor:0},{id:uid(),nome:'Internet / telefone',valor:0},{id:uid(),nome:'Contador',valor:0},{id:uid(),nome:'Software / sistemas',valor:0},{id:uid(),nome:'Material de limpeza',valor:0},{id:uid(),nome:'Royalties franquia',valor:0}];changed=true;}
+  if(!db.dep.length){db.dep=[{id:uid(),nome:'Cadeira odontológica',valor:0},{id:uid(),nome:'Equipamentos / raio-X',valor:0}];changed=true;}
+  if(!db.folha.length){db.folha=[{id:uid(),nome:'Recepcionista',valor:0},{id:uid(),nome:'Auxiliar odontológico',valor:0}];changed=true;}
+  if(!db.bon.length){db.bon=[{id:uid(),nome:'Bonificações / comissões',valor:0},{id:uid(),nome:'Ocorrências financeiras',valor:0}];changed=true;}
+  if(changed)saveDB(db);
+  if(db.infAcum){infAcumGlobal=db.infAcum;const ip=$('prec-inflacao');if(ip)ip.value=db.infAcum.toFixed(2);}
+  renderProcCards();renderLabCards();renderProfCards();renderCF();renderCFDep();renderCFFolha();renderCFBon();renderEngCards();atualizarCargaBadge();
+}
+// Ponto de entrada — pula login, entra direto como ADM
+document.getElementById('login-screen').style.display='none';
+document.getElementById('hdr-usuario').textContent='ADM';
+_iniciarApp();
+</script>
+</body>
+</html>
