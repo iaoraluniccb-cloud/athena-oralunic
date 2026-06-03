@@ -1294,8 +1294,14 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
             <span class="dir-card-arrow" id="dir-arrow-divisao">▾</span>
           </div>
           <div class="dir-card-body" id="dir-body-divisao" style="display:none">
-            <div class="dir-items" id="dir-items-divisao"></div>
-            <button class="dir-add-btn" onclick="addDirItem('divisao')">+ Adicionar item</button>
+            <div style="padding:10px 14px 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.7;white-space:nowrap;">Total a dividir</label>
+              <input type="text" id="dir-divisao-total-input"
+                placeholder="0,00"
+                oninput="saveDivisaoTotal(this.value)"
+                style="border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:16px;font-weight:600;color:var(--vinho);width:140px;outline:none;padding:2px 4px;text-align:right;">
+            </div>
+            <div id="dir-divisao-breakdown" style="padding:6px 14px 12px;"></div>
           </div>
         </div>
 
@@ -3522,7 +3528,7 @@ function addDirMonth(){
   const key = label.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
   const data = getDirData();
   if(!data[key]){
-    data[key] = { label: label.trim(), cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[], fluxo:[] } };
+    data[key] = { label: label.trim(), divisaoTotal: 0, cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[], fluxo:[] } };
     saveDirData(data);
   }
   populateDirMonthSel();
@@ -3561,11 +3567,13 @@ function renderDirecao(){
 
   const month = data[key];
   for(const card of DIR_CARDS){
+    if(card === 'divisao') continue; // Divisão tem tratamento próprio
     const items = (month.cards[card]||[]);
     const total = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
     document.getElementById('dir-total-'+card).textContent = total > 0 ? fmt(total) : 'R$ —';
     renderDirItems(card, items);
   }
+  loadDivisaoField(key);
 }
 
 function renderDirItems(card, items){
@@ -3615,6 +3623,53 @@ function saveDirItem(card, idx, field, value){
   const items = data[key].cards[card];
   const total = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
   document.getElementById('dir-total-'+card).textContent = total > 0 ? fmt(total) : 'R$ —';
+}
+
+// ── Divisão automática ────────────────────────────────────────────────────
+const DIVISAO_SOCIOS = [
+  { nome: 'MB Participações', pct: 52.5 },
+  { nome: 'AGO Participações', pct: 23.5 },
+  { nome: 'Torres Participações', pct: 20.0 },
+  { nome: 'Thalis Ryan', pct: 4.0 },
+];
+
+function renderDivisaoBreakdown(total){
+  const el = document.getElementById('dir-divisao-breakdown');
+  if(!el) return;
+  if(!total || isNaN(total) || total <= 0){
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = DIVISAO_SOCIOS.map(s=>{
+    const val = total * s.pct / 100;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;
+      padding:5px 0;border-bottom:1px solid rgba(139,90,60,.1);font-family:'Josefin Sans',sans-serif;">
+      <span style="font-size:11px;color:var(--moka)">${s.nome}</span>
+      <span style="font-size:11px;font-weight:600;color:var(--vinho)">${s.pct}% &nbsp; ${fmt(val)}</span>
+    </div>`;
+  }).join('');
+}
+
+function saveDivisaoTotal(raw){
+  const key = document.getElementById('dir-month-sel').value;
+  if(!key) return;
+  const cleaned = raw.replace(',','.').replace(/[^0-9.]/g,'');
+  const n = parseFloat(cleaned);
+  const data = getDirData();
+  if(!data[key]) return;
+  data[key].divisaoTotal = isNaN(n) ? 0 : n;
+  saveDirData(data);
+  document.getElementById('dir-total-divisao').textContent = (!isNaN(n) && n>0) ? fmt(n) : 'R$ —';
+  renderDivisaoBreakdown(isNaN(n) ? 0 : n);
+}
+
+function loadDivisaoField(key){
+  const data = getDirData();
+  const val  = data[key]?.divisaoTotal || 0;
+  const inp  = document.getElementById('dir-divisao-total-input');
+  if(inp) inp.value = val > 0 ? String(val).replace('.',',') : '';
+  renderDivisaoBreakdown(val);
+  document.getElementById('dir-total-divisao').textContent = val > 0 ? fmt(val) : 'R$ —';
 }
 
 function removeDirItem(card, idx){
