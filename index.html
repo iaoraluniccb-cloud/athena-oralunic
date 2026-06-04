@@ -1901,10 +1901,12 @@ async function loadFromSB(){
       fObj[rec.key] = { key: rec.key, label: rec.label, rows: rec.rows||[], acards: rec.cards||{} };
     }
     if(Object.keys(fObj).length) localStorage.setItem('ou_athena_fechamento', JSON.stringify(fObj));
-    // Load direcao
+    // Load direcao — monta objeto com label + conteúdo de data
     const dRes = await sbFetch('GET', '/rest/v1/direcao?select=key,label,data');
     const dObj = {};
-    for(const rec of dRes){ dObj[rec.key] = rec.data; }
+    for(const rec of dRes){
+      dObj[rec.key] = { label: rec.label, ...(rec.data||{}) };
+    }
     if(Object.keys(dObj).length) localStorage.setItem('ou_athena_direcao', JSON.stringify(dObj));
     // Load aprovacoes
     const aRes = await sbFetch('GET', '/rest/v1/aprovacoes?select=key,label,data');
@@ -4291,8 +4293,9 @@ async function syncFromSBSilent(){
     const dLocal = JSON.parse(localStorage.getItem('ou_athena_direcao')||'{}');
     let mudouDir = false;
     for(const rec of dRes){
-      if(JSON.stringify(dLocal[rec.key]) !== JSON.stringify(rec.data)){
-        dLocal[rec.key] = rec.data; mudouDir = true;
+      const converted = { label: rec.label, ...(rec.data||{}) };
+      if(JSON.stringify(dLocal[rec.key]) !== JSON.stringify(converted)){
+        dLocal[rec.key] = converted; mudouDir = true;
       }
     }
     if(mudouDir) localStorage.setItem('ou_athena_direcao', JSON.stringify(dLocal));
