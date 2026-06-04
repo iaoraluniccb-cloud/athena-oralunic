@@ -1293,8 +1293,19 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <!-- Seletor de mês pills -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
       <div class="month-switcher" id="dir-month-switcher"></div>
-      <button onclick="addDirMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:14px;padding:5px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
+      <button onclick="showAddDirMonth()" style="font-size:10px;letter-spacing:.15em;background:var(--cobre);color:var(--marfim);border:none;border-radius:14px;padding:5px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">+ Novo mês</button>
       <button id="dir-del-btn" onclick="deleteDirMonth()" style="display:none;font-size:10px;letter-spacing:.15em;background:transparent;color:var(--over-text);border:1px solid var(--over-text);border-radius:14px;padding:5px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;">Apagar mês</button>
+    </div>
+    <!-- Modal inline novo mês Direção -->
+    <div id="dir-novo-mes-form" style="display:none;background:var(--surface);border:1px solid var(--warm);border-radius:12px;padding:16px 20px;margin-bottom:16px;max-width:340px">
+      <div style="font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.12em;color:var(--moka);margin-bottom:10px;text-transform:uppercase">Nome do mês</div>
+      <input id="dir-novo-mes-input" type="text" placeholder="Ex: Maio 2026"
+        onkeydown="if(event.key==='Enter') confirmAddDirMonth()"
+        style="width:100%;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:14px;color:var(--tinta);outline:none;padding:4px 2px;margin-bottom:12px">
+      <div style="display:flex;gap:8px">
+        <button onclick="confirmAddDirMonth()" style="font-size:10px;letter-spacing:.12em;background:var(--vinho);color:var(--marfim);border:none;border-radius:10px;padding:5px 16px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase">Criar</button>
+        <button onclick="document.getElementById('dir-novo-mes-form').style.display='none'" style="font-size:10px;letter-spacing:.12em;background:transparent;color:var(--moka);border:1px solid var(--warm);border-radius:10px;padding:5px 14px;cursor:pointer;font-family:'Josefin Sans',sans-serif;text-transform:uppercase">Cancelar</button>
+      </div>
     </div>
     <!-- select oculto mantido para compatibilidade com JS existente -->
     <select id="dir-month-sel" onchange="renderDirecao()" style="display:none;">
@@ -3981,19 +3992,30 @@ function selectDirMonth(k){
   populateDirMonthSel();
 }
 
-function addDirMonth(){
-  const label = prompt('Nome do mês (ex: Maio 2026):');
-  if(!label || !label.trim()) return;
-  const key = label.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
+function showAddDirMonth(){
+  const form = document.getElementById('dir-novo-mes-form');
+  form.style.display = 'block';
+  setTimeout(()=>document.getElementById('dir-novo-mes-input').focus(), 50);
+}
+
+function confirmAddDirMonth(){
+  const input = document.getElementById('dir-novo-mes-input');
+  const label = (input.value || '').trim();
+  if(!label) return;
+  const key = label.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'');
   const data = getDirData();
   if(!data[key]){
-    data[key] = { label: label.trim(), divisaoTotal: 0, cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[], fluxo:[] } };
+    data[key] = { label, divisaoTotal: 0, cards:{ faturamento:[], divisao:[], resultado:[], aplicacao:[], fluxo:[] } };
     saveDirData(data);
   }
+  input.value = '';
+  document.getElementById('dir-novo-mes-form').style.display = 'none';
   populateDirMonthSel();
   document.getElementById('dir-month-sel').value = key;
   renderDirecao();
 }
+
+function addDirMonth(){ showAddDirMonth(); }
 
 function deleteDirMonth(){
   const key = document.getElementById('dir-month-sel').value;
