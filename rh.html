@@ -220,7 +220,7 @@ a{text-decoration:none;color:inherit;}
 <body>
 
 <!-- LOGIN -->
-<div id="login-screen">
+<div id="login-screen" style="display:none">
   <div class="login-box">
     <div class="login-brand">Athena</div>
     <div class="login-divider"></div>
@@ -529,14 +529,19 @@ function ini(n){return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase
 function bdg(v){if(v==='CLT')return'<span class="badge badge-clt">CLT</span>';if(v==='PJ')return'<span class="badge badge-pj">PJ</span>';return'<span class="badge badge-socio">Sócio</span>';}
 
 function loginRapido(e){const u=usuarios.find(x=>x.email===e);document.getElementById('login-email').value=e;document.getElementById('login-pass').value=u?u.senha:'';fazerLogin();}
-// Auto-login baseado no usuário do Vello
+// Auto-login baseado no usuário do Vello — sem mostrar tela de login
 (function autoLogin(){
   const MAP = {mone:'laizmone@gmail.com', thais:'ia.oraluniccb@gmail.com', jarina:'jarinachagas@hotmail.com'};
-  try {
-    const velloUser = localStorage.getItem('ou_currentUser') || (window.parent && window.parent.localStorage && window.parent.localStorage.getItem('ou_currentUser'));
-    const email = MAP[velloUser];
-    if (email) { setTimeout(()=>loginRapido(email), 200); }
-  } catch(e){}
+  function tryLogin(){
+    try {
+      let velloUser = localStorage.getItem('ou_currentUser');
+      if (!velloUser) { try { velloUser = window.parent.localStorage.getItem('ou_currentUser'); } catch(e){} }
+      const email = MAP[velloUser] || 'ia.oraluniccb@gmail.com';
+      loginRapido(email);
+    } catch(e){ loginRapido('ia.oraluniccb@gmail.com'); }
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ()=>setTimeout(tryLogin,100)); }
+  else { setTimeout(tryLogin, 100); }
 })();
 function fazerLogin(){
   const e=document.getElementById('login-email').value;
