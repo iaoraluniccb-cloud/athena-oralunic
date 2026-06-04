@@ -6590,9 +6590,32 @@ function aprovDel(colId, idx){
 // ── Init ──────────────────────────────────────────────────────────────────────
 function aprovInit(){
   aprovInicializarMeses();
-  const sel = document.getElementById('aprov-usuario');
-  if(sel && aprovUsuario) sel.value = aprovUsuario;
   aprovRender();
+}
+
+async function aprovInitComSB(){
+  // Carrega dados do Supabase antes de renderizar
+  try {
+    const r = await fetch(SB_URL_F + '/rest/v1/aprovacoes?select=key,label,data', {
+      headers: { 'apikey': SB_KEY_F, 'Authorization': `Bearer ${SB_KEY_F}` }
+    });
+    if(r.ok){
+      const rows = await r.json();
+      if(rows && rows.length){
+        for(const rec of rows){
+          const remoto = { label: rec.label, ...rec.data };
+          const localStr  = JSON.stringify(aprovData2[rec.key] || {});
+          const remotoStr = JSON.stringify(remoto);
+          // Usa remoto se local estiver vazio ou diferente
+          if(!aprovData2[rec.key] || localStr === '{}' || localStr !== remotoStr){
+            aprovData2[rec.key] = remoto;
+          }
+        }
+        try{ localStorage.setItem('aprovData2', JSON.stringify(aprovData2)); }catch(e){}
+      }
+    }
+  } catch(e){ console.warn('aprovInitComSB error:', e); }
+  aprovInit();
 }
 
 // Restaura estados salvos ao inicializar
@@ -6602,8 +6625,8 @@ concRestaurarTodos();
 // Pré-cria os 12 meses do extrato — script está no fim do body, DOM já existe
 extratoInit();
 
-// Inicializa aprovações
-aprovInit();
+// Inicializa aprovações carregando do Supabase
+aprovInitComSB();
 
 // Inicializa painel ativo ao entrar na aba (encadeia no patch existente)
 (function(){
