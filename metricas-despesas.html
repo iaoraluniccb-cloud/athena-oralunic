@@ -2465,76 +2465,156 @@ function exportPDF(){
   const mesLabel = currentMonth.label || currentMonth.key;
   const totalReal = rows.reduce((s,r)=>s+(r.real||0),0);
   const totalMet  = rows.reduce((s,r)=>s+(r.metrica||0),0);
+  const nOk   = rows.filter(r=>r.status==='ok').length;
+  const nOver = rows.filter(r=>r.status==='over').length;
+  const nWarn = rows.filter(r=>r.status==='warn').length;
 
-  // Cabeçalho
+  // ── Cabeçalho ──────────────────────────────────
   doc.setFillColor(106, 31, 48);
-  doc.rect(0, 0, 210, 28, 'F');
+  doc.rect(0, 0, 210, 30, 'F');
   doc.setFont('helvetica','bold');
-  doc.setFontSize(16);
-  doc.setTextColor(255,255,255);
-  doc.text('ORAL UNIC CARLOS BARBOSA', 14, 11);
-  doc.setFontSize(10);
+  doc.setFontSize(15);
+  doc.setTextColor(245, 237, 220);
+  doc.text('ORAL UNIC CARLOS BARBOSA', 14, 12);
+  doc.setFontSize(9);
   doc.setFont('helvetica','normal');
-  doc.text('Relatório de Despesas — ' + mesLabel, 14, 19);
-  doc.text('Emitido em ' + new Date().toLocaleDateString('pt-BR'), 196, 19, {align:'right'});
+  doc.setTextColor(196, 149, 90);
+  doc.text('Relatório de Despesas  ·  ' + mesLabel, 14, 20);
+  doc.text('Emitido em ' + new Date().toLocaleDateString('pt-BR'), 196, 20, {align:'right'});
+  doc.setDrawColor(196,149,90); doc.setLineWidth(0.4);
+  doc.line(14, 26, 196, 26);
 
-  // Cards resumo
-  doc.setTextColor(80,40,20);
-  doc.setFontSize(8);
-  doc.setFont('helvetica','bold');
+  // ── Cards resumo ───────────────────────────────
   const cardY = 34;
-  [[fmt(totalReal),'Total Realizado'],[fmt(totalMet),'Total Métrica'],
-   [rows.filter(r=>r.status==='ok').length + ' itens','Dentro da Métrica'],
-   [rows.filter(r=>r.status==='over').length + ' itens','Acima da Métrica']
-  ].forEach(([val,lbl],i)=>{
-    const x = 14 + i*49;
-    doc.setDrawColor(196,149,90);
-    doc.roundedRect(x, cardY, 46, 14, 2, 2, 'S');
-    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(106,31,48);
-    doc.text(val, x+23, cardY+7, {align:'center'});
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,80,50);
-    doc.text(lbl, x+23, cardY+12, {align:'center'});
+  const cards = [
+    { val: fmt(totalReal),  lbl: 'Total Realizado',    bg:[106,31,48],  fg:[245,237,220], sub:[196,149,90] },
+    { val: fmt(totalMet),   lbl: 'Total Métrica',       bg:[245,240,230],fg:[106,31,48],  sub:[160,120,80] },
+    { val: nOk+' itens',    lbl: 'Dentro da Métrica',  bg:[236,253,245],fg:[21,128,61],   sub:[21,128,61]  },
+    { val: nOver+' itens',  lbl: 'Acima da Métrica',   bg:[254,242,242],fg:[185,28,28],   sub:[185,28,28]  },
+    { val: nWarn+' itens',  lbl: 'Aguardando',          bg:[255,251,235],fg:[161,98,7],    sub:[161,98,7]   },
+  ];
+  const cw = 36, gap = 3, startX = 14;
+  cards.forEach(({val,lbl,bg,fg,sub},i)=>{
+    const x = startX + i*(cw+gap);
+    doc.setFillColor(...bg); doc.setDrawColor(...sub); doc.setLineWidth(0.3);
+    doc.roundedRect(x, cardY, cw, 16, 2, 2, 'FD');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...fg);
+    doc.text(val, x+cw/2, cardY+7.5, {align:'center'});
+    doc.setFontSize(6); doc.setFont('helvetica','normal'); doc.setTextColor(...sub);
+    doc.text(lbl, x+cw/2, cardY+13, {align:'center'});
   });
 
-  // Tabela
-  const tableRows = rows.filter(r => !r.isSub).map(r => [
-    r.desp,
-    r.cat,
-    r.tipo === 'F' ? 'Fixa' : 'Variável',
-    r.metrica != null ? fmt(r.metrica) : '—',
-    r.real != null ? fmt(r.real) : '—',
-    r.status === 'ok' ? '✓ Ok' : r.status === 'over' ? '↑ Acima' : r.status === 'warn' ? 'Aguard.' : 'Sem métrica'
-  ]);
+  // ── Tabela ─────────────────────────────────────
+  // Agrupar por categoria para cabeçalhos de seção
+  let lastCat = null;
+  const tableRows = [];
+  for(const r of rows){
+    if(r.isSub) continue;
+    tableRows.push({
+      cat: r.cat,
+      data: [
+        r.desp,
+        r.tipo === 'F' ? 'FIXA' : 'VARIÁVEL',
+        r.metrica != null ? fmt(r.metrica) : '—',
+        r.real    != null ? fmt(r.real)    : '—',
+        r.delta   != null ? (r.delta >= 0 ? '+' : '') + fmt(r.delta) : '—',
+        r.status
+      ]
+    });
+  }
+
+  // Construir body com linhas de categoria intercaladas
+  const body = [];
+  const rowMeta = []; // guarda status por índice para colorir
+  let curCat = null;
+  for(const {cat, data} of tableRows){
+    if(cat !== curCat){
+      curCat = cat;
+      body.push([{content: cat.toUpperCase(), colSpan:6, styles:{
+        fillColor:[106,31,48], textColor:[245,237,220],
+        fontStyle:'bold', fontSize:7.5, cellPadding:{top:3,bottom:3,left:4,right:4}
+      }}]);
+      rowMeta.push('cat');
+    }
+    body.push(data);
+    rowMeta.push(data[5]); // status
+  }
 
   doc.autoTable({
-    startY: cardY + 20,
-    head: [['Despesa','Categoria','Tipo','Métrica','Realizado','Status']],
-    body: tableRows,
-    styles: { fontSize: 7.5, cellPadding: 2.5, overflow: 'linebreak' },
-    headStyles: { fillColor: [106,31,48], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+    startY: cardY + 22,
+    head: [['Despesa','Tipo','Métrica','Realizado','Diferença','Status']],
+    body,
+    styles: { fontSize: 7.5, cellPadding: {top:2.2,bottom:2.2,left:3,right:3}, overflow:'linebreak', font:'helvetica' },
+    headStyles: { fillColor:[74,20,34], textColor:[245,237,220], fontStyle:'bold', fontSize:7.5,
+                  cellPadding:{top:3,bottom:3,left:3,right:3} },
     columnStyles: {
-      0: { cellWidth: 58 }, 1: { cellWidth: 38 }, 2: { cellWidth: 18 },
-      3: { cellWidth: 28, halign:'right' }, 4: { cellWidth: 28, halign:'right' },
+      0: { cellWidth: 62 },
+      1: { cellWidth: 18, halign:'center', fontSize:6.5 },
+      2: { cellWidth: 30, halign:'right' },
+      3: { cellWidth: 30, halign:'right', fontStyle:'bold' },
+      4: { cellWidth: 24, halign:'right' },
       5: { cellWidth: 22, halign:'center' }
     },
+    alternateRowStyles: { fillColor:[250,247,243] },
     didParseCell(data){
-      if(data.section==='body'){
-        const status = data.row.raw[5];
-        if(status==='✓ Ok') data.cell.styles.textColor = [21,128,61];
-        else if(status==='↑ Acima') data.cell.styles.textColor = [185,28,28];
+      if(data.section !== 'body') return;
+      // pula linhas de categoria (colSpan)
+      if(data.row.raw[0] && data.row.raw[0].colSpan) return;
+      const status = data.row.raw[5];
+      // Coluna Status — badge colorido
+      if(data.column.index === 5){
+        if(status === 'ok'){
+          data.cell.styles.fillColor  = [220,252,231];
+          data.cell.styles.textColor  = [21,128,61];
+          data.cell.styles.fontStyle  = 'bold';
+          data.cell.text = ['✓ OK'];
+        } else if(status === 'over'){
+          data.cell.styles.fillColor  = [254,226,226];
+          data.cell.styles.textColor  = [185,28,28];
+          data.cell.styles.fontStyle  = 'bold';
+          data.cell.text = ['↑ ACIMA'];
+        } else if(status === 'warn'){
+          data.cell.styles.fillColor  = [254,249,195];
+          data.cell.styles.textColor  = [161,98,7];
+          data.cell.styles.fontStyle  = 'bold';
+          data.cell.text = ['AGUARD.'];
+        } else {
+          data.cell.styles.textColor  = [160,160,160];
+          data.cell.text = ['—'];
+        }
       }
+      // Coluna Diferença — verde/vermelho
+      if(data.column.index === 4 && status !== 'nf-eq' && status !== 'nf-high'){
+        const raw = data.row.raw[4];
+        if(raw && raw !== '—'){
+          const isNeg = raw.startsWith('+') ? false : raw.replace(/[^\d\-]/g,'').startsWith('-');
+          data.cell.styles.textColor = isNeg ? [185,28,28] : [21,128,61];
+        }
+      }
+      // Linha toda — fundo suave por status
+      if(status === 'ok')   data.cell.styles.fillColor = [240,253,244];
+      if(status === 'over') data.cell.styles.fillColor = [255,245,245];
+      if(status === 'warn') data.cell.styles.fillColor = [255,253,235];
     },
-    foot: [['','','Total Geral','',fmt(totalReal),'']],
-    footStyles: { fillColor:[245,240,230], textColor:[106,31,48], fontStyle:'bold', fontSize:8 }
+    foot: [[{content:'TOTAL GERAL', colSpan:2, styles:{halign:'right',fontStyle:'bold'}},
+            {content:fmt(totalMet), styles:{halign:'right',fontStyle:'bold'}},
+            {content:fmt(totalReal), styles:{halign:'right',fontStyle:'bold',textColor:[106,31,48]}},
+            {content: totalReal<=totalMet ? fmt(totalReal-totalMet) : '+'+fmt(totalReal-totalMet),
+             styles:{halign:'right',fontStyle:'bold', textColor: totalReal<=totalMet?[21,128,61]:[185,28,28]}},
+            '']],
+    footStyles: { fillColor:[245,237,220], textColor:[80,40,20], fontSize:8, cellPadding:{top:3,bottom:3,left:3,right:3} },
+    margin: { left:14, right:14 }
   });
 
-  // Rodapé
+  // ── Rodapé ─────────────────────────────────────
   const pageCount = doc.internal.getNumberOfPages();
   for(let i=1;i<=pageCount;i++){
     doc.setPage(i);
-    doc.setFontSize(7); doc.setTextColor(160,120,80);
-    doc.text('Oral Unic Carlos Barbosa · Athena · '+mesLabel, 14, 292);
-    doc.text('Página '+i+'/'+pageCount, 196, 292, {align:'right'});
+    doc.setDrawColor(196,149,90); doc.setLineWidth(0.3);
+    doc.line(14, 287, 196, 287);
+    doc.setFontSize(6.5); doc.setTextColor(160,120,80);
+    doc.text('Oral Unic Carlos Barbosa · Athena · ' + mesLabel, 14, 291);
+    doc.text('Página '+i+' / '+pageCount, 196, 291, {align:'right'});
   }
 
   doc.save('despesas-' + (currentMonth.key||mesLabel.replace(/\s/g,'-').toLowerCase()) + '.pdf');
