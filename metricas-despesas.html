@@ -2524,8 +2524,8 @@ function exportPDF(){
   }
 
   // Construir body com linhas de categoria intercaladas
+  // status vai como _status separado, coluna 5 já recebe texto final legível
   const body = [];
-  const rowMeta = []; // guarda status por índice para colorir
   let curCat = null;
   for(const {cat, data} of tableRows){
     if(cat !== curCat){
@@ -2533,75 +2533,74 @@ function exportPDF(){
       body.push([{content: cat.toUpperCase(), colSpan:6, styles:{
         fillColor:[106,31,48], textColor:[245,237,220],
         fontStyle:'bold', fontSize:7.5, cellPadding:{top:3,bottom:3,left:4,right:4}
-      }}]);
-      rowMeta.push('cat');
+      }, _isCat: true}]);
     }
-    body.push(data);
-    rowMeta.push(data[5]); // status
+    const st = data[5]; // status interno
+    const stText = st==='ok' ? 'OK' : st==='over' ? 'ACIMA' : st==='warn' ? 'AGUARD.' : '—';
+    body.push([data[0], data[1], data[2], data[3], data[4], stText, st]); // col 6 = status interno oculto
   }
 
   doc.autoTable({
     startY: cardY + 22,
-    head: [['Despesa','Tipo','Métrica','Realizado','Diferença','Status']],
+    head: [['Despesa','Tipo','Metrica','Realizado','Diferenca','Status','']],
     body,
     styles: { fontSize: 7.5, cellPadding: {top:2.2,bottom:2.2,left:3,right:3}, overflow:'linebreak', font:'helvetica' },
     headStyles: { fillColor:[74,20,34], textColor:[245,237,220], fontStyle:'bold', fontSize:7.5,
                   cellPadding:{top:3,bottom:3,left:3,right:3} },
     columnStyles: {
-      0: { cellWidth: 62 },
+      0: { cellWidth: 60 },
       1: { cellWidth: 18, halign:'center', fontSize:6.5 },
-      2: { cellWidth: 30, halign:'right' },
-      3: { cellWidth: 30, halign:'right', fontStyle:'bold' },
+      2: { cellWidth: 28, halign:'right' },
+      3: { cellWidth: 28, halign:'right', fontStyle:'bold' },
       4: { cellWidth: 24, halign:'right' },
-      5: { cellWidth: 22, halign:'center' }
+      5: { cellWidth: 22, halign:'center' },
+      6: { cellWidth: 0.1, overflow:'hidden' } // coluna oculta com status interno
     },
     alternateRowStyles: { fillColor:[250,247,243] },
     didParseCell(data){
       if(data.section !== 'body') return;
-      // pula linhas de categoria (colSpan)
-      if(data.row.raw[0] && data.row.raw[0].colSpan) return;
-      const status = data.row.raw[5];
-      // Coluna Status — badge colorido
+      const raw = data.row.raw;
+      // linha de categoria (primeiro elemento tem _isCat)
+      if(raw[0] && typeof raw[0] === 'object' && raw[0]._isCat) return;
+      const st = raw[6]; // status interno na col oculta
+      // Coluna Status (5) — badge colorido com texto ASCII
       if(data.column.index === 5){
-        if(status === 'ok'){
-          data.cell.styles.fillColor  = [220,252,231];
-          data.cell.styles.textColor  = [21,128,61];
-          data.cell.styles.fontStyle  = 'bold';
-          data.cell.text = ['✓ OK'];
-        } else if(status === 'over'){
-          data.cell.styles.fillColor  = [254,226,226];
-          data.cell.styles.textColor  = [185,28,28];
-          data.cell.styles.fontStyle  = 'bold';
-          data.cell.text = ['↑ ACIMA'];
-        } else if(status === 'warn'){
-          data.cell.styles.fillColor  = [254,249,195];
-          data.cell.styles.textColor  = [161,98,7];
-          data.cell.styles.fontStyle  = 'bold';
-          data.cell.text = ['AGUARD.'];
+        if(st === 'ok'){
+          data.cell.styles.fillColor = [220,252,231];
+          data.cell.styles.textColor = [21,128,61];
+          data.cell.styles.fontStyle = 'bold';
+        } else if(st === 'over'){
+          data.cell.styles.fillColor = [254,226,226];
+          data.cell.styles.textColor = [185,28,28];
+          data.cell.styles.fontStyle = 'bold';
+        } else if(st === 'warn'){
+          data.cell.styles.fillColor = [254,249,195];
+          data.cell.styles.textColor = [161,98,7];
+          data.cell.styles.fontStyle = 'bold';
         } else {
-          data.cell.styles.textColor  = [160,160,160];
-          data.cell.text = ['—'];
+          data.cell.styles.textColor = [180,180,180];
         }
       }
-      // Coluna Diferença — verde/vermelho
-      if(data.column.index === 4 && status !== 'nf-eq' && status !== 'nf-high'){
-        const raw = data.row.raw[4];
-        if(raw && raw !== '—'){
-          const isNeg = raw.startsWith('+') ? false : raw.replace(/[^\d\-]/g,'').startsWith('-');
-          data.cell.styles.textColor = isNeg ? [185,28,28] : [21,128,61];
+      // Coluna Diferença (4) — verde/vermelho
+      if(data.column.index === 4){
+        const val = raw[4];
+        if(val && val !== '—'){
+          data.cell.styles.textColor = val.startsWith('+') ? [185,28,28] : [21,128,61];
         }
       }
-      // Linha toda — fundo suave por status
-      if(status === 'ok')   data.cell.styles.fillColor = [240,253,244];
-      if(status === 'over') data.cell.styles.fillColor = [255,245,245];
-      if(status === 'warn') data.cell.styles.fillColor = [255,253,235];
+      // Fundo suave da linha por status
+      if(data.column.index !== 5){
+        if(st === 'ok')   data.cell.styles.fillColor = [242,253,244];
+        if(st === 'over') data.cell.styles.fillColor = [255,246,246];
+        if(st === 'warn') data.cell.styles.fillColor = [255,253,235];
+      }
     },
     foot: [[{content:'TOTAL GERAL', colSpan:2, styles:{halign:'right',fontStyle:'bold'}},
             {content:fmt(totalMet), styles:{halign:'right',fontStyle:'bold'}},
             {content:fmt(totalReal), styles:{halign:'right',fontStyle:'bold',textColor:[106,31,48]}},
             {content: totalReal<=totalMet ? fmt(totalReal-totalMet) : '+'+fmt(totalReal-totalMet),
              styles:{halign:'right',fontStyle:'bold', textColor: totalReal<=totalMet?[21,128,61]:[185,28,28]}},
-            '']],
+            '','']],
     footStyles: { fillColor:[245,237,220], textColor:[80,40,20], fontSize:8, cellPadding:{top:3,bottom:3,left:3,right:3} },
     margin: { left:14, right:14 }
   });
