@@ -2854,9 +2854,6 @@ function changeParcelaStatus(id, idx, status, dataPagamento){
 // Só adiciona se o pagamento for do mês atual; meses anteriores ficam apenas como "paga" no card
 function autoAddCobFromReneg(r, p){
   const dataPag = p.dataPagamento || today();
-  const mesAtual = today().slice(0,7);
-  // Pagamento de mês anterior → não entra em Cobrança
-  if(dataPag.slice(0,7) < mesAtual) return;
   const sourceKey = 'reneg_'+r.id+'_p'+p.num;
   if(cobRecords.find(c=>c.sourceKey===sourceKey)) return;
   cobRecords.push({
@@ -2874,6 +2871,35 @@ function autoAddCobFromReneg(r, p){
     obs: 'Renegociação — Parcela #'+p.num
   });
   persistCob();
+}
+
+// Backfill: registra em Cobrança todas as parcelas pagas de renegociações que ainda não têm sourceKey
+function backfillCobFromReneg(){
+  let added = 0;
+  records.forEach(r=>{
+    (r.parcelas||[]).forEach(p=>{
+      if(p.status !== 'paga' || !p.dataPagamento) return;
+      const sourceKey = 'reneg_'+r.id+'_p'+p.num;
+      if(cobRecords.find(c=>c.sourceKey===sourceKey)) return;
+      cobRecords.push({
+        id: Date.now() + Math.random(),
+        sourceKey,
+        nome: r.nome,
+        ficha: r.ficha,
+        valor: p.valor,
+        vencimento: p.data,
+        pagamento: p.dataPagamento,
+        diasUteis: diasUteisEntre(p.data, p.dataPagamento),
+        etapa: 'reneg',
+        usuario: cobUser||'Sistema',
+        mes: p.dataPagamento.slice(0,7),
+        obs: 'Renegociação — Parcela #'+p.num
+      });
+      added++;
+    });
+  });
+  if(added > 0){ persistCob(); renderCob(); }
+  return added;
 }
 
 // Cria registros em Cobrança a partir de todas as parcelas de uma Negativação paga
@@ -6733,8 +6759,14 @@ aprovInitComSB();
     if(name==='aprovacoes'){
       aprovRenderBoard();
     }
+    if(name==='cobranca'){
+      backfillCobFromReneg();
+    }
   };
 })();
+
+// Roda backfill no carregamento inicial também
+setTimeout(backfillCobFromReneg, 500);
 
 // Carrega SheetJS para suporte a .xlsx
 (function(){
