@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athena — Construa sua Métrica | Oral Unic</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%238B2D42'/><text y='72' x='50' text-anchor='middle' font-size='62' font-family='serif'>📏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ORAL UNIC ATHENA — Design System
+   ═══════════════════════════════════════════ */
+:root {
+  /* Âncoras */
+  --vinho:        #8B2D42;
+  --vinho-deep:   #6A1F30;
+  --vinho-light:  #B85C72;
+  /* Acento */
+  --cobre:        #C4955A;
+  /* Bases */
+  --marfim:       #FDF9F4;
+  --creme:        #F5EDE2;
+  --blush:        #EDDDD4;
+  /* Suporte */
+  --warm:         #E0C9B8;
+  /* Escuros */
+  --moka:         #3D2A20;
+  --tinta:        #1A0F0A;
+
+  /* Status */
+  --ok-bg:        #dcfce7;
+  --ok-text:      #15803d;
+  --over-bg:      #fee2e2;
+  --over-text:    #dc2626;
+  --warn-bg:      #fef9c3;
+  --warn-text:    #b45309;
+
+  /* Sem métrica */
+  --nf-high-bg:   #dbeafe;
+  --nf-high-text: #1d4ed8;
+  --nf-low-bg:    #eff6ff;
+  --nf-low-text:  #3b82f6;
+  --nf-eq-bg:     #f3f4f6;
+  --nf-eq-text:   #9ca3af;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  background: var(--marfim);
+  color: var(--tinta);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, var(--vinho-deep) 0%, var(--vinho) 70%, var(--vinho-light) 100%);
+  padding: 24px 32px 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 3px solid var(--cobre);
+}
+.header-brand h1 {
+  font-family: 'Cormorant SC', serif;
+  font-weight: 300;
+  font-size: 28px;
+  letter-spacing: 0.2em;
+  color: var(--marfim);
+  line-height: 1;
+}
+.header-brand p {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--warm);
+  margin-top: 5px;
+}
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.month-badge {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--cobre);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(196,149,90,0.4);
+  border-radius: 20px;
+  padding: 5px 14px;
+}
+.month-switcher {
+  display: flex;
+  gap: 6px;
+}
+.month-pill {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  background: rgba(255,255,255,0.1);
+  color: rgba(253,249,244,0.6);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.month-pill:hover, .month-pill.active {
+  background: var(--cobre);
+  color: var(--marfim);
+  border-color: var(--cobre);
+}
+
+/* ── TABS ── */
+.tabs-bar {
+  background: var(--vinho-deep);
+  display: flex;
+  gap: 0;
+  padding: 0 24px;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(196,149,90,0.3);
+}
+.tab-btn {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  color: rgba(253,249,244,0.5);
+  padding: 14px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .2s, border-color .2s;
+}
+.tab-btn:hover { color: var(--marfim); }
+.tab-btn.active { color: var(--cobre); border-bottom-color: var(--cobre); }
+
+/* ── MAIN ── */
+main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+/* ── SUMMARY ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px,1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.s-card {
+  background: var(--creme);
+  border-radius: 4px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--warm);
+  position: relative;
+  overflow: hidden;
+}
+.s-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 3px; height: 100%;
+  background: transparent;
+}
+.s-card.total   { border-left-color: var(--vinho); }
+.s-card.fixed   { border-left-color: var(--cobre); }
+.s-card.variable{ border-left-color: var(--vinho-light); }
+.s-card.ok      { border-left-color: var(--ok-text); }
+.s-card.over    { border-left-color: var(--over-text); }
+.s-card.manual  { border-left-color: #6366f1; cursor:default; }
+.s-card.manual .val { color: #4f46e5; }
+tr.data-row.row-selected td { background: #ede9fe !important; }
+tr.data-row { cursor: pointer; }
+tr.data-row:hover td { filter: brightness(.97); }
+.manual-hint { font-size:9px; letter-spacing:.08em; opacity:.5; margin-top:2px; }
+.clear-sel-btn { font-size:9px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px solid #a5b4fc; border-radius:3px; padding:2px 8px; cursor:pointer; color:#4f46e5; margin-top:6px; display:block; }
+.s-card label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .7;
+}
+.s-card .val {
+  font-family: 'Cormorant SC', serif;
+  font-weight: 400;
+  font-size: 22px;
+  color: var(--tinta);
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+}
+.s-card .sub {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--moka);
+  opacity: .6;
+  margin-top: 3px;
+  letter-spacing: 0.1em;
+}
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  background: var(--creme);
+  border-radius: 4px;
+  border: 1px solid var(--warm);
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--moka);
+}
+.legend-swatch {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  background: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(106,31,48,0.08);
+}
+thead th {
+  background: var(--vinho-deep);
+  color: var(--marfim);
+  padding: 11px 14px;
+  text-align: left;
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+thead th.right { text-align: right; }
+
+/* category row */
+tr.cat-row td {
+  background: var(--vinho);
+  color: var(--marfim);
+  font-family: 'Cormorant SC', serif;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  padding: 9px 14px;
+}
+tr.cat-row td.right {
+  text-align: right;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--cobre);
+}
+
+/* data rows */
+tr.data-row td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--blush);
+  vertical-align: middle;
+  line-height: 1.4;
+}
+tr.data-row:last-child td { border-bottom: none; }
+tr.data-row td.right { text-align: right; font-variant-numeric: tabular-nums; }
+tr.data-row td.label-col {
+  padding-left: 26px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  font-size: 12.5px;
+  color: var(--tinta);
+}
+
+/* status backgrounds */
+tr.row-ok    td { background: var(--ok-bg);      }
+tr.row-over  td { background: var(--over-bg);     }
+tr.row-warn  td { background: var(--warn-bg);     }
+tr.row-nf-high td { background: var(--nf-high-bg); }
+tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
+
+/* type badges */
+.badge {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 2px 9px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.badge-fixed    { background: var(--blush);  color: var(--vinho-deep); border: 1px solid var(--warm); }
+.badge-variable { background: #fdf2e4;       color: #7a4f1d;           border: 1px solid var(--cobre); }
+.editable-tipo    { cursor: pointer; transition: opacity .15s; }
+.editable-tipo:hover { opacity: .75; outline: 1px dashed var(--cobre); }
+.editable-metrica { cursor: pointer; border-bottom: 1px dashed var(--cobre); transition: color .15s; }
+.editable-metrica:hover { color: var(--vinho); }
+.editable-real { cursor: pointer; border-bottom: 1px dashed var(--vinho); color: inherit; transition: color .15s; }
+.editable-real:hover { color: var(--vinho); }
+/* Distribution modals (Lab Externo + generic) */
+#lab-modal-overlay,#dist-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
+#lab-modal-overlay.open,#dist-modal-overlay.open { display:flex; }
+#lab-modal,#dist-modal { background:var(--marfim,#fdf8f2); border-radius:10px; padding:28px 32px; min-width:420px; max-width:96vw; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.25); font-family:'Josefin Sans',sans-serif; }
+#lab-modal h3,#dist-modal h3 { font-family:'Cormorant SC',serif; color:var(--vinho); margin:0 0 4px; font-size:18px; }
+#lab-modal .lab-total-line,#dist-modal .dist-total-line { font-size:12px; color:var(--moka); opacity:.6; margin-bottom:16px; }
+#lab-modal .lab-rows,#dist-modal .dist-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+#lab-modal .lab-row,#dist-modal .dist-row { display:flex; align-items:center; gap:8px; }
+#lab-modal .lab-row label { flex:1; font-size:13px; color:var(--vinho-deep,#3a1a2e); }
+#lab-modal .lab-row input { width:110px; font-size:13px; padding:4px 8px; border:1px solid var(--warm,#d4b8a0); border-radius:4px; text-align:right; font-family:inherit; background:white; }
+#lab-modal .lab-unallocated,#dist-modal .dist-unallocated { font-size:12px; padding:8px 10px; background:rgba(0,0,0,.04); border-radius:5px; margin-bottom:16px; }
+#lab-modal .lab-unallocated.negative,#dist-modal .dist-unallocated.negative { color:#c0392b; }
+#lab-modal .lab-btn-row,#dist-modal .dist-btn-row { display:flex; gap:10px; justify-content:flex-end; }
+#lab-modal .lab-btn,#dist-modal .dist-btn { padding:7px 18px; border:none; border-radius:5px; cursor:pointer; font-family:inherit; font-size:13px; }
+#lab-modal .lab-btn-save,#dist-modal .dist-btn-save { background:var(--vinho,#6b1d3d); color:white; }
+#lab-modal .lab-btn-clear,#dist-modal .dist-btn-clear { background:transparent; border:1px solid var(--cobre,#a0522d); color:var(--cobre,#a0522d); }
+#lab-modal .lab-btn-cancel,#dist-modal .dist-btn-cancel { background:transparent; color:var(--moka,#7a5c4d); }
+/* dist-modal dynamic rows */
+#dist-modal .dist-row input.di-nome { flex:1; font-size:12px; padding:4px 8px; border:1px solid var(--warm); border-radius:4px; font-family:inherit; background:white; }
+#dist-modal .dist-row input.di-val { width:110px; font-size:12px; padding:4px 8px; border:1px solid var(--warm); border-radius:4px; text-align:right; font-family:inherit; background:white; }
+#dist-modal .dist-row select.di-tipo { font-size:11px; padding:3px 5px; border:1px solid var(--warm); border-radius:4px; font-family:inherit; background:white; color:var(--tinta); }
+#dist-modal .dist-row .di-del { background:none; border:none; cursor:pointer; color:#c0392b; font-size:15px; padding:0 4px; }
+#dist-modal .dist-add-btn { font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px dashed var(--cobre); border-radius:4px; padding:5px 14px; cursor:pointer; color:var(--cobre); margin-bottom:14px; width:100%; }
+/* sub-item rows in table */
+tr.sub-row td { background:#f5f0ea; font-size:12px; padding:6px 14px; }
+tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka); }
+
+/* status pill */
+.metric-pill {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 62px;
+  text-align: center;
+}
+.mp-ok   { background: var(--ok-bg);      color: var(--ok-text);   }
+.mp-over { background: var(--over-bg);    color: var(--over-text); }
+.mp-warn { background: var(--warn-bg);    color: var(--warn-text); }
+.mp-nf   { background: var(--nf-eq-bg);  color: var(--nf-eq-text);}
+
+/* delta */
+.delta { font-size: 11px; font-weight: 300; letter-spacing: 0.05em; }
+.delta.up   { color: var(--over-text); }
+.delta.down { color: var(--ok-text);   }
+.delta.eq   { color: var(--nf-eq-text);}
+
+/* ── IMPORT TAB ── */
+.import-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+@media(max-width:800px){ .import-wrap { grid-template-columns: 1fr; } }
+
+.import-card {
+  background: white;
+  border-radius: 4px;
+  padding: 28px 28px 24px;
+  box-shadow: 0 1px 6px rgba(106,31,48,0.07);
+  border-top: 3px solid var(--vinho);
+}
+.import-card h2 {
+  font-family: 'Cormorant SC', serif;
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  color: var(--vinho);
+  margin-bottom: 6px;
+}
+.import-card p {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--moka);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  opacity: .8;
+}
+.month-select {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.month-select label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--moka);
+  font-weight: 300;
+}
+.month-select select, .month-select input {
+  border: 1px solid var(--warm);
+  border-radius: 3px;
+  padding: 8px 12px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--tinta);
+  background: var(--marfim);
+  outline: none;
+  transition: border-color .2s;
+}
+.month-select select:focus,
+.month-select input:focus { border-color: var(--vinho); }
+
+.drop-zone {
+  border: 1.5px dashed var(--warm);
+  border-radius: 4px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--creme);
+  transition: background .2s, border-color .2s;
+}
+.drop-zone:hover { background: var(--blush); border-color: var(--vinho-light); }
+.drop-zone p { color: var(--vinho); font-size: 13px; font-weight: 300; letter-spacing: 0.08em; margin-bottom: 4px; }
+.drop-zone small { color: var(--moka); font-size: 11px; opacity: .6; }
+#file-input { display: none; }
+
+.btn-primary {
+  background: var(--vinho);
+  color: var(--marfim);
+  border: none;
+  border-radius: 3px;
+  padding: 10px 22px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-primary:hover { background: var(--vinho-deep); }
+.btn-secondary {
+  background: transparent;
+  color: var(--vinho);
+  border: 1px solid var(--vinho);
+  border-radius: 3px;
+  padding: 9px 18px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-secondary:hover { background: var(--blush); }
+
+.import-log {
+  margin-top: 14px;
+  background: var(--marfim);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  color: var(--moka);
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--warm);
+  display: none;
+  letter-spacing: 0.05em;
+  line-height: 1.8;
+}
+.import-log.visible { display: block; }
+
+/* months sidebar */
+.months-sidebar {
+  background: white;
+  border-radius: 4px;
+  padding: 22px 20px;
+  box-shadow: 0 1px 6px rgba(106,31,48,0.07);
+  border-top: 3px solid var(--cobre);
+  align-self: start;
+}
+.months-sidebar h3 {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .7;
+  margin-bottom: 14px;
+}
+.month-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 3px;
+  background: var(--creme);
+  border-left: 3px solid var(--cobre);
+}
+.month-item strong {
+  font-family: 'Cormorant SC', serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--vinho);
+  letter-spacing: 0.08em;
+}
+.month-item span {
+  display: block;
+  font-size: 10px;
+  color: var(--moka);
+  opacity: .6;
+  margin-top: 1px;
+  letter-spacing: 0.08em;
+}
+.btn-sm {
+  border: none;
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.btn-sm:hover { opacity: .75; }
+.btn-view { background: var(--vinho); color: var(--marfim); }
+.btn-del  { background: var(--blush); color: var(--over-text); margin-left: 5px; }
+
+/* ── EMPTY ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--moka);
+  opacity: .5;
+}
+.empty-state .icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+  font-family: 'Cormorant SC', serif;
+  color: var(--vinho-light);
+  letter-spacing: 0.2em;
+}
+.empty-state h3 {
+  font-family: 'Cormorant SC', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--vinho);
+  margin-bottom: 6px;
+  letter-spacing: 0.12em;
+}
+.empty-state p { font-size: 12px; font-weight: 300; }
+
+/* ── DIVIDER ── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  margin-top: 4px;
+}
+.section-divider span {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .6;
+  white-space: nowrap;
+}
+.section-divider::before, .section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--warm);
+}
+
+/* ── COMPARE TAB ── */
+.compare-bar {
+  background: white;
+  border-radius: 4px;
+  padding: 18px 20px 14px;
+  box-shadow: 0 1px 6px rgba(106,31,48,0.07);
+  border-top: 3px solid var(--vinho);
+  margin-bottom: 0;
+}
+.compare-selectors {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.compare-selector-group { display:flex; align-items:center; gap:8px; }
+.compare-label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .7;
+  white-space: nowrap;
+}
+.compare-vs {
+  font-family: 'Cormorant SC', serif;
+  font-size: 16px;
+  color: var(--cobre);
+  letter-spacing: 0.1em;
+}
+.compare-selectors select {
+  border: 1px solid var(--warm);
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--tinta);
+  background: var(--marfim);
+  outline: none;
+  transition: border-color .2s;
+  min-width: 155px;
+}
+.compare-selectors select:focus { border-color: var(--vinho); }
+.compare-toggle-label {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--moka);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  opacity: .75;
+}
+/* compare summary pills */
+#compare-summary-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cmp-pill {
+  background: var(--creme);
+  border-radius: 4px;
+  padding: 8px 14px;
+  border-left: 3px solid var(--warm);
+  min-width: 140px;
+}
+.cmp-pill label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .65;
+  display: block;
+  margin-bottom: 3px;
+}
+.cmp-pill .cmp-val {
+  font-family: 'Cormorant SC', serif;
+  font-size: 17px;
+  color: var(--tinta);
+  letter-spacing: 0.04em;
+}
+.cmp-pill.total-a { border-left-color: var(--vinho); }
+.cmp-pill.total-b { border-left-color: var(--vinho-light); }
+.cmp-pill.delta-pos { border-left-color: var(--over-text); }
+.cmp-pill.delta-neg { border-left-color: var(--ok-text); }
+/* compare table rows */
+tr.cmp-cat td {
+  background: var(--vinho);
+  color: var(--marfim);
+  font-family: 'Cormorant SC', serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  padding: 9px 14px;
+  font-weight: 400;
+}
+tr.cmp-row td { padding: 7px 14px; border-bottom: 1px solid var(--blush); vertical-align:middle; }
+tr.cmp-row:last-child td { border-bottom: none; }
+tr.cmp-row td.right { text-align: right; font-variant-numeric: tabular-nums; }
+tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
+.cmp-up   { color: var(--over-text); font-weight: 300; }
+.cmp-down { color: var(--ok-text);   font-weight: 300; }
+.cmp-eq   { color: var(--nf-eq-text);font-weight: 300; }
+.cmp-new  { background: #fef9c3; }
+.cmp-gone { background: #f3f4f6; opacity: .7; }
+
+@media(max-width:600px){
+  main { padding: 14px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  header { padding: 18px 20px; }
+}
+
+/* ── LOGIN SCREEN ── */
+#login-screen {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, var(--vinho-deep) 0%, var(--vinho) 60%, var(--vinho-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10000;
+}
+#login-screen.hidden { display: none; }
+.login-box {
+  background: var(--marfim);
+  border-radius: 10px;
+  padding: 40px 44px 36px;
+  width: 360px;
+  max-width: 94vw;
+  box-shadow: 0 16px 60px rgba(0,0,0,.35);
+  border-top: 4px solid var(--cobre);
+}
+.login-box h1 {
+  font-family: 'Cormorant SC', serif;
+  font-weight: 300;
+  font-size: 26px;
+  letter-spacing: 0.2em;
+  color: var(--vinho);
+  margin-bottom: 2px;
+}
+.login-box p {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .55;
+  margin-bottom: 28px;
+}
+.login-field { margin-bottom: 16px; }
+.login-field label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--moka);
+  opacity: .7;
+  margin-bottom: 6px;
+}
+.login-field input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--warm);
+  border-radius: 4px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--tinta);
+  background: white;
+  outline: none;
+  transition: border-color .2s;
+}
+.login-field input:focus { border-color: var(--vinho); }
+.login-btn {
+  width: 100%;
+  background: var(--vinho);
+  color: var(--marfim);
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background .2s;
+}
+.login-btn:hover { background: var(--vinho-deep); }
+.login-err {
+  color: var(--over-text);
+  font-size: 11px;
+  margin-top: 10px;
+  min-height: 16px;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+.user-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.user-card {
+  background: var(--creme);
+  border: 2px solid var(--warm);
+  border-radius: 6px;
+  padding: 14px 10px;
+  text-align: center;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--vinho-deep);
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: 0.05em;
+}
+.user-card:hover { border-color: var(--vinho-light); background: var(--blush); }
+.user-card.selected { border-color: var(--vinho); background: var(--vinho); color: var(--marfim); }
+/* user pill in header */
+.user-pill {
+  font-size: 11px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: rgba(253,249,244,0.7);
+  display: flex; align-items: center; gap: 8px;
+}
+.user-pill button {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(253,249,244,0.6);
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background .2s;
+}
+.user-pill button:hover { background: rgba(255,255,255,0.2); }
+/* sync indicator */
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  display: inline-block; margin-left: 4px;
+  background: var(--cobre); opacity: .7;
+}
+.sync-dot.ok   { background: #4ade80; opacity: 1; }
+.sync-dot.err  { background: #f87171; opacity: 1; }
+.sync-dot.spin { animation: spin .8s linear infinite; background: var(--cobre); }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Athena</h1>
+    <p>Oral Unic · Carlos Barbosa</p>
+    <div class="login-field">
+      <label>Quem é você?</label>
+      <div class="user-cards" id="user-cards">
+        <div class="user-card" onclick="selectUser(this,'adm@oralunic.com.br','Adm')">Adm</div>
+        <div class="user-card" onclick="selectUser(this,'mone@oralunic.com.br','Dra Mone')">Dra Mone</div>
+        <div class="user-card" onclick="selectUser(this,'jarina@oralunic.com.br','Jarina')">Jarina</div>
+        <div class="user-card" onclick="selectUser(this,'alexandre@oralunic.com.br','Alexandre')">Alexandre</div>
+      </div>
+    </div>
+    <div class="login-field" id="pass-field" style="display:none">
+      <label id="pass-label">Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()" id="login-btn" style="display:none">Entrar</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-brand">
+    <h1>Athena</h1>
+    <p>Construa sua Métrica · Oral Unic Carlos Barbosa</p>
+  </div>
+  <div class="header-right">
+    <div class="user-pill" id="user-pill" style="display:none">
+      <span id="user-name-label"></span>
+      <span class="sync-dot" id="sync-dot" title="Status sincronização"></span>
+      <button onclick="doLogout()">Sair</button>
+    </div>
+    <div class="month-badge" id="current-month-badge">—</div>
+    <div class="month-switcher" id="month-switcher"></div>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('metrics')">Métricas</button>
+  <button class="tab-btn" onclick="switchTab('fixed')">Fixas</button>
+  <button class="tab-btn" onclick="switchTab('variable')">Variáveis</button>
+  <button class="tab-btn" onclick="switchTab('compare')">Comparar Meses</button>
+  <button class="tab-btn" onclick="switchTab('import')">Importar Despesas</button>
+</div>
+
+<main>
+
+  <!-- ═══ METRICS ═══ -->
+  <div id="tab-metrics">
+    <div id="summary-cards" class="summary-grid"></div>
+    <div class="section-divider"><span>Detalhamento por categoria</span><button onclick="resetOverrides()" style="font-size:10px;font-family:'Josefin Sans',sans-serif;font-weight:300;letter-spacing:.1em;background:transparent;border:1px solid var(--warm);border-radius:3px;padding:3px 10px;cursor:pointer;color:var(--moka);opacity:.7;float:right;margin-top:-2px;" title="Desfaz todas as edições de métrica e tipo">↺ Resetar edições</button></div>
+    <div class="legend" id="legend-block"></div>
+    <div class="table-wrap">
+      <table id="metrics-table">
+        <thead id="metrics-thead">
+          <tr>
+            <th style="width:32%">Despesa</th>
+            <th>Tipo</th>
+            <th class="right">Métrica</th>
+            <th class="right">Realizado</th>
+            <th class="right">Diferença</th>
+            <th class="right">Status</th>
+          </tr>
+          <tr id="thead-totals" style="display:none">
+            <th colspan="2" style="padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);font-size:9px;letter-spacing:.15em;font-weight:300;color:rgba(255,255,255,.5);text-transform:uppercase;">Total geral</th>
+            <th class="right" id="thead-total-metrica" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:var(--cobre);padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
+            <th class="right" id="thead-total-real" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:#fff;padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
+            <th colspan="2" style="border-top:1px solid rgba(255,255,255,.15);padding-top:2px;padding-bottom:7px;"></th>
+          </tr>
+        </thead>
+        <tbody id="metrics-tbody"></tbody>
+      </table>
+    </div>
+    <div id="empty-metrics" class="empty-state" style="display:none">
+      <div class="icon">— —</div>
+      <h3>Nenhum dado carregado</h3>
+      <p>Acesse <em>Importar Despesas</em> e selecione um mês.</p>
+    </div>
+  </div>
+
+  <!-- ═══ FIXED ═══ -->
+  <div id="tab-fixed" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:35%">Despesa</th>
+            <th>Categoria</th>
+            <th class="right">Métrica</th>
+            <th class="right">Realizado</th>
+            <th class="right">Diferença</th>
+            <th class="right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="fixed-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ VARIABLE ═══ -->
+  <div id="tab-variable" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:35%">Despesa</th>
+            <th>Categoria</th>
+            <th class="right">Métrica</th>
+            <th class="right">Realizado</th>
+            <th class="right">Diferença</th>
+            <th class="right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="variable-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ COMPARE ═══ -->
+  <div id="tab-compare" style="display:none">
+    <div class="compare-bar">
+      <div class="compare-selectors">
+        <div class="compare-selector-group">
+          <span class="compare-label">Mês A</span>
+          <select id="cmp-a" onchange="renderCompare()"></select>
+        </div>
+        <div class="compare-vs">vs</div>
+        <div class="compare-selector-group">
+          <span class="compare-label">Mês B</span>
+          <select id="cmp-b" onchange="renderCompare()"></select>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+          <label class="compare-toggle-label"><input type="checkbox" id="cmp-only-diff" onchange="renderCompare()"> Só diferenças</label>
+          <label class="compare-toggle-label"><input type="checkbox" id="cmp-hide-zero" onchange="renderCompare()" checked> Ocultar zeros</label>
+        </div>
+      </div>
+      <div id="compare-summary-bar"></div>
+    </div>
+    <div class="table-wrap" style="margin-top:16px">
+      <table id="compare-table" style="display:none">
+        <thead>
+          <tr>
+            <th style="width:28%">Categoria</th>
+            <th style="width:24%">Despesa</th>
+            <th class="right" id="cmp-th-a">—</th>
+            <th class="right" id="cmp-th-b">—</th>
+            <th class="right">Variação R$</th>
+            <th class="right">Variação %</th>
+          </tr>
+        </thead>
+        <tbody id="compare-tbody"></tbody>
+      </table>
+    </div>
+    <div id="compare-empty" class="empty-state" style="display:none">
+      <div class="icon">⇄</div>
+      <h3>Selecione dois meses</h3>
+      <p>Escolha os meses A e B acima para comparar.</p>
+    </div>
+  </div>
+
+  <!-- ═══ IMPORT ═══ -->
+  <div id="tab-import" style="display:none">
+    <div class="import-wrap">
+      <div class="import-card">
+        <h2>Importar Arquivo</h2>
+        <p>Selecione o mês de referência e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
+
+        <div class="month-select">
+          <label>Mês</label>
+          <select id="import-month">
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5" selected>Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <label>Ano</label>
+          <input type="number" id="import-year" value="2026" min="2020" max="2099" style="width:86px">
+        </div>
+
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <p>Clique ou arraste o arquivo aqui</p>
+          <small>.csv com colunas: Categoria · Despesa · Valor</small>
+        </div>
+        <input type="file" id="file-input" accept=".csv,.xlsx" onchange="handleFile(event)">
+
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
+          <button class="btn-primary" onclick="loadRealData()">Carregar Fev / Mar / Abr / Mai 2026</button>
+          <button class="btn-primary" onclick="createBlankMonth()" style="background:var(--cobre);border-color:var(--cobre)" title="Cria o mês selecionado com todas as despesas zeradas, pronto para editar">+ Criar mês em branco</button>
+          <button class="btn-secondary" onclick="clearCurrent()">Limpar visualização</button>
+        </div>
+        <div class="import-log" id="import-log"></div>
+      </div>
+
+      <div class="months-sidebar">
+        <h3>Meses importados</h3>
+        <div id="months-list"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Lab Externo distribution modal -->
+<div id="lab-modal-overlay" onclick="if(event.target===this)closeLabModal()">
+  <div id="lab-modal">
+    <h3>Distribuir Laboratório Externo</h3>
+    <div class="lab-total-line" id="lab-total-line"></div>
+    <div class="lab-rows" id="lab-modal-rows"></div>
+    <div class="lab-unallocated" id="lab-unallocated"></div>
+    <div class="lab-btn-row">
+      <button class="lab-btn lab-btn-cancel" onclick="closeLabModal()">Cancelar</button>
+      <button class="lab-btn lab-btn-clear" onclick="clearLabDist()">Limpar</button>
+      <button class="lab-btn lab-btn-save" onclick="saveLabDist()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic distribution modal (Avaliador / Outras Despesas / etc.) -->
+<div id="dist-modal-overlay" onclick="if(event.target===this)closeDistModal()">
+  <div id="dist-modal">
+    <h3 id="dist-modal-title">Distribuir Despesa</h3>
+    <div class="dist-total-line" id="dist-total-line"></div>
+    <div class="dist-rows" id="dist-modal-rows"></div>
+    <button class="dist-add-btn" id="dist-add-btn" onclick="distAddRow()" style="display:none">+ Adicionar item</button>
+    <div class="dist-unallocated" id="dist-unallocated"></div>
+    <div class="dist-btn-row">
+      <button class="dist-btn dist-btn-cancel" onclick="closeDistModal()">Cancelar</button>
+      <button class="dist-btn dist-btn-clear" onclick="clearDistModal()">Limpar</button>
+      <button class="dist-btn dist-btn-save" onclick="saveDistModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// ORAL UNIC ATHENA — Metric Base (Maio 2025)
+// ═══════════════════════════════════════
+const METRIC_BASE = [
+  ["Agencia de Publicidade","Mensalidade de Agencia",         1098.30,"F"],
+  ["Avaliador",             "Pro-Labore Avaliador",           5000.00,"V"],
+  ["Avaliador",             "Comissao de Vendas Avaliador",  15110.00,"V"],
+  ["Beneficios",             "Vale Refeicao",                 1800.00,"F"],
+  ["Beneficios",             "Vale Transporte",               null,   "F"],
+  ["Bonif./Comissionamento", "Bonif. Relacionamento",         1060.00,"V"],
+  ["Bonif./Comissionamento", "Comissao Cobranca",             1300.00,"V"],
+  ["Bonif./Comissionamento", "Comissao Captacao de Leads",    null,   "V"],
+  ["Bonif./Comissionamento", "Bonif. Dentista",               null,   "V"],
+  ["Bonif./Comissionamento", "Bonif. Gerente",                null,   "V"],
+  ["Bonif./Comissionamento", "Bonif. Protetico",              null,   "V"],
+  ["Bonif./Comissionamento", "Bonif. Recepcao",               700.00, "V"],
+  ["Bonif./Comissionamento", "Bonif. ASB/TSB",                null,   "V"],
+  ["Capex",                  "Compra Moveis/Equipamentos",    null,   "V"],
+  ["Capex",                  "Infraestrutura da Clinica",     null,   "V"],
+  ["Dental",                 "Insumos de Dental",            10000.00,"V"],
+  ["Dentistas",              "Remuneracao Dentistas",        55000.00,"V"],
+  ["Dentistas",              "Cirurgiao Zigomaticos",         null,   "V"],
+  ["Despesas Financeiras",   "Despesas Bancarias/IOF/Juros",  1100.00,"V"],
+  ["Despesas Gerais",        "Brindes",                        500.00,"V"],
+  ["Despesas Gerais",        "Copa e Cozinha",                 700.00,"F"],
+  ["Despesas Gerais",        "Motoboy",                         50.00,"V"],
+  ["Despesas Gerais",        "Material de Escritorio",         350.00,"V"],
+  ["Despesas Gerais",        "Material de Limpeza",           1000.00,"F"],
+  ["Despesas Gerais",        "Material Grafico",               500.00,"V"],
+  ["Despesas Gerais",        "Outras Despesas",               3700.00,"V"],
+  ["Despesas Gerais",        "Uniformes",                     null,   "V"],
+  ["Devolucao Tratamento",   "Devolucao de Tratamento",       null,   "V"],
+  ["Encargos Trabalhistas",  "FGTS",                          1800.00,"F"],
+  ["Encargos Trabalhistas",  "FGTS Rescisorio",               null,   "V"],
+  ["Encargos Trabalhistas",  "INSS (GPS/DCTFWEB)",            9500.00,"F"],
+  ["Folha de Pagamento",     "13 Salario",                    null,   "V"],
+  ["Folha de Pagamento",     "Ferias",                        null,   "V"],
+  ["Folha de Pagamento",     "R. Auxiliar de Cobranca",       2000.00,"F"],
+  ["Folha de Pagamento",     "R. ASB",                        4600.00,"F"],
+  ["Folha de Pagamento",     "R. ASG",                        2000.00,"F"],
+  ["Folha de Pagamento",     "R. Gerente",                    3123.00,"F"],
+  ["Folha de Pagamento",     "R. Recepcionista",              4000.00,"F"],
+  ["Folha de Pagamento",     "R. Relacionamento",             3230.00,"F"],
+  ["Folha de Pagamento",     "R. TSB",                        3000.00,"F"],
+  ["Folha de Pagamento",     "Rescisao Trabalhista",          null,   "V"],
+  ["Franqueadora",           "Fundo de Propaganda (FNP)",     null,   "F"],
+  ["Franqueadora",           "Royalty",                       null,   "F"],
+  ["Implantes e Componentes","Implantes e Componentes",      30000.00,"V"],
+  ["Implantes e Componentes","Zigomaticos",                   3000.00,"V"],
+  ["Impostos Retidos",       "PIS/COFINS/CSLL Trimestral",    null,   "V"],
+  ["Impostos Retidos",       "IRRF",                            15.00,"V"],
+  ["Impostos Retidos",       "ISS Retido",                    null,   "V"],
+  ["Impostos Sobre Lucro",   "CSLL",                          7200.00,"V"],
+  ["Impostos Sobre Lucro",   "IRPJ",                         17500.00,"V"],
+  ["Impostos Sobre Venda",   "COFINS",                       14000.00,"V"],
+  ["Impostos Sobre Venda",   "ISS",                          14000.00,"V"],
+  ["Impostos Sobre Venda",   "PIS",                           3000.00,"V"],
+  ["Midia Offline",          "Eventos Externos",              2500.00,"V"],
+  ["Midia Offline",          "Outdoor",                       5400.00,"V"],
+  ["Midia Offline",          "Outras Midias",                 null,   "V"],
+  ["Midia Offline",          "Radio",                         6614.00,"V"],
+  ["Midia Online",           "Facebook",                      4000.00,"V"],
+  ["Midia Online",           "Google",                        2000.00,"V"],
+  ["Midia Online",           "Instagram",                     null,   "V"],
+  ["Midia Online",           "YouTube",                       null,   "V"],
+  ["Laboratorio Externo",    "Lab. Externo (consolidado)",   null,    "V"],
+  ["Laboratorio Externo",    "AGA",                          15000.00,"V"],
+  ["Laboratorio Externo",    "Marcelo",                       2500.00,"V"],
+  ["Laboratorio Externo",    "Fabio",                          500.00,"V"],
+  ["Laboratorio Externo",    "Breda",                         1000.00,"V"],
+  ["Laboratorio Externo",    "Kion Mensalidade",              2500.00,"F"],
+  ["Laboratorio Externo",    "Kion Trabalhos",                null,   "V"],
+  ["Laboratorio Interno",    "Insumos para Lab.",             5000.00,"V"],
+  ["Laboratorio Interno",    "R. Auxiliar de Protese",        2000.00,"F"],
+  ["Laboratorio Interno",    "R. Protetico",                   800.00,"F"],
+  ["Medicamentos",           "Medicamentos",                  null,   "V"],
+  ["Ocupacao",               "Agua",                           260.00,"F"],
+  ["Ocupacao",               "Aluguel",                      14000.00,"F"],
+  ["Ocupacao",               "Celular",                        192.00,"F"],
+  ["Ocupacao",               "Coleta de Lixo",                 290.03,"F"],
+  ["Ocupacao",               "Energia Eletrica",              3000.00,"F"],
+  ["Ocupacao",               "Internet/Telefone",              314.19,"F"],
+  ["Ocupacao",               "IPTU",                          null,   "F"],
+  ["Ocupacao",               "Manutencao Predial",            null,   "V"],
+  ["Taxas Diversas",         "Alvara Prefeitura",             null,   "V"],
+  ["Taxas Diversas",         "Alvara Sanitario",              null,   "V"],
+  ["Taxas Diversas",         "CRO",                           null,   "V"],
+  ["Taxas Diversas",         "Cert. Digital/Credito",         null,   "V"],
+  ["Terceiros",              "Assistencia Juridica",           521.15,"F"],
+  ["Terceiros",              "Assistencia Tecnica",           null,   "V"],
+  ["Terceiros",              "Consultoria",                   null,   "V"],
+  ["Terceiros",              "Contabilidade",                 null,   "F"],
+  ["Terceiros",              "Medicina do Trabalho",           269.00,"F"],
+  ["Terceiros",              "Medico Anestesista",            2000.00,"V"],
+];
+
+// ── Mapping: planilha name (normalized) → metric name
+const MAP = {
+  "mensalidade de agencia de publicidade":        "Mensalidade de Agencia",
+  "remuneracao avaliador com comissao":           "Comissao de Vendas Avaliador",
+  "pro-labore":                                   "Pro-Labore Avaliador",
+  "pró-labore":                                   "Pro-Labore Avaliador",
+  "vale refeicao":                                "Vale Refeicao",
+  "vale transporte":                              "Vale Transporte",
+  "bonificacao/comissionamento - relacionamento": "Bonif. Relacionamento",
+  "bonificacao/comissionamento - auxiliar de cobranca": "Comissao Cobranca",
+  "bonificacao/comissionamento - auxiliar administrativo": "Bonif. Relacionamento",
+  "bonificacao/comissionamento - captador(a) de leads":   "Comissao Captacao de Leads",
+  "bonificacao/comissionamento - dentista":       "Bonif. Dentista",
+  "bonificacao/comissionamento - gerente":        "Bonif. Gerente",
+  "bonificacao/comissionamento - protetico":      "Bonif. Protetico",
+  "bonificacao/comissionamento - recepcao":       "Bonif. Recepcao",
+  "bonificacao/comissionamento - asb/tsb":        "Bonif. ASB/TSB",
+  "bonificacao/comissionamento - asg":            "Bonif. ASB/TSB",
+  "bonificacao/comissionamento - auxiliar de protese": "Bonif. Protetico",
+  "compra de moveis ou equipamentos":             "Compra Moveis/Equipamentos",
+  "infraestrutura da clinica":                    "Infraestrutura da Clinica",
+  "insumos de dental":                            "Insumos de Dental",
+  "remuneracao dentistas":                        "Remuneracao Dentistas",
+  "despesas bancarias":                           "Despesas Bancarias/IOF/Juros",
+  "emprestimo/financiamento":                     "Despesas Bancarias/IOF/Juros",
+  "iof":                                          "Despesas Bancarias/IOF/Juros",
+  "juros passivos":                               "Despesas Bancarias/IOF/Juros",
+  "brindes":                                      "Brindes",
+  "copa e cozinha":                               "Copa e Cozinha",
+  "fretes e entregas rapidas (motoboy)":          "Motoboy",
+  "material de escritorio":                       "Material de Escritorio",
+  "material de limpeza":                          "Material de Limpeza",
+  "material grafico":                             "Material Grafico",
+  "outras despesas":                              "Outras Despesas",
+  "uniformes":                                    "Uniformes",
+  "devolucao de tratamento":                      "Devolucao de Tratamento",
+  "fgts":                                         "FGTS",
+  "fgts rescisorio":                              "FGTS Rescisorio",
+  "inss (gps / dctfweb)":                        "INSS (GPS/DCTFWEB)",
+  "13 salario":                                   "13 Salario",
+  "13º salario":                                  "13 Salario",
+  "ferias":                                       "Ferias",
+  "auxiliar de cobranca":                         "R. Auxiliar de Cobranca",
+  "remuneracao asb - auxiliar em saude bucal":    "R. ASB",
+  "remuneracao asg - auxiliar de servicos gerais":"R. ASG",
+  "remuneracao gerente":                          "R. Gerente",
+  "remuneracao recepcionista":                    "R. Recepcionista",
+  "remuneracao relacionamento":                   "R. Relacionamento",
+  "remuneracao tsb - tecnica em saude bucal":     "R. TSB",
+  "rescisao trabalhista":                         "Rescisao Trabalhista",
+  "remuneracao captador(a) de leads":             "Comissao Captacao de Leads",
+  "fundo nacional de propaganda (fnp)":           "Fundo de Propaganda (FNP)",
+  "royalty":                                      "Royalty",
+  "implantes e componentes":                      "Implantes e Componentes",
+  "pcc/csrf (pis, cofins, csll)":                "PIS/COFINS/CSLL Trimestral",
+  "inss retido":                                  "ISS Retido",
+  "irrf":                                         "IRRF",
+  "iss retido":                                   "ISS Retido",
+  "csll":                                         "CSLL",
+  "irpj":                                         "IRPJ",
+  "cofins":                                       "COFINS",
+  "iss":                                          "ISS",
+  "pis":                                          "PIS",
+  "eventos externos":                             "Eventos Externos",
+  "outdoor":                                      "Outdoor",
+  "outras midias offline":                        "Outras Midias",
+  "radio":                                        "Radio",
+  "facebook":                                     "Facebook",
+  "google":                                       "Google",
+  "instagram":                                    "Instagram",
+  "youtube":                                      "YouTube",
+  "outras midias online":                         "YouTube",
+  "laboratorio externo":                          "Lab. Externo (consolidado)",
+  "insumos para laboratorio":                     "Insumos para Lab.",
+  "remuneracao auxiliar de protese":              "R. Auxiliar de Protese",
+  "remuneracao protetico":                        "R. Protetico",
+  "medicamentos":                                 "Medicamentos",
+  "agua":                                         "Agua",
+  "aluguel":                                      "Aluguel",
+  "celular":                                      "Celular",
+  "coleta de lixo":                               "Coleta de Lixo",
+  "energia eletrica":                             "Energia Eletrica",
+  "internet/telefone":                            "Internet/Telefone",
+  "iptu":                                         "IPTU",
+  "manutencao predial":                           "Manutencao Predial",
+  "alvara prefeitura":                            "Alvara Prefeitura",
+  "alvara sanitario":                             "Alvara Sanitario",
+  "cro":                                          "CRO",
+  "certificado digital & analise de credito":     "Cert. Digital/Credito",
+  "assistencia juridica":                         "Assistencia Juridica",
+  "assistencia tecnica":                          "Assistencia Tecnica",
+  "consultoria":                                  "Consultoria",
+  "contabilidade":                                "Contabilidade",
+  "medicina do trabalho":                         "Medicina do Trabalho",
+  "medico anestesista":                           "Medico Anestesista",
+};
+
+// ── Real data: Fev / Mar / Abr / Mai 2026
+const REAL_DATA = {
+  "2026-02":{label:"Fevereiro 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:242.95},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:649.42},{d:"Alvará Sanitário",v:208.37},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1750.0},{d:"Auxiliar de Cobrança",v:2149.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:403.0},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:374.13},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:0.0},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:371.9},{d:"Bonificação/Comissionamento - Gerente",v:350.0},{d:"Bonificação/Comissionamento - Protético",v:0.0},{d:"Bonificação/Comissionamento - Recepção",v:850.0},{d:"Bonificação/Comissionamento - Relacionamento",v:1472.71},{d:"Brindes",v:2187.69},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:221.26},{d:"Certificado Digital & Análise de Crédito",v:1561.51},{d:"COFINS",v:11401.33},{d:"Coleta de Lixo",v:304.53},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:3702.2},{d:"Condomínio",v:0.0},{d:"Consultoria",v:7478.55},{d:"Contabilidade",v:2450.73},{d:"Copa e Cozinha",v:722.0},{d:"CRO",v:0.0},{d:"CSLL",v:10945.28},{d:"Despesas Bancárias",v:1234.7},{d:"Devolução de Tratamento",v:1970.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:3581.33},{d:"Eventos Externos",v:3635.36},{d:"Facebook",v:4000.0},{d:"Férias",v:0.0},{d:"FGTS",v:2122.6},{d:"FGTS Rescisório",v:621.47},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:480.0},{d:"Fundo Nacional de Propaganda (FNP)",v:4770.62},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:2000.0},{d:"Implantes e Componentes",v:23204.37},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:0.0},{d:"INSS (GPS / DCTFWEB)",v:8533.04},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:7891.88},{d:"Insumos para Laboratório",v:2942.3},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:18242.13},{d:"IRRF",v:0.0},{d:"ISS",v:11401.47},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:24702.43},{d:"Manutenção Predial",v:3276.0},{d:"Material de Escritório",v:305.58},{d:"Material de Limpeza",v:654.39},{d:"Material Gráfico",v:2367.75},{d:"Medicamentos",v:2666.61},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:4600.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:1400.0},{d:"Outras Despesas",v:5610.17},{d:"Outras Mídias Offline",v:1400.0},{d:"Outras Mídias Online",v:1604.87},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2470.29},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10739.0},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2488.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:1820.0},{d:"Remuneração Avaliador Com Comissão",v:17464.25},{d:"Remuneração Captador(a) de Leads",v:1000.0},{d:"Remuneração Dentistas",v:46876.0},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:2932.0},{d:"Remuneração Protético",v:17850.0},{d:"Remuneração Recepcionista",v:1338.0},{d:"Remuneração Relacionamento",v:3151.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:2766.0},{d:"Rescisão Trabalhista",v:4831.72},{d:"Royalty",v:28623.69},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:1579.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
+  "2026-03":{label:"Março 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:240.12},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:0.0},{d:"Alvará Sanitário",v:0.0},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1695.0},{d:"Auxiliar de Cobrança",v:2463.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:306.8},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:265.94},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:0.0},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:26.5},{d:"Bonificação/Comissionamento - Gerente",v:954.55},{d:"Bonificação/Comissionamento - Protético",v:250.0},{d:"Bonificação/Comissionamento - Recepção",v:815.0},{d:"Bonificação/Comissionamento - Relacionamento",v:1417.6},{d:"Brindes",v:2596.78},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:263.06},{d:"Certificado Digital & Análise de Crédito",v:1505.02},{d:"COFINS",v:10482.1},{d:"Coleta de Lixo",v:310.82},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:5603.13},{d:"Condomínio",v:0.0},{d:"Consultoria",v:5437.96},{d:"Contabilidade",v:1650.73},{d:"Copa e Cozinha",v:901.69},{d:"CRO",v:0.0},{d:"CSLL",v:10062.81},{d:"Despesas Bancárias",v:1139.45},{d:"Devolução de Tratamento",v:3500.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:5259.02},{d:"Eventos Externos",v:5207.46},{d:"Facebook",v:4000.0},{d:"Férias",v:0.0},{d:"FGTS",v:2051.35},{d:"FGTS Rescisório",v:0.0},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:290.0},{d:"Fundo Nacional de Propaganda (FNP)",v:4764.13},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:500.0},{d:"Implantes e Componentes",v:21913.88},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:0.0},{d:"INSS (GPS / DCTFWEB)",v:7342.36},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:9960.02},{d:"Insumos para Laboratório",v:3476.95},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:16771.36},{d:"IRRF",v:0.0},{d:"ISS",v:10482.24},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:23733.18},{d:"Manutenção Predial",v:5058.0},{d:"Material de Escritório",v:341.26},{d:"Material de Limpeza",v:710.8},{d:"Material Gráfico",v:1553.75},{d:"Medicamentos",v:1852.23},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:5100.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:3666.66},{d:"Outras Despesas",v:6827.84},{d:"Outras Mídias Offline",v:1900.0},{d:"Outras Mídias Online",v:104.97},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2271.12},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10495.19},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2742.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:2000.0},{d:"Remuneração Avaliador Com Comissão",v:14063.27},{d:"Remuneração Captador(a) de Leads",v:3062.84},{d:"Remuneração Dentistas",v:36112.19},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:3400.0},{d:"Remuneração Protético",v:17000.0},{d:"Remuneração Recepcionista",v:1554.0},{d:"Remuneração Relacionamento",v:3656.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:3217.0},{d:"Rescisão Trabalhista",v:0.0},{d:"Royalty",v:28584.79},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:1800.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
+  "2026-04":{label:"Abril 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:286.54},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:0.0},{d:"Alvará Sanitário",v:0.0},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1460.0},{d:"Auxiliar de Cobrança",v:2406.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:200.0},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:590.4},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:0.0},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:58.0},{d:"Bonificação/Comissionamento - Gerente",v:1508.55},{d:"Bonificação/Comissionamento - Protético",v:0.0},{d:"Bonificação/Comissionamento - Recepção",v:968.0},{d:"Bonificação/Comissionamento - Relacionamento",v:2913.52},{d:"Brindes",v:2689.84},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:271.26},{d:"Certificado Digital & Análise de Crédito",v:1619.59},{d:"COFINS",v:10402.13},{d:"Coleta de Lixo",v:304.53},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:2591.98},{d:"Condomínio",v:0.0},{d:"Consultoria",v:7966.13},{d:"Contabilidade",v:1650.73},{d:"Copa e Cozinha",v:576.69},{d:"CRO",v:0.0},{d:"CSLL",v:9991.8},{d:"Despesas Bancárias",v:1266.05},{d:"Devolução de Tratamento",v:3350.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:534.73},{d:"Eventos Externos",v:2825.36},{d:"Facebook",v:4000.0},{d:"Férias",v:0.0},{d:"FGTS",v:2882.19},{d:"FGTS Rescisório",v:0.0},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:343.9},{d:"Fundo Nacional de Propaganda (FNP)",v:5046.02},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:500.0},{d:"Implantes e Componentes",v:24636.71},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:3922.93},{d:"INSS (GPS / DCTFWEB)",v:7724.81},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:9142.89},{d:"Insumos para Laboratório",v:5101.7},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:45083.17},{d:"IRRF",v:0.0},{d:"ISS",v:10402.18},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:33694.43},{d:"Manutenção Predial",v:740.0},{d:"Material de Escritório",v:326.78},{d:"Material de Limpeza",v:1144.82},{d:"Material Gráfico",v:1690.0},{d:"Medicamentos",v:1134.88},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:6900.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:5083.33},{d:"Outras Despesas",v:5257.97},{d:"Outras Mídias Offline",v:1813.0},{d:"Outras Mídias Online",v:104.97},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2253.79},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10074.0},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2679.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:2000.0},{d:"Remuneração Avaliador Com Comissão",v:18297.51},{d:"Remuneração Captador(a) de Leads",v:2379.62},{d:"Remuneração Dentistas",v:51127.1},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:2692.0},{d:"Remuneração Protético",v:20400.0},{d:"Remuneração Recepcionista",v:3586.0},{d:"Remuneração Relacionamento",v:3655.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:3160.0},{d:"Rescisão Trabalhista",v:0.0},{d:"Royalty",v:30276.14},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:1957.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
+  "2026-05":{label:"Maio 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:243.58},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:0.0},{d:"Alvará Sanitário",v:0.0},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1953.34},{d:"Auxiliar de Cobrança",v:2385.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:281.0},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:407.73},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:30.4},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:92.0},{d:"Bonificação/Comissionamento - Gerente",v:645.0},{d:"Bonificação/Comissionamento - Protético",v:0.0},{d:"Bonificação/Comissionamento - Recepção",v:1551.25},{d:"Bonificação/Comissionamento - Relacionamento",v:2326.47},{d:"Brindes",v:645.99},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:283.15},{d:"Certificado Digital & Análise de Crédito",v:1966.75},{d:"COFINS",v:9484.35},{d:"Coleta de Lixo",v:304.53},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:4820.45},{d:"Condomínio",v:0.0},{d:"Consultoria",v:0.0},{d:"Contabilidade",v:1722.14},{d:"Copa e Cozinha",v:540.0},{d:"CRO",v:0.0},{d:"CSLL",v:9104.97},{d:"Despesas Bancárias",v:1434.65},{d:"Devolução de Tratamento",v:9950.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:2870.92},{d:"Eventos Externos",v:2359.05},{d:"Facebook",v:4500.0},{d:"Férias",v:0.0},{d:"FGTS",v:2988.21},{d:"FGTS Rescisório",v:0.0},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:440.0},{d:"Fundo Nacional de Propaganda (FNP)",v:4497.12},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:500.0},{d:"Implantes e Componentes",v:24424.45},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:104.93},{d:"INSS (GPS / DCTFWEB)",v:8793.38},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:10138.66},{d:"Insumos para Laboratório",v:4597.64},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:24774.39},{d:"IRRF",v:0.0},{d:"ISS",v:9484.4},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:29980.43},{d:"Manutenção Predial",v:3633.99},{d:"Material de Escritório",v:394.41},{d:"Material de Limpeza",v:417.19},{d:"Material Gráfico",v:1691.0},{d:"Medicamentos",v:812.49},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:7300.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:5083.33},{d:"Outras Despesas",v:10062.04},{d:"Outras Mídias Offline",v:900.0},{d:"Outras Mídias Online",v:0.0},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2054.94},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10074.0},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2695.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:2000.0},{d:"Remuneração Avaliador Com Comissão",v:19857.94},{d:"Remuneração Captador(a) de Leads",v:2056.92},{d:"Remuneração Dentistas",v:48614.21},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:2692.0},{d:"Remuneração Protético",v:19100.0},{d:"Remuneração Recepcionista",v:3610.0},{d:"Remuneração Relacionamento",v:3656.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:3472.0},{d:"Rescisão Trabalhista",v:0.0},{d:"Royalty",v:26982.72},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:2009.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
+};
+
+// ═══════════════════════════════════════
+// POCKETBASE API
+// ═══════════════════════════════════════
+const PB = 'https://oralunic-athena-pb-production.up.railway.app';
+let pbToken = null;
+let pbUser  = null;
+let selectedEmail = null;
+
+function setSyncDot(state){ // 'spin'|'ok'|'err'
+  const d = document.getElementById('sync-dot');
+  if(!d) return;
+  d.className = 'sync-dot ' + state;
+}
+
+async function pbFetch(method, path, body){
+  setSyncDot('spin');
+  try {
+    const r = await fetch(PB + path, {
+      method,
+      headers: { 'Content-Type':'application/json', ...(pbToken ? {'Authorization': pbToken} : {}) },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const j = await r.json();
+    if(!r.ok) throw new Error(j.message || r.status);
+    setSyncDot('ok');
+    return j;
+  } catch(e) {
+    setSyncDot('err');
+    throw e;
+  }
+}
+
+function selectUser(el, email, name){
+  document.querySelectorAll('.user-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedEmail = email;
+  document.getElementById('pass-label').textContent = 'Senha de ' + name;
+  document.getElementById('pass-field').style.display = '';
+  document.getElementById('login-btn').style.display = '';
+  document.getElementById('login-err').textContent = '';
+  setTimeout(()=>document.getElementById('login-pass').focus(), 50);
+}
+
+async function doLogin(){
+  const email = selectedEmail;
+  const pass  = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  if(!email){ errEl.textContent = 'Selecione seu nome.'; return; }
+  if(!pass){ errEl.textContent = 'Digite a senha.'; return; }
+  try {
+    const r = await fetch(PB + '/api/collections/users/auth-with-password', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({identity: email, password: pass})
+    });
+    const j = await r.json();
+    if(!r.ok) { errEl.textContent = 'E-mail ou senha incorretos.'; return; }
+    pbToken = j.token;
+    pbUser  = j.record;
+    localStorage.setItem('ou_athena_token', pbToken);
+    localStorage.setItem('ou_athena_user', JSON.stringify(pbUser));
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('user-pill').style.display = 'flex';
+    document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+    setSyncDot('ok');
+    await loadFromPB();
+  } catch(e) {
+    errEl.textContent = 'Servidor offline. Verifique conexão.';
+  }
+}
+
+function doLogout(){
+  pbToken = null; pbUser = null; selectedEmail = null;
+  localStorage.removeItem('ou_athena_token');
+  localStorage.removeItem('ou_athena_user');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('user-pill').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('pass-field').style.display = 'none';
+  document.getElementById('login-btn').style.display = 'none';
+  document.querySelectorAll('.user-card').forEach(c=>c.classList.remove('selected'));
+}
+
+// Enter key on password field triggers login
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('login-pass')?.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+  document.getElementById('login-email')?.addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('login-pass').focus(); });
+});
+
+// ── PocketBase sync functions ──
+async function loadFromPB(){
+  try {
+    // Load months
+    const mRes = await pbFetch('GET', '/api/collections/months/records?perPage=50&sort=-created');
+    localStorage.removeItem('ou_athena_v2');
+    for(const rec of mRes.items){
+      saveMonth(rec.key, rec.label, rec.rows);
+    }
+    // Preenche meses do REAL_DATA que o PB ainda não tem (e salva no PB)
+    { const _s=getAll();
+      for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]) saveMonth(k,o.label,o.rows); } }
+    // Load overrides
+    const oRes = await pbFetch('GET', '/api/collections/overrides/records?perPage=500');
+    const ovObj = {};
+    for(const rec of oRes.items){
+      if(!ovObj[rec.desp]) ovObj[rec.desp] = {};
+      try { ovObj[rec.desp][rec.field] = JSON.parse(rec.value); }
+      catch(e) { ovObj[rec.desp][rec.field] = rec.value; }
+    }
+    localStorage.setItem('ou_athena_overrides', JSON.stringify(ovObj));
+    // Set current month to latest
+    const keys = Object.keys(getAll()).sort().reverse();
+    if(keys.length) currentMonth = getAll()[keys[0]];
+    renderAll();
+  } catch(e) {
+    console.warn('PB load error, using local data:', e);
+    const keys = Object.keys(getAll()).sort().reverse();
+    if(keys.length) currentMonth = getAll()[keys[0]];
+    renderAll();
+  }
+}
+
+async function pbSaveOverride(desp, field, val){
+  if(!pbToken) return;
+  try {
+    // Check if record exists
+    const res = await pbFetch('GET',
+      `/api/collections/overrides/records?filter=(desp='${encodeURIComponent(desp)}'%26%26field='${encodeURIComponent(field)}')`
+    );
+    const existing = res.items?.[0];
+    const valueStr = JSON.stringify(val);
+    if(existing){
+      await pbFetch('PATCH', `/api/collections/overrides/records/${existing.id}`, {value: valueStr});
+    } else {
+      await pbFetch('POST', '/api/collections/overrides/records', {desp, field, value: valueStr});
+    }
+  } catch(e){ console.warn('pbSaveOverride error:', e); }
+}
+
+async function pbDeleteOverrideField(desp, field){
+  if(!pbToken) return;
+  try {
+    const res = await pbFetch('GET',
+      `/api/collections/overrides/records?filter=(desp='${encodeURIComponent(desp)}'%26%26field='${encodeURIComponent(field)}')`
+    );
+    const existing = res.items?.[0];
+    if(existing) await pbFetch('DELETE', `/api/collections/overrides/records/${existing.id}`);
+  } catch(e){ console.warn('pbDeleteOverride error:', e); }
+}
+
+async function pbSaveMonth(key, label, rows){
+  if(!pbToken) return;
+  try {
+    const res = await pbFetch('GET', `/api/collections/months/records?filter=(key='${key}')`);
+    const existing = res.items?.[0];
+    if(existing){
+      await pbFetch('PATCH', `/api/collections/months/records/${existing.id}`, {key, label, rows});
+    } else {
+      await pbFetch('POST', '/api/collections/months/records', {key, label, rows});
+    }
+  } catch(e){ console.warn('pbSaveMonth error:', e); }
+}
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let currentMonth = null;
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+const fmt = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\/\(\)\-\. ]/g,'').trim();
+
+function monthLabel(m,y){
+  return ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m]+' '+y;
+}
+function monthKey(m,y){ return y+'-'+String(m).padStart(2,'0'); }
+
+// ═══════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════
+function getAll(){ try{ return JSON.parse(localStorage.getItem('ou_athena_v2')||'{}'); }catch(e){return{};} }
+function saveMonth(key,label,rows){ const a=getAll(); a[key]={key,label,rows}; localStorage.setItem('ou_athena_v2',JSON.stringify(a)); pbSaveMonth(key,label,rows); }
+function delMonth(key){ const a=getAll(); delete a[key]; localStorage.setItem('ou_athena_v2',JSON.stringify(a)); }
+
+// ── Overrides de métrica/tipo (editáveis pelo usuário)
+function getOverrides(){ try{ return JSON.parse(localStorage.getItem('ou_athena_overrides')||'{}'); }catch(e){return{};} }
+function saveOverride(desp, field, val){ const o=getOverrides(); if(!o[desp])o[desp]={}; o[desp][field]=val; localStorage.setItem('ou_athena_overrides',JSON.stringify(o)); pbSaveOverride(desp,field,val); }
+function deleteOverrideField(desp, field){ const o=getOverrides(); if(o[desp]) delete o[desp][field]; localStorage.setItem('ou_athena_overrides',JSON.stringify(o)); pbDeleteOverrideField(desp,field); }
+function resetOverrides(){ localStorage.removeItem('ou_athena_overrides'); renderAll(); }
+
+// ═══════════════════════════════════════
+// BUILD ROWS
+// ═══════════════════════════════════════
+const LAB_SUB_DESPS = ["AGA","Marcelo","Fabio","Breda","Kion Mensalidade","Kion Trabalhos"];
+const LAB_CONSOL    = "Lab. Externo (consolidado)";
+
+// Avaliador split: Comissao recebe valor total da planilha; Pro-Labore vem de override
+const AVAL_COMISSAO = "Comissao de Vendas Avaliador";
+const AVAL_PROLABORE = "Pro-Labore Avaliador";
+
+// Outras Despesas: sub-itens dinâmicos salvos em override como { items:[{nome,valor,tipo}] }
+const OUTRAS_CONSOL = "Outras Despesas";
+
+function buildRows(monthRows){
+  const realMap = {};
+  if(monthRows){
+    for(const r of monthRows){
+      const k = norm(r.d || r.despesa || '');
+      const target = MAP[k] || (r.d || r.despesa);
+      realMap[target] = (realMap[target]||0) + Number(r.v || r.valor || 0);
+    }
+  }
+  const overrides = getOverrides();
+
+  // Sub-lab allocation
+  const labTotal = realMap[LAB_CONSOL] || 0;
+  let labAllocated = 0;
+  for(const d of LAB_SUB_DESPS){ const ov=overrides[d]||{}; if(ov.real!==undefined) labAllocated+=ov.real; }
+  const labHasDist = LAB_SUB_DESPS.some(d => (overrides[d]||{}).real !== undefined);
+
+  // Avaliador split
+  const avalTotal = realMap[AVAL_COMISSAO] || 0;
+  const avalOv = overrides[AVAL_PROLABORE] || {};
+  const avalProLabore = avalOv.real !== undefined ? avalOv.real : 0;
+  const avalHasSplit = avalOv.real !== undefined;
+
+  // Outras Despesas sub-items
+  const outrasOv = overrides[OUTRAS_CONSOL] || {};
+  const outrasItems = outrasOv.items || [];
+  const outrasTotal = realMap[OUTRAS_CONSOL] || 0;
+
+  const baseRows = METRIC_BASE.map(([cat,desp,metrica,tipo])=>{
+    const ov = overrides[desp] || {};
+    const metricaEff = ov.metrica !== undefined ? ov.metrica : metrica;
+    const tipoEff    = ov.tipo    !== undefined ? ov.tipo    : tipo;
+    let real;
+    if(desp === LAB_CONSOL){
+      real = labHasDist ? Math.max(0, labTotal - labAllocated) : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else if(LAB_SUB_DESPS.includes(desp)){
+      real = ov.real !== undefined ? ov.real : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else if(desp === AVAL_PROLABORE){
+      real = avalHasSplit ? avalProLabore : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else if(desp === AVAL_COMISSAO){
+      real = avalHasSplit ? Math.max(0, avalTotal - avalProLabore) : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else {
+      real = realMap[desp] !== undefined ? realMap[desp] : null;
+    }
+    return makeRow(cat,desp,metricaEff,tipoEff,real);
+  });
+
+  // Inject Outras Despesas sub-rows after OUTRAS_CONSOL
+  const result = [];
+  for(const r of baseRows){
+    result.push(r);
+    if(r.desp === OUTRAS_CONSOL && outrasItems.length > 0){
+      for(const it of outrasItems){
+        result.push({...makeRow(r.cat, it.nome, null, it.tipo||'V', it.valor||0), isSub:true, parentDesp:OUTRAS_CONSOL});
+      }
+    }
+  }
+  return result;
+}
+
+function makeRow(cat,desp,metrica,tipo,real){
+  let status, rowClass, delta=null, deltaPct=null;
+  if(metrica !== null){
+    if(real === null){ status='warn'; rowClass='row-warn'; }
+    else if(real <= metrica){ status='ok'; rowClass='row-ok'; delta=real-metrica; deltaPct=metrica>0?(real-metrica)/metrica*100:0; }
+    else{ status='over'; rowClass='row-over'; delta=real-metrica; deltaPct=metrica>0?(real-metrica)/metrica*100:0; }
+  } else {
+    if(!real){ status='nf-eq'; rowClass='row-nf-eq'; }
+    else { status='nf-high'; rowClass='row-nf-high'; }
+  }
+  return {cat,desp,metrica,tipo,real,status,rowClass,delta,deltaPct};
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderAll(){
+  const rows = buildRows(currentMonth ? currentMonth.rows : null);
+  document.getElementById('current-month-badge').textContent = currentMonth ? currentMonth.label : 'Sem dados';
+  renderSwitcher();
+  renderSummary(rows);
+  renderLegend();
+  renderMainTable(rows);
+  renderFlatTable('fixed-tbody',   rows.filter(r=>r.tipo==='F'));
+  renderFlatTable('variable-tbody',rows.filter(r=>r.tipo==='V'));
+  renderMonthsList();
+  const hasData = !!currentMonth;
+  document.getElementById('empty-metrics').style.display  = hasData ? 'none':'block';
+  document.getElementById('metrics-table').style.display  = hasData ? '':'none';
+}
+
+function renderSwitcher(){
+  const all = getAll();
+  const keys = Object.keys(all).sort();
+  document.getElementById('month-switcher').innerHTML = keys.map(k=>`
+    <button class="month-pill ${currentMonth&&currentMonth.key===k?'active':''}" onclick="loadMonth('${k}')">${all[k].label.split(' ')[0].substring(0,3)} ${all[k].label.split(' ')[1]?.slice(2)||''}</button>
+  `).join('');
+}
+
+function renderSummary(rows){
+  const wr = rows.filter(r=>r.real!==null);
+  const total   = wr.reduce((s,r)=>s+r.real,0);
+  const fixedT  = wr.filter(r=>r.tipo==='F').reduce((s,r)=>s+r.real,0);
+  const varT    = wr.filter(r=>r.tipo==='V').reduce((s,r)=>s+r.real,0);
+  const okCt    = rows.filter(r=>r.status==='ok').length;
+  const overCt  = rows.filter(r=>r.status==='over').length;
+  document.getElementById('summary-cards').innerHTML = `
+    <div class="s-card total"><label>Total Realizado</label><div class="val">${total>0?fmt(total):'—'}</div><div class="sub">${wr.length} itens com valor</div></div>
+    <div class="s-card fixed"><label>Despesas Fixas</label><div class="val">${fixedT>0?fmt(fixedT):'—'}</div><div class="sub">${rows.filter(r=>r.tipo==='F'&&r.real!==null).length} itens</div></div>
+    <div class="s-card variable"><label>Despesas Variáveis</label><div class="val">${varT>0?fmt(varT):'—'}</div><div class="sub">${rows.filter(r=>r.tipo==='V'&&r.real!==null).length} itens</div></div>
+    <div class="s-card ok"><label>Dentro da Métrica</label><div class="val" style="color:var(--ok-text)">${okCt}</div><div class="sub">abaixo ou igual</div></div>
+    <div class="s-card over"><label>Acima da Métrica</label><div class="val" style="color:var(--over-text)">${overCt}</div><div class="sub">acima do previsto</div></div>
+    <div class="s-card manual" id="card-manual"><label>Seleção Manual</label><div class="val" id="card-manual-val">—</div><div class="sub" id="card-manual-sub">clique nas linhas para somar</div><button class="clear-sel-btn" onclick="clearSelection()" id="btn-clear-sel" style="display:none">✕ Limpar seleção</button></div>
+  `;
+}
+
+function renderLegend(){
+  document.getElementById('legend-block').innerHTML = `
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--ok-bg);border:1px solid var(--ok-text)"></div>Com métrica — abaixo (✓ %)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--warn-bg);border:1px solid var(--warn-text)"></div>Com métrica — aguardando</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--over-bg);border:1px solid var(--over-text)"></div>Com métrica — acima (%)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--nf-high-bg);border:1px solid var(--nf-high-text)"></div>Sem métrica — com valor</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--nf-eq-bg);border:1px solid #ccc"></div>Sem métrica — sem valor</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--vinho)"></div>Total da categoria</div>
+  `;
+}
+
+function renderMainTable(rows){
+  const cats={}, catOrder=[];
+  for(const r of rows){ if(!cats[r.cat]){cats[r.cat]=[];catOrder.push(r.cat);} cats[r.cat].push(r); }
+  let html='';
+  for(const cat of catOrder){
+    const cr=cats[cat];
+    const cTotal=cr.reduce((s,r)=>s+(r.real||0),0);
+    const cMet=cr.reduce((s,r)=>s+(r.metrica||0),0);
+    html+=`<tr class="cat-row"><td colspan="2">${cat}</td><td class="right">${cMet>0?fmt(cMet):'—'}</td><td class="right">${cTotal>0?fmt(cTotal):'—'}</td><td></td><td></td></tr>`;
+    for(const r of cr) html += dataRowHtml(r, true);
+  }
+  document.getElementById('metrics-tbody').innerHTML = html;
+  const totalMet = rows.reduce((s,r)=>s+(r.metrica||0),0);
+  const totalReal = rows.reduce((s,r)=>s+(r.real||0),0);
+  const totalsRow = document.getElementById('thead-totals');
+  if(rows.length>0){
+    document.getElementById('thead-total-metrica').textContent = fmt(totalMet);
+    document.getElementById('thead-total-real').textContent = fmt(totalReal);
+    totalsRow.style.display='';
+  } else {
+    totalsRow.style.display='none';
+  }
+}
+
+function renderFlatTable(id, rows){
+  document.getElementById(id).innerHTML = rows.map(r=>dataRowHtml(r,false)).join('');
+}
+
+// ── Seleção manual de linhas ──
+const _sel = new Map(); // desp → real value
+
+function toggleRowSelection(desp, realVal){
+  if(_sel.has(desp)){ _sel.delete(desp); }
+  else { _sel.set(desp, realVal||0); }
+  updateSelectionCard();
+  const tr = document.querySelector(`tr.data-row[data-desp="${CSS.escape(desp)}"]`);
+  if(tr) tr.classList.toggle('row-selected', _sel.has(desp));
+}
+
+function clearSelection(){
+  _sel.clear();
+  document.querySelectorAll('tr.data-row.row-selected').forEach(r=>r.classList.remove('row-selected'));
+  updateSelectionCard();
+}
+
+function updateSelectionCard(){
+  const valEl = document.getElementById('card-manual-val');
+  const subEl = document.getElementById('card-manual-sub');
+  const btnEl = document.getElementById('btn-clear-sel');
+  if(!valEl) return;
+  if(_sel.size===0){
+    valEl.textContent='—';
+    subEl.textContent='clique nas linhas para somar';
+    btnEl.style.display='none';
+  } else {
+    const soma = [..._sel.values()].reduce((a,b)=>a+b,0);
+    valEl.textContent = fmt(soma);
+    subEl.textContent = `${_sel.size} item${_sel.size>1?'s':''} selecionado${_sel.size>1?'s':''}`;
+    btnEl.style.display='block';
+  }
+}
+
+function dataRowHtml(r, indent){
+  const despEsc = r.desp.replace(/"/g,'&quot;').replace(/'/g,"\\'");
+  const badge = r.tipo==='F'
+    ? `<span class="badge badge-fixed editable-tipo" onclick="toggleTipo('${despEsc}')" title="Clique para mudar para Variável">Fixa</span>`
+    : `<span class="badge badge-variable editable-tipo" onclick="toggleTipo('${despEsc}')" title="Clique para mudar para Fixa">Variável</span>`;
+  let dHtml='—';
+  if(r.delta!==null){
+    const sign=r.delta>=0?'+':'';
+    const cls=r.delta>0?'up':r.delta<0?'down':'eq';
+    dHtml=`<span class="delta ${cls}">${sign}${fmt(r.delta)}<br><small>${sign}${r.deltaPct.toFixed(1)}%</small></span>`;
+  }
+  let sHtml='';
+  if(r.status==='ok')        sHtml=`<span class="metric-pill mp-ok">✓ Ok</span>`;
+  else if(r.status==='over') sHtml=`<span class="metric-pill mp-over">↑ Acima</span>`;
+  else if(r.status==='warn') sHtml=`<span class="metric-pill mp-warn">— Aguard.</span>`;
+  else                       sHtml=`<span class="metric-pill mp-nf">Sem métrica</span>`;
+  const isSub = !!r.isSub;
+  const lc = (indent && !isSub) ? 'label-col' : '';
+  const metVal = r.metrica !== null ? r.metrica : '';
+  const metDisplay = r.metrica !== null ? fmt(r.metrica) : '—';
+  let realCell;
+  if(r.desp === LAB_CONSOL){
+    const ovHasDist = LAB_SUB_DESPS.some(d => (getOverrides()[d]||{}).real !== undefined);
+    const tooltip = ovHasDist ? 'Distribuído — clique para editar' : 'Clique para distribuir por laboratório';
+    realCell = `<span class="editable-real" onclick="openLabModal()" title="${tooltip}">⚗ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else if(r.desp === AVAL_COMISSAO){
+    const hasSplit = (getOverrides()[AVAL_PROLABORE]||{}).real !== undefined;
+    const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
+    realCell = `<span class="editable-real" onclick="openDistModal('avaliador')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else if(r.desp === OUTRAS_CONSOL){
+    const hasItems = ((getOverrides()[OUTRAS_CONSOL]||{}).items||[]).length > 0;
+    const tooltip = hasItems ? 'Detalhado — clique para editar' : 'Clique para detalhar';
+    realCell = `<span class="editable-real" onclick="openDistModal('outras')" title="${tooltip}">≡ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else {
+    realCell = r.real!==null?fmt(r.real):'—';
+  }
+  const realNum = r.real !== null ? r.real : 0;
+  const trClass = isSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
+  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real'))toggleRowSelection('${despEsc}',${realNum})"`;
+  return `<tr class="${trClass}" data-desp="${despEsc}" ${trClick}>
+    <td class="${isSub?'label-col':lc}">${isSub?'↳ '+r.desp:r.desp}</td>
+    <td>${badge}</td>
+    <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
+    <td class="right">${realCell}</td>
+    <td class="right">${dHtml}</td>
+    <td class="right">${sHtml}</td>
+  </tr>`;
+}
+
+function toggleTipo(desp){
+  const ovs = getOverrides();
+  const cur = (ovs[desp]&&ovs[desp].tipo) || (METRIC_BASE.find(r=>r[1]===desp)||[])[3] || 'V';
+  saveOverride(desp, 'tipo', cur==='F'?'V':'F');
+  renderAll();
+}
+
+function editMetrica(el, desp, curVal){
+  const inp = document.createElement('input');
+  inp.type='number'; inp.min='0'; inp.step='0.01';
+  inp.value = curVal !== '' ? curVal : '';
+  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--cobre);border-radius:3px;text-align:right;font-family:inherit;background:white;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const v = inp.value.trim();
+    if(v===''){ saveOverride(desp,'metrica',null); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'metrica',n); }
+    renderAll();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ renderAll(); } });
+}
+
+function renderMonthsList(){
+  const all=getAll(), keys=Object.keys(all).sort().reverse();
+  const c=document.getElementById('months-list');
+  if(!keys.length){ c.innerHTML='<p style="font-size:11px;color:var(--moka);opacity:.5">Nenhum mês importado.</p>'; return; }
+  c.innerHTML=keys.map(k=>`
+    <div class="month-item">
+      <div>
+        <strong>${all[k].label}</strong>
+        <span>${all[k].rows.length} registros</span>
+      </div>
+      <div>
+        <button class="btn-sm btn-view" onclick="loadMonth('${k}')">Ver</button>
+        <button class="btn-sm btn-del"  onclick="removeMonth('${k}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════
+function loadMonth(key){ const a=getAll(); if(a[key]){ currentMonth=a[key]; renderAll(); switchTab('metrics'); } }
+function removeMonth(key){
+  if(!confirm('Remover '+getAll()[key]?.label+'?')) return;
+  delMonth(key);
+  if(currentMonth?.key===key) currentMonth=null;
+  renderAll();
+}
+function clearCurrent(){ currentMonth=null; renderAll(); }
+
+function loadRealData(){
+  clearLog();
+  log('Carregando Fev · Mar · Abr · Mai 2026...');
+  for(const [key,obj] of Object.entries(REAL_DATA)){
+    saveMonth(key, obj.label, obj.rows);
+    log('✓ '+obj.label+' — '+obj.rows.length+' registros');
+  }
+  currentMonth = getAll()['2026-05'];
+  renderAll();
+  log('Exibindo Maio 2026');
+  setTimeout(()=>switchTab('metrics'), 500);
+}
+
+function createBlankMonth(){
+  const m = parseInt(document.getElementById('import-month').value);
+  const y = parseInt(document.getElementById('import-year').value);
+  const key = monthKey(m, y);
+  const label = monthLabel(m, y);
+  const all = getAll();
+  if(all[key]){
+    if(!confirm(`${label} já existe. Deseja substituir pelos dados em branco?`)) return;
+  }
+  // Build rows from METRIC_BASE with value 0
+  const rows = METRIC_BASE.map(([,desp])=>({d: desp, v: 0}));
+  // Also add sub-lab names so they can receive values
+  for(const d of LAB_SUB_DESPS) rows.push({d, v:0});
+  clearLog();
+  saveMonth(key, label, rows);
+  currentMonth = getAll()[key];
+  renderAll();
+  log(`✓ ${label} criado em branco — ${METRIC_BASE.length} despesas com valor R$ 0,00`);
+  log('Edite os valores de Realizado usando o botão de importar CSV, ou atualize os valores de métrica diretamente na tabela.');
+  setTimeout(()=>switchTab('metrics'), 400);
+}
+
+// ═══════════════════════════════════════
+// CSV IMPORT
+// ═══════════════════════════════════════
+function log(msg){ const el=document.getElementById('import-log'); el.classList.add('visible'); el.innerHTML+=msg+'<br>'; el.scrollTop=el.scrollHeight; }
+function clearLog(){ const el=document.getElementById('import-log'); el.innerHTML=''; }
+
+function handleFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  clearLog(); log('Arquivo: '+file.name);
+  const m=parseInt(document.getElementById('import-month').value);
+  const y=parseInt(document.getElementById('import-year').value);
+  if(file.name.endsWith('.csv')){
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const rows=parseCSV(ev.target.result);
+      if(rows.length){ saveMonth(monthKey(m,y),monthLabel(m,y),rows); currentMonth=getAll()[monthKey(m,y)]; renderAll(); log('✓ '+rows.length+' registros importados'); setTimeout(()=>switchTab('metrics'),500); }
+    };
+    reader.readAsText(file,'UTF-8');
+  } else { log('⚠ Para .xlsx salve como CSV (UTF-8) primeiro.'); }
+}
+
+function parseCSV(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const hdr=lines[0].split(';').map(h=>norm(h));
+  const iD=hdr.findIndex(h=>h.includes('despesa')||h.includes('descri'));
+  const iV=hdr.findIndex(h=>h.includes('valor')||h.includes('total'));
+  if(iD<0||iV<0){ log('❌ Colunas "Despesa" e "Valor" não encontradas.'); return []; }
+  return lines.slice(1).map(l=>{ const c=l.split(';'); return {d:(c[iD]||'').trim().replace(/^"|"$/g,''), v:parseFloat((c[iV]||'0').replace(/[^0-9,\.]/g,'').replace(',','.'))||0}; }).filter(r=>r.d);
+}
+
+// ═══════════════════════════════════════
+// LAB EXTERNO DISTRIBUTION MODAL
+// ═══════════════════════════════════════
+function openLabModal(){
+  const total = (() => {
+    if(!currentMonth) return 0;
+    let t=0;
+    for(const r of currentMonth.rows){
+      const k = norm(r.d || r.despesa || '');
+      if(MAP[k] === LAB_CONSOL || (r.d||r.despesa) === LAB_CONSOL) t += Number(r.v||r.valor||0);
+    }
+    return t;
+  })();
+  const ovs = getOverrides();
+  document.getElementById('lab-total-line').textContent = 'Total Laboratório Externo: ' + fmt(total);
+  const rowsEl = document.getElementById('lab-modal-rows');
+  rowsEl.innerHTML = LAB_SUB_DESPS.map(d => {
+    const cur = (ovs[d]||{}).real;
+    return `<div class="lab-row">
+      <label>${d}</label>
+      <input type="number" min="0" step="0.01" data-desp="${d}" value="${cur !== undefined ? cur : ''}" placeholder="0,00" oninput="updateLabUnallocated(${total})">
+    </div>`;
+  }).join('');
+  updateLabUnallocated(total);
+  document.getElementById('lab-modal-overlay').classList.add('open');
+}
+
+function updateLabUnallocated(total){
+  let used = 0;
+  document.querySelectorAll('#lab-modal-rows input').forEach(inp => {
+    const v = parseFloat(inp.value.replace(',','.'));
+    if(!isNaN(v)) used += v;
+  });
+  const rem = total - used;
+  const el = document.getElementById('lab-unallocated');
+  el.textContent = 'Restante não alocado: ' + fmt(rem);
+  el.classList.toggle('negative', rem < -0.005);
+}
+
+function closeLabModal(){
+  document.getElementById('lab-modal-overlay').classList.remove('open');
+}
+
+function saveLabDist(){
+  LAB_SUB_DESPS.forEach(d => {
+    const inp = document.querySelector(`#lab-modal-rows input[data-desp="${d}"]`);
+    if(!inp) return;
+    const v = inp.value.trim();
+    if(v === ''){ const o=getOverrides(); if(o[d]) delete o[d].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(o)); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(d,'real',n); }
+  });
+  closeLabModal();
+  renderAll();
+}
+
+function clearLabDist(){
+  const o = getOverrides();
+  LAB_SUB_DESPS.forEach(d => { if(o[d]) delete o[d].real; });
+  localStorage.setItem('ou_athena_overrides', JSON.stringify(o));
+  closeLabModal();
+  renderAll();
+}
+
+// ═══════════════════════════════════════
+// GENERIC DISTRIBUTION MODAL
+// ═══════════════════════════════════════
+let _distMode = ''; // 'avaliador' | 'outras'
+
+function openDistModal(mode){
+  _distMode = mode;
+  const ovs = getOverrides();
+  const rowsEl = document.getElementById('dist-modal-rows');
+  const addBtn = document.getElementById('dist-add-btn');
+  const totalLine = document.getElementById('dist-total-line');
+  const title = document.getElementById('dist-modal-title');
+
+  if(mode === 'avaliador'){
+    title.textContent = 'Distribuir Remuneração Avaliador';
+    const total = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        if(MAP[k]===AVAL_COMISSAO||(r.d||r.despesa)===AVAL_COMISSAO) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    totalLine.textContent = 'Total Remuneração Avaliador (planilha): ' + fmt(total);
+    const curProLabore = (ovs[AVAL_PROLABORE]||{}).real;
+    rowsEl.innerHTML = `
+      <div class="dist-row">
+        <label style="flex:1;font-size:13px;color:var(--vinho-deep)">Pró-Labore Avaliador</label>
+        <input type="number" min="0" step="0.01" id="dist-aval-prolabore" value="${curProLabore!==undefined?curProLabore:''}" placeholder="0,00" oninput="updateDistUnallocated(${total})">
+      </div>
+      <div class="dist-row" style="opacity:.6">
+        <label style="flex:1;font-size:13px;color:var(--vinho-deep)">Comissão de Vendas (restante)</label>
+        <span id="dist-aval-comissao-display" style="font-size:13px;min-width:110px;text-align:right">${fmt(Math.max(0,total-(curProLabore||0)))}</span>
+      </div>`;
+    addBtn.style.display='none';
+    updateDistUnallocated(total);
+  } else if(mode === 'outras'){
+    title.textContent = 'Detalhar Outras Despesas';
+    const total = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        if(MAP[k]===OUTRAS_CONSOL||(r.d||r.despesa)===OUTRAS_CONSOL) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    totalLine.textContent = 'Total Outras Despesas (planilha): ' + fmt(total);
+    const items = (ovs[OUTRAS_CONSOL]||{}).items || [];
+    addBtn.style.display='block';
+    rowsEl.innerHTML = items.map((it,i)=>distOutrasRowHtml(it,i)).join('');
+    updateDistUnallocated(total);
+  }
+  document.getElementById('dist-modal-overlay').classList.add('open');
+}
+
+function distOutrasRowHtml(it, i){
+  return `<div class="dist-row" data-idx="${i}">
+    <input class="di-nome" type="text" placeholder="Nome da despesa" value="${(it.nome||'').replace(/"/g,'&quot;')}" oninput="updateDistUnallocated()">
+    <input class="di-val" type="number" min="0" step="0.01" placeholder="0,00" value="${it.valor||''}" oninput="updateDistUnallocated()">
+    <select class="di-tipo" oninput="updateDistUnallocated()">
+      <option value="V"${(it.tipo||'V')==='V'?' selected':''}>Variável</option>
+      <option value="F"${(it.tipo||'V')==='F'?' selected':''}>Fixa</option>
+    </select>
+    <button class="di-del" onclick="distRemoveRow(this)" title="Remover">✕</button>
+  </div>`;
+}
+
+function distAddRow(){
+  const rowsEl = document.getElementById('dist-modal-rows');
+  const i = rowsEl.querySelectorAll('.dist-row').length;
+  const div = document.createElement('div');
+  div.innerHTML = distOutrasRowHtml({}, i);
+  rowsEl.appendChild(div.firstChild);
+  updateDistUnallocated();
+}
+
+function distRemoveRow(btn){
+  btn.closest('.dist-row').remove();
+  updateDistUnallocated();
+}
+
+function updateDistUnallocated(total){
+  const el = document.getElementById('dist-unallocated');
+  if(_distMode === 'avaliador'){
+    const inp = document.getElementById('dist-aval-prolabore');
+    if(!inp||!el) return;
+    const v = parseFloat((inp.value||'').replace(',','.')) || 0;
+    const remaining = (total||0) - v;
+    const dispEl = document.getElementById('dist-aval-comissao-display');
+    if(dispEl) dispEl.textContent = fmt(Math.max(0, remaining));
+    el.textContent = 'Restante para comissão: ' + fmt(Math.max(0, remaining));
+    el.classList.toggle('negative', remaining < -0.005);
+  } else if(_distMode === 'outras'){
+    let used=0;
+    document.querySelectorAll('#dist-modal-rows .di-val').forEach(inp=>{
+      const v=parseFloat((inp.value||'').replace(',','.'));
+      if(!isNaN(v)) used+=v;
+    });
+    if(!el) return;
+    const curTotal = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        if(MAP[k]===OUTRAS_CONSOL||(r.d||r.despesa)===OUTRAS_CONSOL) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    const rem = curTotal - used;
+    el.textContent = 'Detalhado: ' + fmt(used) + ' · Não alocado: ' + fmt(rem);
+    el.classList.toggle('negative', rem < -0.005);
+  }
+}
+
+function closeDistModal(){
+  document.getElementById('dist-modal-overlay').classList.remove('open');
+}
+
+function saveDistModal(){
+  const ovs = getOverrides();
+  if(_distMode === 'avaliador'){
+    const inp = document.getElementById('dist-aval-prolabore');
+    const v = inp ? inp.value.trim() : '';
+    if(v === ''){ if(ovs[AVAL_PROLABORE]) delete ovs[AVAL_PROLABORE].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(AVAL_PROLABORE,'real',n); }
+  } else if(_distMode === 'outras'){
+    const items = [];
+    document.querySelectorAll('#dist-modal-rows .dist-row').forEach(row=>{
+      const nome = (row.querySelector('.di-nome')||{}).value||'';
+      const valStr = (row.querySelector('.di-val')||{}).value||'';
+      const tipo = (row.querySelector('.di-tipo')||{}).value||'V';
+      const valor = parseFloat(valStr.replace(',','.'));
+      if(nome.trim() && !isNaN(valor)) items.push({nome:nome.trim(), valor, tipo});
+    });
+    if(items.length===0){ if(ovs[OUTRAS_CONSOL]) delete ovs[OUTRAS_CONSOL].items; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); }
+    else {
+      if(!ovs[OUTRAS_CONSOL]) ovs[OUTRAS_CONSOL]={};
+      ovs[OUTRAS_CONSOL].items = items;
+      localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs));
+    }
+  }
+  closeDistModal();
+  renderAll();
+}
+
+function clearDistModal(){
+  const ovs = getOverrides();
+  if(_distMode === 'avaliador'){
+    if(ovs[AVAL_PROLABORE]) delete ovs[AVAL_PROLABORE].real;
+  } else if(_distMode === 'outras'){
+    if(ovs[OUTRAS_CONSOL]) delete ovs[OUTRAS_CONSOL].items;
+  }
+  localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs));
+  closeDistModal();
+  renderAll();
+}
+
+// ═══════════════════════════════════════
+// COMPARE MONTHS
+// ═══════════════════════════════════════
+function populateCompareSelects(){
+  const all = getAll();
+  const keys = Object.keys(all).sort();
+  const opts = keys.map(k=>`<option value="${k}">${all[k].label}</option>`).join('');
+  const noOpt = `<option value="">— Selecione —</option>`;
+  const sa = document.getElementById('cmp-a');
+  const sb = document.getElementById('cmp-b');
+  sa.innerHTML = noOpt + opts;
+  sb.innerHTML = noOpt + opts;
+  // default: A = oldest, B = newest
+  if(keys.length >= 2){ sa.value=keys[0]; sb.value=keys[keys.length-1]; }
+  else if(keys.length === 1){ sa.value=keys[0]; }
+}
+
+function buildRealMapForRows(rows){
+  const realMap = {};
+  if(!rows) return realMap;
+  for(const r of rows){
+    const k = norm(r.d || r.despesa || '');
+    const target = MAP[k] || (r.d || r.despesa);
+    realMap[target] = (realMap[target]||0) + Number(r.v || r.valor || 0);
+  }
+  return realMap;
+}
+
+function renderCompare(){
+  const all = getAll();
+  const keyA = document.getElementById('cmp-a').value;
+  const keyB = document.getElementById('cmp-b').value;
+  const onlyDiff = document.getElementById('cmp-only-diff').checked;
+  const hideZero = document.getElementById('cmp-hide-zero').checked;
+
+  const tableEl = document.getElementById('compare-table');
+  const emptyEl = document.getElementById('compare-empty');
+  const summaryEl = document.getElementById('compare-summary-bar');
+
+  if(!keyA || !keyB || keyA === keyB){
+    tableEl.style.display='none';
+    emptyEl.style.display='';
+    summaryEl.innerHTML='';
+    return;
+  }
+
+  tableEl.style.display='';
+  emptyEl.style.display='none';
+
+  const monthA = all[keyA], monthB = all[keyB];
+  const mapA = buildRealMapForRows(monthA?.rows);
+  const mapB = buildRealMapForRows(monthB?.rows);
+
+  document.getElementById('cmp-th-a').textContent = monthA?.label || keyA;
+  document.getElementById('cmp-th-b').textContent = monthB?.label || keyB;
+
+  // Build rows from METRIC_BASE
+  let html = '';
+  let lastCat = null;
+  let totalA=0, totalB=0;
+
+  for(const [cat, desp] of METRIC_BASE){
+    const vA = mapA[desp] || 0;
+    const vB = mapB[desp] || 0;
+    if(hideZero && vA===0 && vB===0) continue;
+    const diff = vB - vA;
+    if(onlyDiff && Math.abs(diff) < 0.005) continue;
+
+    if(cat !== lastCat){
+      lastCat = cat;
+      html += `<tr class="cmp-cat"><td colspan="6">${cat}</td></tr>`;
+    }
+    totalA += vA; totalB += vB;
+
+    const diffFmt = diff === 0 ? '—' : (diff>0?'+':'')+fmt(diff);
+    const diffCls = diff>0?'cmp-up':diff<0?'cmp-down':'cmp-eq';
+    const pct = vA > 0 ? ((diff/vA)*100).toFixed(1)+'%' : (vB>0?'+100%':'—');
+    const pctCls = diff>0?'cmp-up':diff<0?'cmp-down':'cmp-eq';
+    const trCls = vA===0&&vB>0?'cmp-new':vA>0&&vB===0?'cmp-gone':'';
+
+    html += `<tr class="cmp-row ${trCls}">
+      <td class="label-col">${cat}</td>
+      <td class="label-col">${desp}</td>
+      <td class="right">${vA?fmt(vA):'—'}</td>
+      <td class="right">${vB?fmt(vB):'—'}</td>
+      <td class="right"><span class="${diffCls}">${diffFmt}</span></td>
+      <td class="right"><span class="${pctCls}">${pct}</span></td>
+    </tr>`;
+  }
+  document.getElementById('compare-tbody').innerHTML = html;
+
+  // Summary pills
+  const totalDiff = totalB - totalA;
+  const totalPct = totalA > 0 ? ((totalDiff/totalA)*100).toFixed(1) : '—';
+  const pillCls = totalDiff > 0 ? 'delta-pos' : 'delta-neg';
+  const diffSign = totalDiff >= 0 ? '+' : '';
+  summaryEl.innerHTML = `
+    <div class="cmp-pill total-a"><label>${monthA?.label||keyA}</label><div class="cmp-val">${fmt(totalA)}</div></div>
+    <div class="cmp-pill total-b"><label>${monthB?.label||keyB}</label><div class="cmp-val">${fmt(totalB)}</div></div>
+    <div class="cmp-pill ${pillCls}"><label>Variação</label><div class="cmp-val">${diffSign}${fmt(totalDiff)}</div></div>
+    <div class="cmp-pill ${pillCls}"><label>Variação %</label><div class="cmp-val">${diffSign}${totalPct}%</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function switchTab(tab){
+  ['metrics','fixed','variable','compare','import'].forEach((t,i)=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'':'none';
+    document.querySelectorAll('.tab-btn')[i].classList.toggle('active',t===tab);
+  });
+  if(tab==='compare'){ populateCompareSelects(); renderCompare(); }
+}
+
+// ═══════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--vinho)';});
+dz.addEventListener('dragleave',()=>dz.style.borderColor='');
+dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';const f=e.dataTransfer.files[0];if(f)handleFile({target:{files:e.dataTransfer.files}});});
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Sincroniza REAL_DATA no localStorage (adiciona meses novos sem apagar existentes)
+  { const _s=getAll();
+    for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]){ _s[k]={key:k,label:o.label,rows:o.rows}; } }
+    localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
+  // Se já há sessão salva (token no localStorage), recarrega do PB direto
+  const _savedToken = localStorage.getItem('ou_athena_token');
+  const _savedUser  = localStorage.getItem('ou_athena_user');
+  if(_savedToken && _savedUser){
+    try {
+      pbToken = _savedToken;
+      pbUser  = JSON.parse(_savedUser);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      document.getElementById('user-pill').style.display = 'flex';
+      document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+      setSyncDot('ok');
+      await loadFromPB();
+    } catch(e) {
+      // token inválido — mostra login
+      localStorage.removeItem('ou_athena_token');
+      localStorage.removeItem('ou_athena_user');
+      document.getElementById('login-email')?.focus();
+    }
+  } else {
+    // Sem sessão — define currentMonth pelos dados locais para pré-visualização
+    const _initKeys = Object.keys(getAll()).sort().reverse();
+    if(_initKeys.length){ currentMonth = getAll()[_initKeys[0]]; renderAll(); }
+    setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
+  }
+});
+</script>
+</body>
+</html>
