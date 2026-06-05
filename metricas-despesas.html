@@ -1306,6 +1306,9 @@ const MAP = {
   "medico anestesista":                           "Medico Anestesista",
 };
 
+// ── norm: normaliza string removendo acentos, caracteres especiais e espaços duplos
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\/\(\)\-\. ]/g,'').replace(/  +/g,' ').trim();
+
 // ── MAP normalizado para lookup sem falhas de acento/símbolo
 const MAP_NORM = Object.fromEntries(Object.entries(MAP).map(([k,v])=>[norm(k),v]));
 
@@ -1479,7 +1482,6 @@ let currentMonth = null;
 // UTILS
 // ═══════════════════════════════════════
 const fmt = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\/\(\)\-\. ]/g,'').replace(/  +/g,' ').trim();
 
 function monthLabel(m,y){
   return ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m]+' '+y;
