@@ -1734,6 +1734,8 @@ function dataRowHtml(r, indent){
     const hasItems = ((getOverrides()[OUTRAS_CONSOL]||{}).items||[]).length > 0;
     const tooltip = hasItems ? 'Detalhado — clique para editar' : 'Clique para detalhar';
     realCell = `<span class="editable-real" onclick="openDistModal('outras')" title="${tooltip}">≡ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else if(LAB_SUB_DESPS.includes(r.desp)){
+    realCell = `<span class="editable-real" onclick="editReal(this,'${despEsc}',${r.real!==null?r.real:'null'})" title="Clique para editar">${r.real!==null?fmt(r.real):'—'}</span>`;
   } else {
     realCell = r.real!==null?fmt(r.real):'—';
   }
@@ -1755,6 +1757,23 @@ function toggleTipo(desp){
   const cur = (ovs[desp]&&ovs[desp].tipo) || (METRIC_BASE.find(r=>r[1]===desp)||[])[3] || 'V';
   saveOverride(desp, 'tipo', cur==='F'?'V':'F');
   renderAll();
+}
+
+function editReal(el, desp, curVal){
+  const inp = document.createElement('input');
+  inp.type='number'; inp.min='0'; inp.step='0.01';
+  inp.value = curVal !== null && curVal !== 'null' ? curVal : '';
+  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--cobre);border-radius:3px;text-align:right;font-family:inherit;background:white;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  function commit(){
+    const v = inp.value.trim();
+    if(v===''){ const o=getOverrides(); if(o[desp]) delete o[desp].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(o)); pbDeleteOverrideField(desp,'real'); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'real',n); }
+    renderAll();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ renderAll(); } });
 }
 
 function editMetrica(el, desp, curVal){
