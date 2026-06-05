@@ -1791,14 +1791,6 @@ function dataRowHtml(r, indent){
     const hasSplit = (getOverrides()[AVAL_PROLABORE]||{}).real !== undefined;
     const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
     realCell = `<span class="editable-real" onclick="openDistModal('avaliador')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
-  } else if(r.desp === ZIG_TOTAL){
-    const hasSplit = (getOverrides()[ZIG_PROLABORE]||{}).real !== undefined;
-    const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
-    realCell = `<span class="editable-real" onclick="openDistModal('zigomaticos')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
-  } else if(r.desp === IMP_TOTAL){
-    const hasSplit = (getOverrides()[IMP_PROLABORE]||{}).real !== undefined;
-    const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
-    realCell = `<span class="editable-real" onclick="openDistModal('implantes')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
   } else if(r.desp === OUTRAS_CONSOL){
     const hasItems = ((getOverrides()[OUTRAS_CONSOL]||{}).items||[]).length > 0;
     const tooltip = hasItems ? 'Detalhado — clique para editar' : 'Clique para detalhar';
