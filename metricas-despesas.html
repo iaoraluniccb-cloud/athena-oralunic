@@ -1795,10 +1795,6 @@ function dataRowHtml(r, indent){
     const hasSplit = (getOverrides()[ZIG_PROLABORE]||{}).real !== undefined;
     const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
     realCell = `<span class="editable-real" onclick="openDistModal('zigomaticos')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
-  } else if(r.desp === DENT_ZIG){
-    const hasSplit = (getOverrides()[DENT_ZIG_PL]||{}).real !== undefined;
-    const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
-    realCell = `<span class="editable-real" onclick="openDistModal('dent-zig')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
   } else if(r.desp === IMP_TOTAL){
     const hasSplit = (getOverrides()[IMP_PROLABORE]||{}).real !== undefined;
     const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
@@ -1814,9 +1810,7 @@ function dataRowHtml(r, indent){
   }
   const realNum = r.real !== null ? r.real : 0;
   const trClass = isSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
-  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.row-del-btn'))toggleRowSelection('${despEsc}',${realNum})"`;
-  const isCustom = !!((getOverrides()[despEsc]||{})._custom);
-  const delBtn = isSub ? '' : `<td style="width:22px;padding:2px 4px"><button class="row-del-btn" onclick="event.stopPropagation();rowDelete('${despEsc}',${isCustom})" title="${isCustom?'Excluir linha':'Ocultar linha'}">✕</button></td>`;
+  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real'))toggleRowSelection('${despEsc}',${realNum})"`;
   return `<tr class="${trClass}" data-desp="${despEsc}" ${trClick}>
     <td class="${isSub?'label-col':lc}">${isSub?'↳ '+r.desp:r.desp}</td>
     <td>${badge}</td>
@@ -1824,7 +1818,6 @@ function dataRowHtml(r, indent){
     <td class="right">${realCell}</td>
     <td class="right">${dHtml}</td>
     <td class="right">${sHtml}</td>
-    ${delBtn}
   </tr>`;
 }
 
@@ -2541,36 +2534,39 @@ function exportPDF(){
   doc.save('despesas-' + (currentMonth.key||mesLabel.replace(/\s/g,'-').toLowerCase()) + '.pdf');
 }
 </script>
-<div id=modal-add-row style=display:none;position:fixed;inset:0;background:rgba(26,15,10,.45);z-index:9999;align-items:center;justify-content:center;>
-  <div style=background:white;border-radius:12px;padding:28px 32px;width:360px;box-shadow:0 8px 32px rgba(106,31,48,.18);font-family:'Josefin Sans',sans-serif;>
-    <div style=font-family:'Cormorant SC',serif;font-size:16px;letter-spacing:.12em;color:var(--vinho);margin-bottom:4px;>Nova Linha</div>
-    <div id=row-add-cat-label style=font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--moka);opacity:.55;margin-bottom:18px;></div>
-    <div style=display:flex;flex-direction:column;gap:12px;>
+<div id="modal-add-row" style="display:none;position:fixed;inset:0;background:rgba(26,15,10,.45);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:28px 32px;width:360px;box-shadow:0 8px 32px rgba(106,31,48,.18);font-family:'Josefin Sans',sans-serif;">
+    <div style="font-family:'Cormorant SC',serif;font-size:16px;letter-spacing:.12em;color:var(--vinho);margin-bottom:4px;">Nova Linha</div>
+    <div id="row-add-cat-label" style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--moka);opacity:.55;margin-bottom:18px;"></div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
       <div>
-        <label style=font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;>Nome da despesa *</label>
-        <input id=row-add-nome type=text placeholder=Ex: Consultoria RH onkeydown=if(event.key==='Enter')rowAddConfirm() style=width:100%;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:14px;color:var(--tinta);outline:none;padding:4px 2px;>
+        <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Nome da despesa *</label>
+        <input id="row-add-nome" type="text" placeholder="Ex: Consultoria RH" onkeydown="if(event.key==='Enter')rowAddConfirm()"
+          style="width:100%;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:14px;color:var(--tinta);outline:none;padding:4px 2px;">
       </div>
-      <div style=display:grid;grid-template-columns:1fr 1fr;gap:12px;>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
-          <label style=font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;>Metrica (R$)</label>
-          <input id=row-add-metrica type=number min=0 step=0.01 placeholder=-- style=width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;>
+          <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Métrica (R$)</label>
+          <input id="row-add-metrica" type="number" min="0" step="0.01" placeholder="—"
+            style="width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;">
         </div>
         <div>
-          <label style=font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;>Realizado (R$)</label>
-          <input id=row-add-real type=number min=0 step=0.01 placeholder=-- style=width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;>
+          <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Realizado (R$)</label>
+          <input id="row-add-real" type="number" min="0" step="0.01" placeholder="—"
+            style="width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;">
         </div>
       </div>
       <div>
-        <label style=font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;>Tipo</label>
-        <select id=row-add-tipo style=border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;width:100%;>
-          <option value=V>Variavel</option>
-          <option value=F>Fixa</option>
+        <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Tipo</label>
+        <select id="row-add-tipo" style="border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;width:100%;">
+          <option value="V">Variável</option>
+          <option value="F">Fixa</option>
         </select>
       </div>
     </div>
-    <div style=display:flex;gap:10px;margin-top:22px;justify-content:flex-end;>
-      <button onclick=rowAddCancel() style=background:transparent;border:1px solid var(--warm);border-radius:8px;padding:7px 18px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--moka);cursor:pointer;>Cancelar</button>
-      <button onclick=rowAddConfirm() style=background:var(--vinho);border:none;border-radius:8px;padding:7px 18px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marfim);cursor:pointer;>Adicionar</button>
+    <div style="display:flex;gap:10px;margin-top:22px;justify-content:flex-end;">
+      <button onclick="rowAddCancel()" style="background:transparent;border:1px solid var(--warm);border-radius:8px;padding:7px 18px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--moka);cursor:pointer;">Cancelar</button>
+      <button onclick="rowAddConfirm()" style="background:var(--vinho);border:none;border-radius:8px;padding:7px 18px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marfim);cursor:pointer;">Adicionar</button>
     </div>
   </div>
 </div>
