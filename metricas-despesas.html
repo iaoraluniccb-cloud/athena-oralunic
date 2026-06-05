@@ -1404,9 +1404,8 @@ async function loadFromPB(){
     for(const rec of mRes.items){
       saveMonth(rec.key, rec.label, rec.rows);
     }
-    // Preenche meses do REAL_DATA que o PB ainda não tem (e salva no PB)
-    { const _s=getAll();
-      for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]) saveMonth(k,o.label,o.rows); } }
+    // Sincroniza REAL_DATA no PB (sempre sobrescreve — garante dados atualizados)
+    { for(const [k,o] of Object.entries(REAL_DATA)){ saveMonth(k,o.label,o.rows); } }
     // Load overrides
     const oRes = await pbFetch('GET', '/api/collections/overrides/records?perPage=500');
     const ovObj = {};
@@ -2218,9 +2217,9 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';const 
 // INIT
 // ═══════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async ()=>{
-  // Sincroniza REAL_DATA no localStorage (adiciona meses novos sem apagar existentes)
+  // Sincroniza REAL_DATA no localStorage (sempre sobrescreve — garante dados atualizados)
   { const _s=getAll();
-    for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]){ _s[k]={key:k,label:o.label,rows:o.rows}; } }
+    for(const [k,o] of Object.entries(REAL_DATA)){ _s[k]={key:k,label:o.label,rows:o.rows}; }
     localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
   // Se já há sessão salva (token no localStorage), recarrega do PB direto
   const _savedToken = localStorage.getItem('ou_athena_token');
