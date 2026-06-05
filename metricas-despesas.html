@@ -1526,9 +1526,9 @@ const ZIG_PROLABORE = "Pro-Labore Zigomaticos";
 const IMP_TOTAL     = "Implantes e Componentes";
 const IMP_PROLABORE = "Pro-Labore Implantes";
 
-// Cirurgião Zigomáticos split (seção Dentistas)
-const DENT_ZIG       = "Cirurgiao Zigomaticos";
-const DENT_ZIG_PL    = "Pro-Labore Cirurgiao Zigomaticos";
+// Remuneração Dentistas split — Cirurgião Zigomáticos sai do total
+const DENT_REM = "Remuneracao Dentistas";
+const DENT_ZIG = "Cirurgiao Zigomaticos";
 
 function buildRows(monthRows){
   const realMap = {};
@@ -1565,10 +1565,11 @@ function buildRows(monthRows){
   const impProLabore = impOv.real !== undefined ? impOv.real : 0;
   const impHasSplit = impOv.real !== undefined;
 
-  // Cirurgião Zigomáticos split (seção Dentistas) — valor vem de override, não da planilha
-  const dentZigOv = overrides[DENT_ZIG_PL] || {};
-  const dentZigProLabore = dentZigOv.real !== undefined ? dentZigOv.real : 0;
-  const dentZigHasSplit = dentZigOv.real !== undefined;
+  // Remuneração Dentistas split — Cirurgião Zigomáticos é separado do total
+  const dentRemTotal = realMap[DENT_REM] || 0;
+  const dentZigOv = overrides[DENT_ZIG] || {};
+  const dentZigVal = dentZigOv.real !== undefined ? dentZigOv.real : 0;
+  const dentHasSplit = dentZigOv.real !== undefined;
 
   // Outras Despesas sub-items
   const outrasOv = overrides[OUTRAS_CONSOL] || {};
@@ -1596,9 +1597,10 @@ function buildRows(monthRows){
       real = impHasSplit ? impProLabore : null;
     } else if(desp === IMP_TOTAL){
       real = impHasSplit ? Math.max(0, impTotal - impProLabore) : (realMap[desp] !== undefined ? realMap[desp] : null);
+    } else if(desp === DENT_REM){
+      real = dentHasSplit ? Math.max(0, dentRemTotal - dentZigVal) : (realMap[desp] !== undefined ? realMap[desp] : null);
     } else if(desp === DENT_ZIG){
-      const dentZigOvReal = ov.real !== undefined ? ov.real : null;
-      real = dentZigHasSplit ? Math.max(0, (dentZigOvReal||0) - dentZigProLabore) : dentZigOvReal;
+      real = dentHasSplit ? dentZigVal : (ov.real !== undefined ? ov.real : null);
     } else {
       real = realMap[desp] !== undefined ? realMap[desp] : null;
     }
@@ -1791,6 +1793,10 @@ function dataRowHtml(r, indent){
     const hasSplit = (getOverrides()[AVAL_PROLABORE]||{}).real !== undefined;
     const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Pró-Labore';
     realCell = `<span class="editable-real" onclick="openDistModal('avaliador')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
+  } else if(r.desp === DENT_REM){
+    const hasSplit = (getOverrides()[DENT_ZIG]||{}).real !== undefined;
+    const tooltip = hasSplit ? 'Distribuído — clique para editar' : 'Clique para separar Cirurgião Zigomáticos';
+    realCell = `<span class="editable-real" onclick="openDistModal('dent-zig')" title="${tooltip}">⚖ ${r.real!==null?fmt(r.real):'—'}</span>`;
   } else if(r.desp === OUTRAS_CONSOL){
     const hasItems = ((getOverrides()[OUTRAS_CONSOL]||{}).items||[]).length > 0;
     const tooltip = hasItems ? 'Detalhado — clique para editar' : 'Clique para detalhar';
@@ -2092,34 +2098,25 @@ function openDistModal(mode){
       </div>`;
     addBtn.style.display='none';
     updateDistUnallocated(total);
-  } else if(mode === 'zigomaticos' || mode === 'implantes' || mode === 'dent-zig'){
+  } else if(mode === 'zigomaticos' || mode === 'implantes'){
     const isZig = mode === 'zigomaticos';
-    const isDentZig = mode === 'dent-zig';
-    const TOTAL_KEY = isZig ? ZIG_TOTAL : (isDentZig ? DENT_ZIG : IMP_TOTAL);
-    const PL_KEY    = isZig ? ZIG_PROLABORE : (isDentZig ? DENT_ZIG_PL : IMP_PROLABORE);
-    const label     = isZig ? 'Cirurgião Zigomáticos (Implantes)' : (isDentZig ? 'Cirurgião Zigomáticos (Dentistas)' : 'Implantes e Componentes');
-    const plLabel   = (isZig || isDentZig) ? 'Pró-Labore Cirurgião' : 'Pró-Labore Implantes';
-    const restLabel = (isZig || isDentZig) ? 'Material/Implante (restante)' : 'Custo Implante (restante)';
+    const TOTAL_KEY = isZig ? ZIG_TOTAL : IMP_TOTAL;
+    const PL_KEY    = isZig ? ZIG_PROLABORE : IMP_PROLABORE;
+    const label     = isZig ? 'Cirurgião Zigomáticos' : 'Implantes e Componentes';
+    const plLabel   = isZig ? 'Pró-Labore Cirurgião' : 'Pró-Labore Implantes';
+    const restLabel = isZig ? 'Material/Implante (restante)' : 'Custo Implante (restante)';
     title.textContent = 'Distribuir ' + label;
-    let total;
-    if(isDentZig){
-      // Cirurgião Zigomáticos (Dentistas) não vem da planilha — usa override total ou 0
-      total = (ovs[TOTAL_KEY]||{}).real !== undefined ? (ovs[TOTAL_KEY]||{}).real : 0;
-    } else {
-      total = (() => {
-        if(!currentMonth) return 0;
-        let t=0;
-        for(const r of currentMonth.rows){
-          const k=norm(r.d||r.despesa||'');
-          const target = MAP_NORM[k] || (r.d||r.despesa);
-          if(target === TOTAL_KEY) t+=Number(r.v||r.valor||0);
-        }
-        return t;
-      })();
-    }
-    totalLine.textContent = isDentZig
-      ? 'Total informado (editável na linha): ' + fmt(total)
-      : 'Total ' + label + ' (planilha): ' + fmt(total);
+    const total = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        const target = MAP_NORM[k] || (r.d||r.despesa);
+        if(target === TOTAL_KEY) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    totalLine.textContent = 'Total ' + label + ' (planilha): ' + fmt(total);
     const curPL = (ovs[PL_KEY]||{}).real;
     rowsEl.innerHTML = `
       <div class="dist-row">
@@ -2129,6 +2126,31 @@ function openDistModal(mode){
       <div class="dist-row" style="opacity:.6">
         <label style="flex:1;font-size:13px;color:var(--vinho-deep)">${restLabel}</label>
         <span id="dist-split-rest-display" style="font-size:13px;min-width:110px;text-align:right">${fmt(Math.max(0,total-(curPL||0)))}</span>
+      </div>`;
+    addBtn.style.display='none';
+    updateDistUnallocated(total);
+  } else if(mode === 'dent-zig'){
+    title.textContent = 'Separar Cirurgião Zigomáticos';
+    const total = (() => {
+      if(!currentMonth) return 0;
+      let t=0;
+      for(const r of currentMonth.rows){
+        const k=norm(r.d||r.despesa||'');
+        const target = MAP_NORM[k] || (r.d||r.despesa);
+        if(target === DENT_REM) t+=Number(r.v||r.valor||0);
+      }
+      return t;
+    })();
+    totalLine.textContent = 'Total Remuneração Dentistas (planilha): ' + fmt(total);
+    const curZig = (ovs[DENT_ZIG]||{}).real;
+    rowsEl.innerHTML = `
+      <div class="dist-row">
+        <label style="flex:1;font-size:13px;color:var(--vinho-deep)">Cirurgião Zigomáticos</label>
+        <input type="number" min="0" step="0.01" id="dist-split-prolabore" value="${curZig!==undefined?curZig:''}" placeholder="0,00" oninput="updateDistUnallocated(${total})">
+      </div>
+      <div class="dist-row" style="opacity:.6">
+        <label style="flex:1;font-size:13px;color:var(--vinho-deep)">Remuneração Dentistas (restante)</label>
+        <span id="dist-split-rest-display" style="font-size:13px;min-width:110px;text-align:right">${fmt(Math.max(0,total-(curZig||0)))}</span>
       </div>`;
     addBtn.style.display='none';
     updateDistUnallocated(total);
@@ -2189,7 +2211,7 @@ function updateDistUnallocated(total){
     if(dispEl) dispEl.textContent = fmt(Math.max(0, remaining));
     el.textContent = 'Restante para comissão: ' + fmt(Math.max(0, remaining));
     el.classList.toggle('negative', remaining < -0.005);
-  } else if(_distMode === 'zigomaticos' || _distMode === 'implantes' || _distMode === 'dent-zig'){
+  } else if(_distMode === 'zigomaticos' || _distMode === 'implantes' || _distMode === 'dent-zig'){  // shared input id
     const inp = document.getElementById('dist-split-prolabore');
     if(!inp||!el) return;
     const v = parseFloat((inp.value||'').replace(',','.')) || 0;
@@ -2231,12 +2253,17 @@ function saveDistModal(){
     const v = inp ? inp.value.trim() : '';
     if(v === ''){ if(ovs[AVAL_PROLABORE]) delete ovs[AVAL_PROLABORE].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); }
     else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(AVAL_PROLABORE,'real',n); }
-  } else if(_distMode === 'zigomaticos' || _distMode === 'implantes' || _distMode === 'dent-zig'){
-    const PL_KEY = _distMode === 'zigomaticos' ? ZIG_PROLABORE : (_distMode === 'dent-zig' ? DENT_ZIG_PL : IMP_PROLABORE);
+  } else if(_distMode === 'zigomaticos' || _distMode === 'implantes'){
+    const PL_KEY = _distMode === 'zigomaticos' ? ZIG_PROLABORE : IMP_PROLABORE;
     const inp = document.getElementById('dist-split-prolabore');
     const v = inp ? inp.value.trim() : '';
     if(v === ''){ if(ovs[PL_KEY]) delete ovs[PL_KEY].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); pbDeleteOverrideField(PL_KEY,'real'); }
     else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(PL_KEY,'real',n); }
+  } else if(_distMode === 'dent-zig'){
+    const inp = document.getElementById('dist-split-prolabore');
+    const v = inp ? inp.value.trim() : '';
+    if(v === ''){ if(ovs[DENT_ZIG]) delete ovs[DENT_ZIG].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(ovs)); pbDeleteOverrideField(DENT_ZIG,'real'); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(DENT_ZIG,'real',n); }
   } else if(_distMode === 'outras'){
     const items = [];
     document.querySelectorAll('#dist-modal-rows .dist-row').forEach(row=>{
