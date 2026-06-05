@@ -541,7 +541,7 @@
 </div>
 
 <!-- BARRA DE ABAS — estilo Athena -->
-<div style="background:var(--marfim);padding:12px 24px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--warm);flex-wrap:wrap;">
+<div style="background:var(--marfim);padding:10px 24px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--warm);flex-wrap:wrap;">
   <div class="tabs">
     <button class="tab active" onclick="switchTab('cobranca')">Cobrança <span class="tab-badge" id="badge-cobranca">0</span></button>
     <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
@@ -550,7 +550,14 @@
     <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
     <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
   </div>
-  <button onclick="openBackupModal()" style="margin-left:auto;background:transparent;border:1px solid var(--warm);color:var(--moka);border-radius:14px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.08em;display:flex;align-items:center;gap:6px;opacity:.7">💾 Backup</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+    <div id="fin-user-badge" style="display:none;align-items:center;gap:6px;background:rgba(139,45,66,0.06);border:1px solid rgba(139,45,66,0.15);border-radius:20px;padding:4px 12px 4px 8px">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--vinho);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--marfim);font-family:var(--font-body);font-weight:600" id="fin-user-avatar">T</div>
+      <span id="fin-user-name" style="font-size:11px;letter-spacing:.06em;color:var(--moka);font-family:var(--font-body)"></span>
+    </div>
+    <button id="fin-save-btn" onclick="finSaveAll()" style="background:var(--vinho);border:none;color:var(--marfim);border-radius:14px;padding:6px 16px;font-size:11px;letter-spacing:.08em;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;gap:6px;transition:background .2s" onmouseenter="this.style.background='var(--vinho-p)'" onmouseleave="this.style.background='var(--vinho)'">💾 Salvar</button>
+    <button onclick="openBackupModal()" style="background:transparent;border:1px solid var(--warm);color:var(--moka);border-radius:14px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.08em;display:flex;align-items:center;gap:6px;opacity:.7">Backup</button>
+  </div>
 </div>
 
 <!-- MAIN -->
@@ -6769,6 +6776,34 @@ async function syncAprovFromSB(){
 
 // Polling a cada 15 segundos
 setInterval(syncAprovFromSB, 15000);
+
+// ==================== BADGE USUÁRIO + SALVAR ====================
+function finUpdateUserBadge(){
+  try {
+    const u = JSON.parse(localStorage.getItem('ou_athena_user') || 'null');
+    const nome = u?.name || u?.user_metadata?.name || u?.email?.split('@')[0] || '';
+    const badge = document.getElementById('fin-user-badge');
+    const nameEl = document.getElementById('fin-user-name');
+    const avatarEl = document.getElementById('fin-user-avatar');
+    if(nome && badge){
+      nameEl.textContent = nome;
+      avatarEl.textContent = nome.charAt(0).toUpperCase();
+      badge.style.display = 'flex';
+    }
+  } catch(e){}
+}
+
+function finSaveAll(){
+  save(); saveNegs(); persistDes(); persistCob(); persistBoletos();
+  try { persistConcMeses(); } catch(e){}
+  const btn = document.getElementById('fin-save-btn');
+  if(btn){ btn.textContent = '✓ Salvo'; btn.style.background='var(--green)'; setTimeout(()=>{ btn.innerHTML='💾 Salvar'; btn.style.background='var(--vinho)'; }, 1500); }
+}
+
+// Atualiza badge assim que a página carrega (token já pode estar no localStorage)
+finUpdateUserBadge();
+// Reatualiza após login no Supabase (polling leve)
+setInterval(finUpdateUserBadge, 5000);
 
 // ==================== EXPORTAR CSV ====================
 function csvEscape(v){ const s=String(v??''); return s.includes(',')||s.includes('"')||s.includes('\n') ? '"'+s.replace(/"/g,'""')+'"' : s; }
