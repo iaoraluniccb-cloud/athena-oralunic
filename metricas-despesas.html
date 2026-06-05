@@ -914,6 +914,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <button class="tab-btn" onclick="switchTab('compare')">Comparar Meses</button>
   <button class="tab-btn" onclick="switchTab('import')">Importar Despesas</button>
   <button class="tab-btn tab-btn-pdf" onclick="exportPDF()" title="Exportar relatório em PDF">📄 Exportar PDF</button>
+  <button class="tab-btn tab-btn-pdf" onclick="exportBackup()" title="Baixar backup das edições" style="background:var(--cobre);border-color:var(--cobre)">💾 Backup</button>
 </div>
 
 <main>
@@ -2268,6 +2269,22 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 
 // ═══════════════════════════════════════
 // EXPORTAR PDF
+function exportBackup(){
+  const overrides = getOverrides();
+  const data = {
+    exportedAt: new Date().toISOString(),
+    mes: currentMonth ? currentMonth.label : 'nenhum',
+    overrides
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'athena-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ═══════════════════════════════════════
 function exportPDF(){
   if(!currentMonth){ alert('Selecione um mês antes de exportar.'); return; }
