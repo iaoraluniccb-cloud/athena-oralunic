@@ -1973,9 +1973,20 @@ async function loadFromSB(){
     for(const rec of mRes){
       const a = getAll(); a[rec.key]={key:rec.key,label:rec.label,rows:rec.rows}; localStorage.setItem('ou_athena_v2',JSON.stringify(a));
     }
-    // Preenche meses do REAL_DATA que o SB ainda não tem
+    // Sincroniza REAL_DATA → SB/localStorage (garante que correções no código propagam)
     { const _s=getAll();
-      for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]) saveMonth(k,o.label,o.rows); } }
+      for(const [k,o] of Object.entries(REAL_DATA)){
+        if(!_s[k]){ saveMonth(k,o.label,o.rows); }
+        else {
+          // Verifica se algum valor do código difere do armazenado e atualiza
+          const stored = _s[k].rows;
+          const source = o.rows;
+          let dirty = stored.length !== source.length;
+          if(!dirty){ for(let i=0;i<source.length;i++){ if(!stored[i]||stored[i].d!==source[i].d||stored[i].v!==source[i].v){dirty=true;break;} } }
+          if(dirty) saveMonth(k,o.label,o.rows);
+        }
+      }
+    }
     // Load overrides
     const oRes = await sbFetch('GET', '/rest/v1/overrides?select=desp,field,value');
     const ovObj = {};
