@@ -6777,6 +6777,96 @@ async function syncAprovFromSB(){
 // Polling a cada 15 segundos
 setInterval(syncAprovFromSB, 15000);
 
+// ==================== SYNC SUPABASE — DADOS FINANCEIROS ====================
+async function sbFin(method, path, body){
+  const opts = {
+    method,
+    headers: {
+      'apikey': SB_KEY_F,
+      'Authorization': `Bearer ${SB_KEY_F}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal'
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB_URL_F + path, opts);
+  return r;
+}
+
+async function sbUpsertFin(table, rows){
+  if(!rows || !rows.length) return;
+  // Supabase aceita upsert em lotes — manda de 50 em 50
+  for(let i=0; i<rows.length; i+=50){
+    const chunk = rows.slice(i, i+50);
+    await sbFin('POST', `/rest/v1/${table}`, chunk);
+  }
+}
+
+async function finPushAllToSupabase(){
+  const btn = document.getElementById('fin-save-btn');
+  if(btn){ btn.textContent = '⏳ Salvando...'; btn.style.background='var(--yellow,#b45309)'; btn.disabled=true; }
+
+  try {
+    // 1. Renegociações
+    await sbUpsertFin('fin_renegociacoes', records.map(r=>({
+      id: String(r.id),
+      nome: r.nome,
+      ficha: r.ficha,
+      data: r.data,
+      valor_total: r.valorTotal,
+      valor_entrada: r.valorEntrada,
+      num_reneg: r.numReneg,
+      situacao: r.situacao,
+      contato: r.contato,
+      motivo_cancelamento: r.motivoCancelamento || null,
+      parcelas: r.parcelas
+    })));
+
+    // 2. Negativações
+    await sbUpsertFin('fin_negativacoes', negRecords.map(r=>({
+      id: String(r.id),
+      reneg_id: r.renegId ? String(r.renegId) : null,
+      nome: r.nome,
+      ficha: r.ficha,
+      valor_total: r.valorTotal,
+      status: r.status,
+      data_negativacao: r.dataNegativacao || null,
+      data_pagamento: r.dataPagamento || null,
+      parcelas: r.parcelas,
+      protestos: r.protestos || []
+    })));
+
+    // 3. Desativações
+    await sbUpsertFin('fin_desativacoes', (desRecords||[]).map(r=>({
+      id: String(r.id),
+      nome: r.nome,
+      ficha: r.ficha,
+      tipo: r.tipo || null,
+      valor: r.valor || 0,
+      status: r.status || null,
+      data: r.data || null,
+      data_exclusao: r.dataExclusao || null,
+      motivo: r.motivo || null
+    })));
+
+    // 4. Cobranças
+    await sbUpsertFin('fin_cobrancas', (cobRecords||[]).map(r=>({
+      id: String(r.id),
+      nome: r.nome,
+      ficha: r.ficha,
+      data: r.data || null,
+      valor: r.valor || 0,
+      etapa: r.etapa || null,
+      obs: r.obs || null
+    })));
+
+    if(btn){ btn.innerHTML='✓ Salvo'; btn.style.background='var(--green,#16a34a)'; btn.disabled=false; setTimeout(()=>{ btn.innerHTML='💾 Salvar'; btn.style.background='var(--vinho)'; }, 2000); }
+  } catch(e){
+    console.error('finPushAllToSupabase error:', e);
+    if(btn){ btn.innerHTML='✗ Erro'; btn.style.background='var(--red,#dc2626)'; btn.disabled=false; setTimeout(()=>{ btn.innerHTML='💾 Salvar'; btn.style.background='var(--vinho)'; }, 2500); }
+  }
+}
+
 // ==================== BADGE USUÁRIO + SALVAR ====================
 function finUpdateUserBadge(){
   try {
@@ -6794,10 +6884,11 @@ function finUpdateUserBadge(){
 }
 
 function finSaveAll(){
+  // 1. Persiste localStorage
   save(); saveNegs(); persistDes(); persistCob(); persistBoletos();
   try { persistConcMeses(); } catch(e){}
-  const btn = document.getElementById('fin-save-btn');
-  if(btn){ btn.textContent = '✓ Salvo'; btn.style.background='var(--green)'; setTimeout(()=>{ btn.innerHTML='💾 Salvar'; btn.style.background='var(--vinho)'; }, 1500); }
+  // 2. Sobe para Supabase (assíncrono — botão gerencia o estado)
+  finPushAllToSupabase();
 }
 
 // Atualiza badge assim que a página carrega (token já pode estar no localStorage)
