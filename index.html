@@ -337,6 +337,15 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 .editable-real:hover { color: var(--vinho); }
 .editable-desp { cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,.3); transition: color .15s; }
 .editable-desp:hover { color: var(--cobre); }
+/* ── Print / PDF ── */
+@media print {
+  body { background:#fff !important; color:#1A0F0A !important; }
+  #print-metrica-overlay { display:block !important; }
+  body > *:not(#print-metrica-overlay) { display:none !important; }
+  #print-metrica-overlay { position:static; background:#fff; padding:0; }
+}
+#print-metrica-overlay { display:none; }
+
 /* Distribution modals (Lab Externo + generic) */
 #lab-modal-overlay,#dist-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
 #lab-modal-overlay.open,#dist-modal-overlay.open { display:flex; }
@@ -1214,6 +1223,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
       <div class="month-badge" id="current-month-badge">—</div>
       <div class="month-switcher" id="month-switcher"></div>
+      <button onclick="exportMetricaPDF()" title="Exportar PDF" style="margin-left:auto;display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--cobre);border-radius:4px;color:var(--cobre);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.12em;font-weight:300;padding:5px 14px;cursor:pointer;transition:background .2s,color .2s;" onmouseover="this.style.background='var(--cobre)';this.style.color='var(--tinta)'" onmouseout="this.style.background='transparent';this.style.color='var(--cobre)'">&#8595; PDF</button>
     </div>
 
     <!-- Sub-barra de navegação interna -->
@@ -2457,6 +2467,78 @@ function renderMonthsList(){
 
 // ═══════════════════════════════════════
 // ACTIONS
+// ── Export PDF ──────────────────────────────────────────────────────────────
+function exportMetricaPDF(){
+  if(!currentMonth){ alert('Nenhum mês carregado.'); return; }
+  const rows = buildRows(currentMonth.rows);
+  const ov = getOverrides();
+  const fmt = n => n===null||n===undefined?'—':'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtDiff = n => { if(n===null||n===undefined) return '—'; const s=n>=0?'+':''; return s+'R$ '+Math.abs(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); };
+  // Total idêntico à tela: soma todas as rows (buildRows já aplicou overrides)
+  const totalM = rows.reduce((s,r)=>s+(r.metrica||0),0);
+  const totalR = rows.reduce((s,r)=>s+(r.real||0),0);
+  const trs = rows.map(r=>{
+    const isSub = !!r.isSub;
+    // buildRows já aplicou overrides em r.metrica e r.real
+    const metrica = r.metrica;
+    const real = r.real;
+    const label = ov[r.desp]?.label || r.desp;
+    const diff = (metrica!==null&&metrica!==undefined&&real!==null&&real!==undefined) ? real-metrica : null;
+    let statusColor='#9ca3af', statusText='—';
+    if(metrica!==null&&metrica!==undefined&&real!==null&&real!==undefined){
+      if(real<=metrica){statusColor='#15803d';statusText='OK';}
+      else if(real<=metrica*1.1){statusColor='#b45309';statusText='Alerta';}
+      else{statusColor='#dc2626';statusText='Excedeu';}
+    }
+    const indent = isSub ? 'padding-left:20px;color:#555;font-size:11px;' : '';
+    return `<tr style="border-bottom:1px solid #e5e7eb;">
+      <td style="padding:5px 8px;${indent}">${isSub?'↳ ':''}<span style="font-size:${isSub?'11':'12'}px">${label}</span></td>
+      <td style="padding:5px 8px;text-align:center;font-size:11px">${r.tipo||'F'}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:12px">${fmt(metrica)}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:12px">${fmt(real)}</td>
+      <td style="padding:5px 8px;text-align:right;font-size:12px;color:${diff!==null&&diff>0?'#dc2626':diff!==null&&diff<0?'#15803d':'#555'}">${fmtDiff(diff)}</td>
+      <td style="padding:5px 8px;text-align:center;font-size:10px;font-weight:600;color:${statusColor}">${statusText}</td>
+    </tr>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Métricas — ${currentMonth.label}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Josefin Sans',Arial,sans-serif;color:#1A0F0A;background:#fff;padding:24px;font-size:13px}
+    h1{font-size:20px;letter-spacing:.12em;color:#8B2D42;margin-bottom:4px;font-weight:300}
+    .sub{font-size:11px;color:#777;margin-bottom:20px;letter-spacing:.08em}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:#8B2D42;color:#fff}
+    thead th{padding:7px 8px;text-align:left;font-size:11px;letter-spacing:.1em;font-weight:300}
+    thead th.r{text-align:right} thead th.c{text-align:center}
+    tfoot tr{background:#f5ede2}
+    tfoot td{padding:7px 8px;font-size:13px;font-weight:600;color:#8B2D42}
+    tfoot td.r{text-align:right}
+    @media print{body{padding:12px}@page{margin:15mm}}
+  </style></head><body>
+  <h1>Métricas — ${currentMonth.label}</h1>
+  <div class="sub">Oral Unic Carlos Barbosa · Exportado em ${new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+  <table>
+    <thead><tr>
+      <th style="width:35%">Despesa</th><th class="c">Tipo</th>
+      <th class="r">Métrica</th><th class="r">Realizado</th>
+      <th class="r">Diferença</th><th class="c">Status</th>
+    </tr></thead>
+    <tbody>${trs}</tbody>
+    <tfoot><tr>
+      <td colspan="2">Total geral</td>
+      <td class="r">${fmt(totalM)}</td>
+      <td class="r">${fmt(totalR)}</td>
+      <td class="r" style="color:${totalR-totalM>0?'#dc2626':'#15803d'}">${fmtDiff(totalR-totalM)}</td>
+      <td></td>
+    </tr></tfoot>
+  </table>
+  <script>window.onload=()=>{ window.print(); window.onafterprint=()=>window.close(); }<\/script>
+  </body></html>`;
+  const w = window.open('','_blank','width=900,height=700');
+  if(w){ w.document.write(html); w.document.close(); }
+}
+
 // ═══════════════════════════════════════
 function loadMonth(key){ const a=getAll(); if(a[key]){ currentMonth=a[key]; renderAll(); switchTab('metrics'); } }
 function removeMonth(key){
