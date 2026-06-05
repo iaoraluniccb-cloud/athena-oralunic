@@ -335,6 +335,8 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 .editable-metrica:hover { color: var(--vinho); }
 .editable-real { cursor: pointer; border-bottom: 1px dashed var(--vinho); color: inherit; transition: color .15s; }
 .editable-real:hover { color: var(--vinho); }
+.editable-desp { cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,.3); transition: color .15s; }
+.editable-desp:hover { color: var(--cobre); }
 /* Distribution modals (Lab Externo + generic) */
 #lab-modal-overlay,#dist-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
 #lab-modal-overlay.open,#dist-modal-overlay.open { display:flex; }
@@ -2334,9 +2336,11 @@ function dataRowHtml(r, indent){
   }
   const realNum = r.real !== null ? r.real : 0;
   const trClass = isSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
-  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real'))toggleRowSelection('${despEsc}',${realNum})"`;
+  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.editable-desp'))toggleRowSelection('${despEsc}',${realNum})"`;
+  const despLabel = isSub ? '↳ '+r.desp : r.desp;
+  const despCell = `<span class="editable-desp" onclick="editDesp(this,'${despEsc}')" title="Clique para editar nome">${despLabel}</span>`;
   return `<tr class="${trClass}" data-desp="${despEsc}" ${trClick}>
-    <td class="${isSub?'label-col':lc}">${isSub?'↳ '+r.desp:r.desp}</td>
+    <td class="${isSub?'label-col':lc}">${despCell}</td>
     <td>${badge}</td>
     <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
     <td class="right">${realCell}</td>
@@ -2356,34 +2360,70 @@ function editMetrica(el, desp, curVal){
   const inp = document.createElement('input');
   inp.type='number'; inp.min='0'; inp.step='0.01';
   inp.value = curVal !== '' ? curVal : '';
-  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--cobre);border-radius:3px;text-align:right;font-family:inherit;background:white;';
+  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--cobre);border-radius:3px;text-align:right;font-family:inherit;background:white;color:#111;';
   el.replaceWith(inp);
   inp.focus(); inp.select();
-  function commit(){
-    const v = inp.value.trim();
-    if(v===''){ saveOverride(desp,'metrica',null); }
-    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'metrica',n); }
-    renderAll();
+  let _saveTimer=null;
+  function autoSave(){
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(()=>{
+      const v=inp.value.trim();
+      if(v===''){ saveOverride(desp,'metrica',null); }
+      else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'metrica',n); }
+    }, 600);
   }
+  function commit(){ clearTimeout(_saveTimer); autoSave._saveTimer=null; const v=inp.value.trim(); if(v===''){ saveOverride(desp,'metrica',null); } else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'metrica',n); } renderAll(); }
+  inp.addEventListener('input', autoSave);
   inp.addEventListener('blur', commit);
-  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ renderAll(); } });
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ clearTimeout(_saveTimer); renderAll(); } });
 }
 
 function editReal(el, desp, curVal){
   const inp = document.createElement('input');
   inp.type='number'; inp.min='0'; inp.step='0.01';
   inp.value = curVal !== '' ? curVal : '';
-  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--vinho);border-radius:3px;text-align:right;font-family:inherit;background:white;';
+  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--vinho);border-radius:3px;text-align:right;font-family:inherit;background:white;color:#111;';
   el.replaceWith(inp);
   inp.focus(); inp.select();
+  let _saveTimer=null;
+  function autoSave(){
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(()=>{
+      const v=inp.value.trim();
+      if(v===''){ saveOverride(desp,'real',null); }
+      else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'real',n); }
+    }, 600);
+  }
+  function commit(){ clearTimeout(_saveTimer); const v=inp.value.trim(); if(v===''){ saveOverride(desp,'real',null); } else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'real',n); } renderAll(); }
+  inp.addEventListener('input', autoSave);
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ clearTimeout(_saveTimer); renderAll(); } });
+}
+
+function editDesp(el, oldDesp){
+  const inp = document.createElement('input');
+  inp.type='text';
+  inp.value = oldDesp;
+  inp.style.cssText='width:100%;font-size:12px;padding:2px 6px;border:1px solid rgba(255,255,255,.4);border-radius:3px;font-family:inherit;background:rgba(255,255,255,.08);color:inherit;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  let _saveTimer=null;
+  function autoSave(){
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(()=>{
+      const v=inp.value.trim();
+      if(v && v!==oldDesp) saveOverride(oldDesp,'label',v);
+    }, 600);
+  }
   function commit(){
-    const v = inp.value.trim();
-    if(v===''){ saveOverride(desp,'real',null); }
-    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(desp,'real',n); }
+    clearTimeout(_saveTimer);
+    const v=inp.value.trim();
+    if(v && v!==oldDesp) saveOverride(oldDesp,'label',v);
     renderAll();
   }
+  inp.addEventListener('input', autoSave);
   inp.addEventListener('blur', commit);
-  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ renderAll(); } });
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ clearTimeout(_saveTimer); renderAll(); } });
 }
 
 function renderMonthsList(){
