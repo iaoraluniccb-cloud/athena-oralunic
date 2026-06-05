@@ -1405,16 +1405,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── Supabase sync functions ──
 async function loadFromSB(){
   try {
-    // Sincroniza REAL_DATA no Supabase ANTES de carregar (garante dados atualizados)
-    for(const [k,o] of Object.entries(REAL_DATA)){ await pbSaveMonth(k, o.label, o.rows); }
-    // Carregar meses do Supabase
+    // REAL_DATA é sempre fonte de verdade — carrega direto no localStorage sem passar pelo Supabase
+    const _s = {};
+    for(const [k,o] of Object.entries(REAL_DATA)){ _s[k] = {key:k, label:o.label, rows:o.rows}; }
+    localStorage.setItem('ou_athena_v2', JSON.stringify(_s));
+
+    // Carregar do Supabase apenas meses extras (criados pelo usuário, fora do REAL_DATA)
     const mRes = await sbFetch('GET', 'athena_months', null, 'select=key,label,rows&order=key.asc');
-    localStorage.removeItem('ou_athena_v2');
     for(const rec of mRes){
-      const a = getAll(); a[rec.key] = {key: rec.key, label: rec.label, rows: rec.rows};
-      localStorage.setItem('ou_athena_v2', JSON.stringify(a));
+      if(!REAL_DATA[rec.key]){ // só adiciona se não for mês do REAL_DATA
+        const a = getAll(); a[rec.key] = {key: rec.key, label: rec.label, rows: rec.rows};
+        localStorage.setItem('ou_athena_v2', JSON.stringify(a));
+      }
     }
-    // Carregar overrides
+
+    // Carregar overrides do Supabase
     const oRes = await sbFetch('GET', 'athena_overrides', null, 'select=desp,field,val&limit=500');
     const ovObj = {};
     for(const rec of oRes){
@@ -1428,6 +1433,9 @@ async function loadFromSB(){
     renderAll();
   } catch(e) {
     console.warn('SB load error, using local data:', e);
+    const _s = {};
+    for(const [k,o] of Object.entries(REAL_DATA)){ _s[k] = {key:k, label:o.label, rows:o.rows}; }
+    localStorage.setItem('ou_athena_v2', JSON.stringify(_s));
     const keys = Object.keys(getAll()).sort().reverse();
     if(keys.length) currentMonth = getAll()[keys[0]];
     renderAll();
