@@ -1403,6 +1403,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── Supabase sync functions ──
 async function loadFromSB(){
   try {
+    // Sincroniza REAL_DATA no Supabase ANTES de carregar (garante dados atualizados)
+    for(const [k,o] of Object.entries(REAL_DATA)){ await pbSaveMonth(k, o.label, o.rows); }
     // Carregar meses do Supabase
     const mRes = await sbFetch('GET', 'athena_months', null, 'select=key,label,rows&order=key.asc');
     localStorage.removeItem('ou_athena_v2');
@@ -1410,8 +1412,6 @@ async function loadFromSB(){
       const a = getAll(); a[rec.key] = {key: rec.key, label: rec.label, rows: rec.rows};
       localStorage.setItem('ou_athena_v2', JSON.stringify(a));
     }
-    // Sincroniza REAL_DATA no Supabase (sempre sobrescreve)
-    for(const [k,o] of Object.entries(REAL_DATA)){ saveMonth(k, o.label, o.rows); }
     // Carregar overrides
     const oRes = await sbFetch('GET', 'athena_overrides', null, 'select=desp,field,val&limit=500');
     const ovObj = {};
