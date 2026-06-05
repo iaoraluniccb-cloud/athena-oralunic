@@ -254,6 +254,8 @@
   .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
   .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 400; letter-spacing:.04em; font-family:var(--font-body); cursor: pointer; transition: background .2s; }
   .btn-secondary:hover { background: var(--border); color: var(--text); }
+  .btn-io { background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 12px; font-size: 11px; letter-spacing:.06em; font-family:var(--font-body); cursor: pointer; transition: all .15s; display:inline-flex;align-items:center;gap:5px;white-space:nowrap; }
+  .btn-io:hover { background: var(--surface2); color: var(--text); border-color: var(--text2); }
   .btn-save { background: var(--vinho); color: var(--marfim); border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 400; letter-spacing:.08em; font-family:var(--font-body); cursor: pointer; transition: background .2s; }
   .btn-save:hover { background: var(--vinho-p); }
   .btn-danger { background: #991b1b; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 400; font-family:var(--font-body); cursor: pointer; }
@@ -602,7 +604,10 @@
       <div class="subtab-content active" id="subtab-cob-registros">
         <div class="section-header" style="margin-bottom:16px">
           <div style="font-size:13px;color:var(--text2)">Registros de pagamentos recebidos por etapa de cobrança.</div>
-          <button class="btn-primary" onclick="openCobModal()">＋ Novo Registro</button>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn-io" onclick="exportarCobCSV()" title="Exportar cobrança como CSV">⬇ CSV</button>
+            <button class="btn-primary" onclick="openCobModal()">＋ Novo Registro</button>
+          </div>
         </div>
 
         <!-- ETAPAS LEGEND -->
@@ -795,12 +800,16 @@
       </div>
       <div class="section-header">
         <div class="section-title">Renegociações <span>Kanban por situação do paciente</span></div>
-        <div style="display:flex;gap:10px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <div style="position:relative">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:13px;pointer-events:none">🔍</span>
             <input type="text" id="reneg-search" placeholder="Buscar paciente ou ficha..." oninput="renderKanban()"
               style="padding:8px 12px 8px 32px;font-size:13px;width:240px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:var(--font-body)">
           </div>
+          <button class="btn-io" onclick="exportarRenegCSV()" title="Exportar renegociações como CSV">⬇ CSV</button>
+          <label class="btn-io" title="Importar planilha de renegociações (.xlsx ou .csv)">⬆ Importar
+            <input type="file" accept=".xlsx,.xls,.csv" onchange="importarPlanilhaReneg(this)" style="display:none">
+          </label>
           <button class="btn-primary" onclick="openNewModal()">＋ Nova Renegociação</button>
         </div>
       </div>
@@ -1033,6 +1042,9 @@
   <div class="tab-content" id="tab-negativacao">
     <div class="section-header">
       <div class="section-title">Negativação <span>Serasa — Controle de negativações</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-io" onclick="exportarNegCSV()" title="Exportar negativações como CSV">⬇ CSV</button>
+      </div>
     </div>
 
     <!-- NEG STATS -->
@@ -1107,6 +1119,9 @@
   <div class="tab-content" id="tab-desativacao">
     <div class="section-header">
       <div class="section-title">Desativações <span>Cancelamentos e baixas de contratos</span></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn-io" onclick="exportarDesCSV()" title="Exportar desativações como CSV">⬇ CSV</button>
+      </div>
     </div>
 
     <!-- STATS -->
@@ -4338,6 +4353,77 @@ if(cobUser) { setTimeout(()=>{ if(document.getElementById('tab-cobranca').classL
   if(changed) persistDes();
 })();
 
+// ==================== SEED PLANILHA RENEGOCIAÇÕES (Jun/2026) ====================
+(function seedPlanilha(){
+  // Converte "DD/MM" com ano implícito para YYYY-MM-DD
+  function d(dd, mm, ano){ return `${ano||2026}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`; }
+  // Cria parcela
+  function p(num, valor, data){ return { num, valor, data, status:'pendente', dataPagamento:null }; }
+  // Serial Excel → ISO
+  function exd(n){ return new Date((n-25569)*86400000).toISOString().split('T')[0]; }
+
+  const SEED = [
+    // ATIVAS
+    { nome:'BRENDA',     ficha:'693',  data:exd(45971), valorTotal:673,    valorEntrada:260, numReneg:5,  situacao:'atraso',     contato:'5',   parcelas:[p(1,160,d(30,3,2026)),p(2,160,d(20,4,2026)),p(3,160,d(20,5,2026))] },
+    { nome:'VICTOR',     ficha:'343',  data:exd(45971), valorTotal:300,    valorEntrada:100, numReneg:5,  situacao:'atraso',     contato:'5',   parcelas:[p(1,100,d(30,3,2026)),p(2,100,d(20,4,2026))] },
+    { nome:'CRISTIANO',  ficha:'2229', data:exd(46042), valorTotal:927.5,  valorEntrada:0,   numReneg:1,  situacao:'atraso',     contato:'1',   parcelas:[p(1,304,d(15,3,2026)),p(2,463.75,d(15,4,2026))] },
+    { nome:'FATIMA',     ficha:'1717', data:exd(46047), valorTotal:904,    valorEntrada:0,   numReneg:6,  situacao:'atraso',     contato:'6',   parcelas:[p(1,452,d(10,2,2026)),p(2,452,d(10,3,2026))] },
+    { nome:'GERSON',     ficha:'1946', data:exd(46060), valorTotal:1031.25,valorEntrada:0,   numReneg:3,  situacao:'atraso',     contato:'3',   parcelas:[p(1,343.75,d(20,2,2026)),p(2,343.75,d(20,3,2026)),p(3,343.75,d(20,4,2026))] },
+    { nome:'DIELE',      ficha:'2095', data:exd(46046), valorTotal:700,    valorEntrada:0,   numReneg:1,  situacao:'emdia',      contato:'1',   parcelas:[p(1,250,d(20,5,2026)),p(2,350,d(20,6,2026))] },
+    { nome:'GLEISILENE', ficha:'2082', data:exd(46077), valorTotal:1248.75,valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,416.25,d(10,4,2026)),p(2,416.25,d(10,5,2026)),p(3,416.25,d(10,6,2026))] },
+    { nome:'EDI',        ficha:'1801', data:exd(46078), valorTotal:10000,  valorEntrada:1600,numReneg:6,  situacao:'atraso',     contato:'6',   parcelas:[p(1,800,d(15,3,2026)),p(2,800,d(15,4,2026)),p(3,800,d(15,5,2026)),p(4,800,d(15,6,2026)),p(5,800,d(15,7,2026)),p(6,1000,d(15,8,2026)),p(7,1000,d(15,9,2026)),p(8,1000,d(15,10,2026)),p(9,1000,d(15,11,2026)),p(10,1000,d(15,12,2026))] },
+    { nome:'JOVANES',    ficha:'281',  data:exd(46078), valorTotal:2767.8, valorEntrada:0,   numReneg:1,  situacao:'atraso',     contato:'neg', parcelas:[p(1,184.5,d(15,3,2026)),p(2,184.5,d(15,4,2026)),p(3,184.5,d(15,5,2026)),p(4,184.5,d(15,6,2026)),p(5,184.5,d(15,7,2026)),p(6,184.5,d(15,8,2026)),p(7,184.5,d(15,9,2026)),p(8,184.5,d(15,10,2026)),p(9,184.5,d(15,11,2026)),p(10,184.5,d(15,12,2026)),p(11,184.5,d(15,1,2027)),p(12,184.5,d(15,2,2027)),p(13,184.5,d(15,3,2027)),p(14,184.5,d(15,4,2027)),p(15,184.5,d(15,5,2027))] },
+    { nome:'LEANDERSON', ficha:'2267', data:exd(46078), valorTotal:900,    valorEntrada:0,   numReneg:4,  situacao:'atraso',     contato:'4',   parcelas:[p(1,300,d(10,3,2026)),p(2,300,d(10,4,2026)),p(3,300,d(10,5,2026))] },
+    { nome:'CARLOS ELY', ficha:'2431', data:exd(46086), valorTotal:1607.1, valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,316.66,d(20,3,2026)),p(2,316.66,d(20,4,2026)),p(3,316.66,d(20,5,2026)),p(4,316.66,d(20,6,2026)),p(5,316.66,d(20,7,2026))] },
+    { nome:'CAMILA',     ficha:'2318', data:exd(46090), valorTotal:904.15, valorEntrada:0,   numReneg:2,  situacao:'atraso',     contato:'2',   parcelas:[p(1,302,d(15,3,2026)),p(2,302,d(15,4,2026)),p(3,302,d(15,5,2026))] },
+    { nome:'SABRINA',    ficha:'2241', data:exd(46095), valorTotal:1030,   valorEntrada:0,   numReneg:1,  situacao:'atraso',     contato:'1',   parcelas:[p(1,515,d(15,4,2026)),p(2,515,d(15,5,2026))] },
+    { nome:'JAIRO',      ficha:'1052', data:exd(46086), valorTotal:4000,   valorEntrada:0,   numReneg:1,  situacao:'emdia',      contato:'neg', parcelas:[p(1,300,d(15,4,2026)),p(2,300,d(15,5,2026)),p(3,300,d(15,6,2026)),p(4,300,d(15,7,2026)),p(5,300,d(15,8,2026)),p(6,300,d(15,9,2026)),p(7,300,d(15,10,2026)),p(8,300,d(15,11,2026)),p(9,500,d(15,12,2026)),p(10,500,d(15,1,2027)),p(11,500,d(15,2,2027))] },
+    { nome:'DIANA',      ficha:'1763', data:exd(46052), valorTotal:1034.3, valorEntrada:0,   numReneg:3,  situacao:'atraso',     contato:'3',   parcelas:[p(1,517.15,d(15,3,2026)),p(2,517.15,d(15,5,2026))] },
+    { nome:'MAYALLA',    ficha:'1040', data:exd(46101), valorTotal:729.09, valorEntrada:0,   numReneg:4,  situacao:'atraso',     contato:'4',   parcelas:[p(1,243.03,d(30,3,2026)),p(2,243.03,d(30,4,2026)),p(3,243.03,d(30,5,2026))] },
+    { nome:'JESSICA',    ficha:'960',  data:exd(46101), valorTotal:805,    valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,250,d(5,4,2026)),p(2,250,d(5,5,2026)),p(3,305,d(5,6,2026))] },
+    { nome:'KELVEN',     ficha:'2477', data:exd(46101), valorTotal:504,    valorEntrada:0,   numReneg:1,  situacao:'emdia',      contato:'1',   parcelas:[p(1,252,d(10,4,2026)),p(2,252,d(10,5,2026))] },
+    { nome:'JAINE',      ficha:'1916', data:exd(46108), valorTotal:6108.5, valorEntrada:0,   numReneg:6,  situacao:'atraso',     contato:'6',   parcelas:[p(1,611.8,d(15,4,2026)),p(2,611.8,d(15,5,2026)),p(3,611.8,d(15,6,2026)),p(4,611.8,d(15,7,2026)),p(5,611.8,d(15,8,2026)),p(6,611.8,d(15,9,2026)),p(7,611.8,d(15,10,2026)),p(8,611.8,d(15,11,2026)),p(9,611.8,d(15,12,2026)),p(10,611.8,d(15,1,2027))] },
+    { nome:'CACIO',      ficha:'499',  data:exd(46106), valorTotal:650,    valorEntrada:0,   numReneg:3,  situacao:'atraso',     contato:'3',   parcelas:[p(1,325,d(25,4,2026)),p(2,325,d(25,5,2026))] },
+    { nome:'LETICIA',    ficha:'1957', data:exd(46107), valorTotal:784.95, valorEntrada:0,   numReneg:4,  situacao:'emdia',      contato:'4',   parcelas:[p(1,261.65,d(10,4,2026)),p(2,261.65,d(10,5,2026)),p(3,261.65,d(10,6,2026))] },
+    { nome:'JANDIR',     ficha:'2250', data:exd(46111), valorTotal:2400,   valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,400,d(15,4,2026)),p(2,400,d(15,5,2026)),p(3,800,d(15,6,2026)),p(4,800,d(15,7,2026))] },
+    { nome:'IVAN',       ficha:'1152', data:exd(46112), valorTotal:2120,   valorEntrada:0,   numReneg:5,  situacao:'emdia',      contato:'5',   parcelas:[p(1,530,d(25,4,2026)),p(2,530,d(25,5,2026)),p(3,530,d(25,6,2026)),p(4,530,d(25,7,2026))] },
+    { nome:'PEDRO',      ficha:'2073', data:exd(46111), valorTotal:4113.5, valorEntrada:0,   numReneg:6,  situacao:'emdia',      contato:'6',   parcelas:[p(1,822.7,d(25,4,2026)),p(2,822.7,d(25,5,2026)),p(3,822.7,d(25,6,2026)),p(4,822.7,d(25,7,2026)),p(5,822.7,d(25,8,2026))] },
+    { nome:'CLAUDIR',    ficha:'1958', data:exd(46113), valorTotal:1120,   valorEntrada:0,   numReneg:1,  situacao:'emdia',      contato:'1',   parcelas:[p(1,560,d(10,4,2026)),p(2,560,d(10,5,2026))] },
+    { nome:'ANDREIA',    ficha:'2399', data:exd(46118), valorTotal:1400,   valorEntrada:0,   numReneg:5,  situacao:'atraso',     contato:'5',   parcelas:[p(1,175,d(25,4,2026)),p(2,175,d(25,5,2026)),p(3,350,d(25,6,2026)),p(4,350,d(25,7,2026))] },
+    { nome:'VALCIR',     ficha:'1253', data:exd(46112), valorTotal:1400,   valorEntrada:0,   numReneg:2,  situacao:'emdia',      contato:'2',   parcelas:[p(1,466.66,d(15,4,2026)),p(2,466.66,d(15,5,2026)),p(3,466.66,d(15,6,2026))] },
+    { nome:'VITOR',      ficha:'1990', data:exd(46118), valorTotal:470,    valorEntrada:0,   numReneg:3,  situacao:'atraso',     contato:'3',   parcelas:[p(1,470,exd(46122))] },
+    { nome:'PATRICIA',   ficha:'2388', data:exd(46122), valorTotal:400,    valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,400,exd(46157))] },
+    { nome:'MAKSUEL',    ficha:'2357', data:exd(46122), valorTotal:2160,   valorEntrada:0,   numReneg:5,  situacao:'atraso',     contato:'5',   parcelas:[p(1,540,d(20,4,2026)),p(2,540,d(20,5,2026)),p(3,540,d(20,6,2026)),p(4,540,d(20,7,2026))] },
+    { nome:'ALEXANDRE',  ficha:'1994', data:exd(46121), valorTotal:1000,   valorEntrada:0,   numReneg:5,  situacao:'atraso',     contato:'5',   parcelas:[p(1,500,d(15,4,2026)),p(2,500,d(15,5,2026))] },
+    { nome:'JOELSON',    ficha:'2228', data:exd(46128), valorTotal:8565,   valorEntrada:0,   numReneg:6,  situacao:'emdia',      contato:'6',   parcelas:[p(1,450,d(20,5,2026)),p(2,450,d(20,6,2026)),p(3,1000,d(20,7,2026)),p(4,1000,d(20,8,2026)),p(5,1000,d(20,9,2026)),p(6,1000,d(20,10,2026)),p(7,1000,d(20,11,2026)),p(8,3000,d(20,12,2026))] },
+    { nome:'CLAUDIA',    ficha:'78',   data:exd(46132), valorTotal:490,    valorEntrada:0,   numReneg:5,  situacao:'emdia',      contato:'5',   parcelas:[p(1,490,exd(46167))] },
+    { nome:'CLEOMAR',    ficha:'996',  data:exd(46134), valorTotal:627.7,  valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,313.85,d(15,5,2026)),p(2,313.85,d(15,6,2026))] },
+    { nome:'DANIELI',    ficha:'1986', data:exd(46140), valorTotal:805.2,  valorEntrada:0,   numReneg:3,  situacao:'emdia',      contato:'3',   parcelas:[p(1,268.40,d(10,5,2026)),p(2,536.80,d(10,6,2026))] },
+    { nome:'NARA',       ficha:'976',  data:exd(46141), valorTotal:1775.1, valorEntrada:0,   numReneg:4,  situacao:'emdia',      contato:'4',   parcelas:[p(1,591.70,d(25,5,2026)),p(2,788.25,d(25,6,2026)),p(3,788.25,d(25,7,2026))] },
+    { nome:'MARISANGELA',ficha:'149',  data:exd(46141), valorTotal:2040,   valorEntrada:0,   numReneg:6,  situacao:'emdia',      contato:'6',   parcelas:[p(1,416,d(5,5,2026)),p(2,416,d(5,6,2026)),p(3,416,d(5,7,2026)),p(4,416,d(5,8,2026)),p(5,416,d(5,9,2026))] },
+    { nome:'NAIDES',     ficha:'1544', data:exd(46142), valorTotal:1275,   valorEntrada:0,   numReneg:2,  situacao:'emdia',      contato:'2',   parcelas:[p(1,637.5,d(25,5,2026)),p(2,637.5,d(25,6,2026))] },
+    { nome:'DAIANE',     ficha:'1900', data:exd(46149), valorTotal:2060,   valorEntrada:0,   numReneg:5,  situacao:'emdia',      contato:'5',   parcelas:[p(1,405,d(10,6,2026)),p(2,405,d(10,7,2026)),p(3,405,d(10,8,2026)),p(4,405,d(10,9,2026)),p(5,405,d(10,10,2026))] },
+    { nome:'CESAR',      ficha:'2489', data:exd(46150), valorTotal:1472,   valorEntrada:0,   numReneg:2,  situacao:'emdia',      contato:'2',   parcelas:[p(1,736,d(25,5,2026)),p(2,736,d(25,6,2026))] },
+    { nome:'RAFAEL',     ficha:'1980', data:exd(46150), valorTotal:2000,   valorEntrada:0,   numReneg:1,  situacao:'emdia',      contato:'neg', parcelas:[p(1,500,d(15,6,2026)),p(2,500,d(15,7,2026)),p(3,500,d(15,8,2026)),p(4,500,d(15,9,2026))] },
+    { nome:'LEILIANE',   ficha:'336',  data:exd(46155), valorTotal:696,    valorEntrada:0,   numReneg:1,  situacao:'emdia',      contato:'neg', parcelas:[p(1,174,d(25,5,2026)),p(2,174,d(10,6,2026)),p(3,174,d(10,7,2026)),p(4,174,d(10,8,2026))] },
+    // CONCLUÍDAS
+    { nome:'CLAUDIA',    ficha:'1991', data:exd(46044), valorTotal:500,    valorEntrada:500, numReneg:2,  situacao:'concluido',  contato:'2',   parcelas:[] },
+    { nome:'FABIANE',    ficha:'1488', data:exd(46048), valorTotal:1500,   valorEntrada:0,   numReneg:1,  situacao:'concluido',  contato:'1',   parcelas:[p(1,1500,exd(46078))] },
+    { nome:'VALQUIRIA',  ficha:'2120', data:exd(46099), valorTotal:161.66, valorEntrada:0,   numReneg:1,  situacao:'concluido',  contato:'1',   parcelas:[p(1,161.66,exd(46127))] },
+    { nome:'MARIA',      ficha:'2313', data:exd(46096), valorTotal:427.5,  valorEntrada:0,   numReneg:1,  situacao:'concluido',  contato:'1',   parcelas:[p(1,427.5,exd(46122))] },
+  ];
+
+  const existentes = new Set(records.map(r=>r.nome+'|'+r.ficha));
+  let adicionados = 0;
+  SEED.forEach((s, i)=>{
+    const chave = s.nome+'|'+s.ficha;
+    if(existentes.has(chave)) return;
+    records.push({ ...s, id: 1748000000000 + i, motivoCancelamento: null });
+    adicionados++;
+  });
+  if(adicionados > 0) save();
+})();
+
 renderKanban();
 
 // ==================== BACKUP / RESTORE ====================
@@ -6683,6 +6769,247 @@ async function syncAprovFromSB(){
 
 // Polling a cada 15 segundos
 setInterval(syncAprovFromSB, 15000);
+
+// ==================== EXPORTAR CSV ====================
+function csvEscape(v){ const s=String(v??''); return s.includes(',')||s.includes('"')||s.includes('\n') ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function downloadCSV(rows, filename){
+  const blob = new Blob(['\uFEFF'+rows.map(r=>r.map(csvEscape).join(',')).join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function exportarRenegCSV(){
+  const header = ['Nome','Ficha','Data Reneg','Nº Reneg','Valor Total','Entrada','Parcelas','Situação','Contato'];
+  const rows = [header, ...records.map(r=>[
+    r.nome, r.ficha, fmtDate(r.data), r.numReneg, r.valorTotal, r.valorEntrada,
+    r.parcelas.length, r.situacao, r.contato
+  ])];
+  downloadCSV(rows, `renegociacoes-${today()}.csv`);
+}
+
+function exportarNegCSV(){
+  const header = ['Nome','Ficha','Valor Total','Status','Data Negativação','Data Pagamento'];
+  const rows = [header, ...negRecords.map(r=>[
+    r.nome, r.ficha, r.valorTotal, r.status, fmtDate(r.dataNegativacao), fmtDate(r.dataPagamento)
+  ])];
+  downloadCSV(rows, `negativacoes-${today()}.csv`);
+}
+
+function exportarDesCSV(){
+  const header = ['Nome','Ficha','Tipo','Valor','Status','Data'];
+  const rows = [header, ...(desRecords||[]).map(r=>[
+    r.nome, r.ficha, r.tipo||'', r.valor||0, r.status||'', fmtDate(r.data)
+  ])];
+  downloadCSV(rows, `desativacoes-${today()}.csv`);
+}
+
+function exportarCobCSV(){
+  const header = ['Paciente','Ficha','Data','Valor','Etapa','Observação'];
+  const rows = [header, ...(cobRecords||[]).map(r=>[
+    r.nome, r.ficha, fmtDate(r.data), r.valor||0, r.etapa||'', r.obs||''
+  ])];
+  downloadCSV(rows, `cobranca-${today()}.csv`);
+}
+
+// ==================== IMPORTAR PLANILHA RENEGOCIAÇÕES ====================
+function importarPlanilhaReneg(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+
+  function processarLinhas(linhas){
+    // Detecta separador
+    const sep = linhas[0].includes('\t') ? '\t' : ',';
+    let importados = 0, ignorados = 0;
+    const hoje = today();
+
+    // Mapeia contato string → código interno
+    function mapContato(s){
+      if(!s) return '1';
+      s = String(s).trim().toLowerCase();
+      if(s.includes('neg')) return 'neg';
+      const n = parseInt(s);
+      if(n>=1 && n<=6) return String(n);
+      return '1';
+    }
+
+    // Mapeia situação string → coluna kanban
+    function mapSituacao(s){
+      if(!s) return 'emdia';
+      s = String(s).trim().toLowerCase();
+      if(s.includes('atrasado') || s.includes('atraso')) return 'atraso';
+      if(s.includes('conclu')) return 'concluido';
+      if(s.includes('cancel')) return 'cancelamento';
+      return 'emdia'; // "em aberto", "em dia"
+    }
+
+    // Parse data: suporta Excel serial, DD/MM/AAAA e AAAA-MM-DD
+    function parseData(v){
+      if(!v) return hoje;
+      const s = String(v).trim();
+      // Excel serial (número inteiro)
+      if(/^\d{4,5}$/.test(s)){
+        const serial = parseInt(s);
+        const d = new Date((serial - 25569) * 86400000);
+        return d.toISOString().split('T')[0];
+      }
+      // DD/MM/AAAA
+      if(/\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){
+        const [dd,mm,yyyy] = s.split('/');
+        return `${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
+      }
+      // AAAA-MM-DD
+      if(/\d{4}-\d{2}-\d{2}/.test(s)) return s;
+      return hoje;
+    }
+
+    // Parse vencimentos: "30/03, 20/04, 20/05" ou datas Excel seriais
+    function parseVencimentos(v, parcStr){
+      const vStr = String(v||'').trim();
+      const datas = [];
+      // Tenta separar por vírgula ou ponto-e-vírgula
+      const parts = vStr.split(/[,;]+/).map(p=>p.trim()).filter(Boolean);
+      parts.forEach(p=>{
+        // Serial Excel
+        if(/^\d{4,5}$/.test(p)){
+          const d = new Date((parseInt(p) - 25569) * 86400000);
+          datas.push(d.toISOString().split('T')[0]);
+        } else if(/\d{1,2}\/\d{1,2}/.test(p)){
+          // DD/MM sem ano → assume 2026
+          const [dd,mm] = p.replace(/\s/g,'').split('/');
+          const ano = parseInt(mm||'0')>=1 ? '2026' : '2025';
+          datas.push(`${ano}-${(mm||'01').padStart(2,'0')}-${(dd||'01').padStart(2,'0')}`);
+        }
+      });
+      return datas;
+    }
+
+    // Parse valor de parcelas: "300" ou "8x 300 + 3x 500" ou "304 / 463,75"
+    function parseParcelas(numParc, valStr, vencimentos){
+      const n = parseInt(numParc)||0;
+      const v = String(valStr||'').replace(',','.');
+      const parcelas = [];
+      // Tenta extrair valores múltiplos: "8x 300 + 3x 500"
+      const grupos = [];
+      const rxGrupo = /(\d+)[xX]\s*([\d.]+)/g;
+      let m;
+      while((m=rxGrupo.exec(v))!==null){ grupos.push({qt:parseInt(m[1]),vl:parseFloat(m[2])}); }
+      if(grupos.length>0){
+        let i=0;
+        grupos.forEach(g=>{ for(let k=0;k<g.qt;k++){ parcelas.push({num:i+1,valor:g.vl,data:vencimentos[i]||hoje,status:'pendente',dataPagamento:null}); i++; } });
+      } else {
+        // Valor único ou separado por /
+        const vals = v.split('/').map(x=>parseFloat(x.trim().replace(',','.'))).filter(x=>!isNaN(x));
+        for(let i=0;i<(n||1);i++){
+          parcelas.push({num:i+1,valor:vals[i]||vals[0]||0,data:vencimentos[i]||hoje,status:'pendente',dataPagamento:null});
+        }
+      }
+      return parcelas;
+    }
+
+    // Extrair nome e ficha: "BRENDA 693" → nome="BRENDA", ficha="693"
+    function parseNomeFicha(s){
+      s = String(s||'').trim();
+      const m = s.match(/^(.+?)\s+(\d+)$/);
+      if(m) return { nome: m[1].toUpperCase(), ficha: m[2] };
+      return { nome: s.toUpperCase(), ficha: '' };
+    }
+
+    // Detecta se é "Concluídas" section
+    let emConcluidas = false;
+
+    for(let i=1; i<linhas.length; i++){
+      const linha = linhas[i];
+      if(!linha.trim()) continue;
+      if(linha.toLowerCase().includes('conclu') && !linha.includes(',')){ emConcluidas=true; continue; }
+
+      const cols = linha.split(sep).map(c=>c.trim().replace(/^"|"$/g,''));
+      if(cols.length < 2) continue;
+
+      const pacienteCol = cols[0] || '';
+      if(!pacienteCol || pacienteCol.toLowerCase()==='paciente') continue;
+
+      const { nome, ficha } = parseNomeFicha(pacienteCol);
+      if(!nome) continue;
+
+      // Verifica duplicata pelo nome+ficha
+      const jaExiste = records.some(r=>r.nome===nome && r.ficha===ficha);
+      if(jaExiste){ ignorados++; continue; }
+
+      const dataReneg   = parseData(cols[1]);
+      const valorTotal  = parseFloat(String(cols[2]||'0').replace(',','.'))||0;
+      const entrada     = parseFloat(String(cols[3]||'0').replace(',','.'))||0;
+      const numParc     = parseInt(cols[4])||1;
+      const valParc     = cols[5]||'0';
+      const vencStr     = cols[6]||'';
+      const situacaoStr = emConcluidas ? 'concluido' : (cols[7]||'');
+      const contatoStr  = cols[8]||'1';
+
+      const vencimentos = parseVencimentos(vencStr, valParc);
+      const parcelas    = parseParcelas(numParc, valParc, vencimentos);
+      const situacao    = mapSituacao(situacaoStr);
+      const contato     = mapContato(contatoStr);
+
+      // Inferir numReneg do contato histórico (ex: "3º" → 3)
+      const mOrd = contatoStr.match(/(\d+)/);
+      const numReneg = mOrd ? parseInt(mOrd[1]) : 1;
+
+      records.push({
+        id: Date.now() + i,
+        nome, ficha, data: dataReneg,
+        valorTotal, valorEntrada: entrada,
+        numReneg: numReneg||1,
+        situacao, contato,
+        motivoCancelamento: null,
+        parcelas
+      });
+      importados++;
+    }
+
+    save();
+    renderKanban();
+    input.value='';
+
+    const msg = `✓ ${importados} renegociações importadas${ignorados>0?' ('+ignorados+' ignoradas por já existirem)':''}.`;
+    alert(msg);
+  }
+
+  // CSV direto
+  if(file.name.endsWith('.csv')){
+    reader.onload = e => processarLinhas(e.target.result.split('\n'));
+    reader.readAsText(file, 'UTF-8');
+    return;
+  }
+
+  // XLSX — usa SheetJS se disponível, senão avisa
+  reader.onload = function(e){
+    try {
+      if(typeof XLSX === 'undefined') throw new Error('lib');
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      processarLinhas(csv.split('\n'));
+    } catch(err){
+      if(err.message==='lib'){
+        // Carrega SheetJS dinamicamente e retenta
+        const s = document.createElement('script');
+        s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+        s.onload = ()=>{
+          try {
+            const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const csv = XLSX.utils.sheet_to_csv(ws);
+            processarLinhas(csv.split('\n'));
+          } catch(e2){ alert('Erro ao processar o arquivo XLSX: '+e2.message); input.value=''; }
+        };
+        s.onerror = ()=>{ alert('Não foi possível carregar o leitor de XLSX. Use o arquivo convertido para .csv.'); input.value=''; };
+        document.head.appendChild(s);
+      } else {
+        alert('Erro ao importar: '+err.message);
+        input.value='';
+      }
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 </script>
 </body>
 </html>
