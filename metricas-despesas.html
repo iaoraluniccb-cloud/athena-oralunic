@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════
    ORAL UNIC ATHENA — Design System
@@ -151,6 +153,8 @@ header {
 }
 .tab-btn:hover { color: var(--marfim); }
 .tab-btn.active { color: var(--cobre); border-bottom-color: var(--cobre); }
+.tab-btn-pdf { margin-left: auto; color: var(--cobre); border: 1px solid rgba(196,149,90,0.4); border-radius: 4px; padding: 4px 14px; }
+.tab-btn-pdf:hover { background: rgba(196,149,90,0.15); color: var(--marfim); }
 
 /* ── MAIN ── */
 main { padding: 24px; max-width: 1200px; margin: 0 auto; }
@@ -908,6 +912,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <button class="tab-btn" onclick="switchTab('variable')">Variáveis</button>
   <button class="tab-btn" onclick="switchTab('compare')">Comparar Meses</button>
   <button class="tab-btn" onclick="switchTab('import')">Importar Despesas</button>
+  <button class="tab-btn tab-btn-pdf" onclick="exportPDF()" title="Exportar relatório em PDF">📄 Exportar PDF</button>
 </div>
 
 <main>
@@ -1306,29 +1311,35 @@ const REAL_DATA = {
 };
 
 // ═══════════════════════════════════════
-// POCKETBASE API
+// SUPABASE API
 // ═══════════════════════════════════════
-const PB = 'https://oralunic-athena-pb-production.up.railway.app';
-let pbToken = null;
+const SB_URL  = 'https://ugsolisojqawbjaeencq.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnc29saXNvanFhd2JqYWVlbmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1Mjk3NzksImV4cCI6MjA5NjEwNTc3OX0.L15b-P0BzcdB8dfp71LDueoX1nBcYEzq18nOI7_2PbE';
+let pbToken = true; // sempre logado via tabela própria
 let pbUser  = null;
 let selectedEmail = null;
 
-function setSyncDot(state){ // 'spin'|'ok'|'err'
+function setSyncDot(state){
   const d = document.getElementById('sync-dot');
   if(!d) return;
   d.className = 'sync-dot ' + state;
 }
 
-async function pbFetch(method, path, body){
+async function sbFetch(method, table, body, params){
   setSyncDot('spin');
+  const url = SB_URL + '/rest/v1/' + table + (params ? '?' + params : '');
   try {
-    const r = await fetch(PB + path, {
-      method,
-      headers: { 'Content-Type':'application/json', ...(pbToken ? {'Authorization': pbToken} : {}) },
-      body: body ? JSON.stringify(body) : undefined
-    });
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': SB_ANON,
+      'Authorization': 'Bearer ' + SB_ANON,
+    };
+    if(method === 'POST' || method === 'PATCH') headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
+    if(method === 'DELETE') headers['Prefer'] = 'return=minimal';
+    const r = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    if(method === 'DELETE'){ setSyncDot('ok'); return null; }
     const j = await r.json();
-    if(!r.ok) throw new Error(j.message || r.status);
+    if(!r.ok) throw new Error(JSON.stringify(j));
     setSyncDot('ok');
     return j;
   } catch(e) {
@@ -1356,30 +1367,24 @@ async function doLogin(){
   if(!email){ errEl.textContent = 'Selecione seu nome.'; return; }
   if(!pass){ errEl.textContent = 'Digite a senha.'; return; }
   try {
-    const r = await fetch(PB + '/api/collections/users/auth-with-password', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({identity: email, password: pass})
-    });
-    const j = await r.json();
-    if(!r.ok) { errEl.textContent = 'E-mail ou senha incorretos.'; return; }
-    pbToken = j.token;
-    pbUser  = j.record;
-    localStorage.setItem('ou_athena_token', pbToken);
+    const res = await sbFetch('GET', 'athena_users', null,
+      `email=eq.${encodeURIComponent(email)}&password=eq.${encodeURIComponent(pass)}&select=email,name`
+    );
+    if(!res || res.length === 0){ errEl.textContent = 'E-mail ou senha incorretos.'; return; }
+    pbUser = res[0];
     localStorage.setItem('ou_athena_user', JSON.stringify(pbUser));
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('user-pill').style.display = 'flex';
     document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
     setSyncDot('ok');
-    await loadFromPB();
+    await loadFromSB();
   } catch(e) {
     errEl.textContent = 'Servidor offline. Verifique conexão.';
   }
 }
 
 function doLogout(){
-  pbToken = null; pbUser = null; selectedEmail = null;
-  localStorage.removeItem('ou_athena_token');
+  pbUser = null; selectedEmail = null;
   localStorage.removeItem('ou_athena_user');
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('user-pill').style.display = 'none';
@@ -1395,32 +1400,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('login-email')?.addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('login-pass').focus(); });
 });
 
-// ── PocketBase sync functions ──
-async function loadFromPB(){
+// ── Supabase sync functions ──
+async function loadFromSB(){
   try {
-    // Load months
-    const mRes = await pbFetch('GET', '/api/collections/months/records?perPage=50&sort=-created');
+    // Carregar meses do Supabase
+    const mRes = await sbFetch('GET', 'athena_months', null, 'select=key,label,rows&order=key.asc');
     localStorage.removeItem('ou_athena_v2');
-    for(const rec of mRes.items){
-      saveMonth(rec.key, rec.label, rec.rows);
+    for(const rec of mRes){
+      const a = getAll(); a[rec.key] = {key: rec.key, label: rec.label, rows: rec.rows};
+      localStorage.setItem('ou_athena_v2', JSON.stringify(a));
     }
-    // Sincroniza REAL_DATA no PB (sempre sobrescreve — garante dados atualizados)
-    { for(const [k,o] of Object.entries(REAL_DATA)){ saveMonth(k,o.label,o.rows); } }
-    // Load overrides
-    const oRes = await pbFetch('GET', '/api/collections/overrides/records?perPage=500');
+    // Sincroniza REAL_DATA no Supabase (sempre sobrescreve)
+    for(const [k,o] of Object.entries(REAL_DATA)){ saveMonth(k, o.label, o.rows); }
+    // Carregar overrides
+    const oRes = await sbFetch('GET', 'athena_overrides', null, 'select=desp,field,val&limit=500');
     const ovObj = {};
-    for(const rec of oRes.items){
+    for(const rec of oRes){
       if(!ovObj[rec.desp]) ovObj[rec.desp] = {};
-      try { ovObj[rec.desp][rec.field] = JSON.parse(rec.value); }
-      catch(e) { ovObj[rec.desp][rec.field] = rec.value; }
+      try { ovObj[rec.desp][rec.field] = JSON.parse(rec.val); }
+      catch(e) { ovObj[rec.desp][rec.field] = rec.val; }
     }
     localStorage.setItem('ou_athena_overrides', JSON.stringify(ovObj));
-    // Set current month to latest
     const keys = Object.keys(getAll()).sort().reverse();
     if(keys.length) currentMonth = getAll()[keys[0]];
     renderAll();
   } catch(e) {
-    console.warn('PB load error, using local data:', e);
+    console.warn('SB load error, using local data:', e);
     const keys = Object.keys(getAll()).sort().reverse();
     if(keys.length) currentMonth = getAll()[keys[0]];
     renderAll();
@@ -1428,44 +1433,24 @@ async function loadFromPB(){
 }
 
 async function pbSaveOverride(desp, field, val){
-  if(!pbToken) return;
   try {
-    // Check if record exists
-    const res = await pbFetch('GET',
-      `/api/collections/overrides/records?filter=(desp='${encodeURIComponent(desp)}'%26%26field='${encodeURIComponent(field)}')`
-    );
-    const existing = res.items?.[0];
     const valueStr = JSON.stringify(val);
-    if(existing){
-      await pbFetch('PATCH', `/api/collections/overrides/records/${existing.id}`, {value: valueStr});
-    } else {
-      await pbFetch('POST', '/api/collections/overrides/records', {desp, field, value: valueStr});
-    }
-  } catch(e){ console.warn('pbSaveOverride error:', e); }
+    await sbFetch('POST', 'athena_overrides', {desp, field, val: valueStr});
+  } catch(e){ console.warn('sbSaveOverride error:', e); }
 }
 
 async function pbDeleteOverrideField(desp, field){
-  if(!pbToken) return;
   try {
-    const res = await pbFetch('GET',
-      `/api/collections/overrides/records?filter=(desp='${encodeURIComponent(desp)}'%26%26field='${encodeURIComponent(field)}')`
+    await sbFetch('DELETE', 'athena_overrides', null,
+      `desp=eq.${encodeURIComponent(desp)}&field=eq.${encodeURIComponent(field)}`
     );
-    const existing = res.items?.[0];
-    if(existing) await pbFetch('DELETE', `/api/collections/overrides/records/${existing.id}`);
-  } catch(e){ console.warn('pbDeleteOverride error:', e); }
+  } catch(e){ console.warn('sbDeleteOverride error:', e); }
 }
 
 async function pbSaveMonth(key, label, rows){
-  if(!pbToken) return;
   try {
-    const res = await pbFetch('GET', `/api/collections/months/records?filter=(key='${key}')`);
-    const existing = res.items?.[0];
-    if(existing){
-      await pbFetch('PATCH', `/api/collections/months/records/${existing.id}`, {key, label, rows});
-    } else {
-      await pbFetch('POST', '/api/collections/months/records', {key, label, rows});
-    }
-  } catch(e){ console.warn('pbSaveMonth error:', e); }
+    await sbFetch('POST', 'athena_months', {key, label, rows, updated_at: new Date().toISOString()});
+  } catch(e){ console.warn('sbSaveMonth error:', e); }
 }
 
 // ═══════════════════════════════════════
@@ -2221,32 +2206,115 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   { const _s=getAll();
     for(const [k,o] of Object.entries(REAL_DATA)){ _s[k]={key:k,label:o.label,rows:o.rows}; }
     localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
-  // Se já há sessão salva (token no localStorage), recarrega do PB direto
-  const _savedToken = localStorage.getItem('ou_athena_token');
-  const _savedUser  = localStorage.getItem('ou_athena_user');
-  if(_savedToken && _savedUser){
+  // Se já há sessão salva (usuário no localStorage), recarrega do Supabase
+  const _savedUser = localStorage.getItem('ou_athena_user');
+  if(_savedUser){
     try {
-      pbToken = _savedToken;
-      pbUser  = JSON.parse(_savedUser);
+      pbUser = JSON.parse(_savedUser);
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('main-app').style.display = 'block';
       document.getElementById('user-pill').style.display = 'flex';
       document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
       setSyncDot('ok');
-      await loadFromPB();
+      await loadFromSB();
     } catch(e) {
-      // token inválido — mostra login
-      localStorage.removeItem('ou_athena_token');
       localStorage.removeItem('ou_athena_user');
       document.getElementById('login-email')?.focus();
     }
   } else {
-    // Sem sessão — define currentMonth pelos dados locais para pré-visualização
+    // Sem sessão — pré-visualiza com dados locais
     const _initKeys = Object.keys(getAll()).sort().reverse();
     if(_initKeys.length){ currentMonth = getAll()[_initKeys[0]]; renderAll(); }
     setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
   }
 });
+
+// ═══════════════════════════════════════
+// EXPORTAR PDF
+// ═══════════════════════════════════════
+function exportPDF(){
+  if(!currentMonth){ alert('Selecione um mês antes de exportar.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const rows = buildRows(currentMonth.rows);
+  const mesLabel = currentMonth.label || currentMonth.key;
+  const totalReal = rows.reduce((s,r)=>s+(r.real||0),0);
+  const totalMet  = rows.reduce((s,r)=>s+(r.metrica||0),0);
+
+  // Cabeçalho
+  doc.setFillColor(106, 31, 48);
+  doc.rect(0, 0, 210, 28, 'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255,255,255);
+  doc.text('ORAL UNIC CARLOS BARBOSA', 14, 11);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Relatório de Despesas — ' + mesLabel, 14, 19);
+  doc.text('Emitido em ' + new Date().toLocaleDateString('pt-BR'), 196, 19, {align:'right'});
+
+  // Cards resumo
+  doc.setTextColor(80,40,20);
+  doc.setFontSize(8);
+  doc.setFont('helvetica','bold');
+  const cardY = 34;
+  [[fmt(totalReal),'Total Realizado'],[fmt(totalMet),'Total Métrica'],
+   [rows.filter(r=>r.status==='ok').length + ' itens','Dentro da Métrica'],
+   [rows.filter(r=>r.status==='over').length + ' itens','Acima da Métrica']
+  ].forEach(([val,lbl],i)=>{
+    const x = 14 + i*49;
+    doc.setDrawColor(196,149,90);
+    doc.roundedRect(x, cardY, 46, 14, 2, 2, 'S');
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(106,31,48);
+    doc.text(val, x+23, cardY+7, {align:'center'});
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,80,50);
+    doc.text(lbl, x+23, cardY+12, {align:'center'});
+  });
+
+  // Tabela
+  const tableRows = rows.filter(r => !r.isSub).map(r => [
+    r.desp,
+    r.cat,
+    r.tipo === 'F' ? 'Fixa' : 'Variável',
+    r.metrica != null ? fmt(r.metrica) : '—',
+    r.real != null ? fmt(r.real) : '—',
+    r.status === 'ok' ? '✓ Ok' : r.status === 'over' ? '↑ Acima' : r.status === 'warn' ? 'Aguard.' : 'Sem métrica'
+  ]);
+
+  doc.autoTable({
+    startY: cardY + 20,
+    head: [['Despesa','Categoria','Tipo','Métrica','Realizado','Status']],
+    body: tableRows,
+    styles: { fontSize: 7.5, cellPadding: 2.5, overflow: 'linebreak' },
+    headStyles: { fillColor: [106,31,48], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+    columnStyles: {
+      0: { cellWidth: 58 }, 1: { cellWidth: 38 }, 2: { cellWidth: 18 },
+      3: { cellWidth: 28, halign:'right' }, 4: { cellWidth: 28, halign:'right' },
+      5: { cellWidth: 22, halign:'center' }
+    },
+    didParseCell(data){
+      if(data.section==='body'){
+        const status = data.row.raw[5];
+        if(status==='✓ Ok') data.cell.styles.textColor = [21,128,61];
+        else if(status==='↑ Acima') data.cell.styles.textColor = [185,28,28];
+      }
+    },
+    foot: [['','','Total Geral','',fmt(totalReal),'']],
+    footStyles: { fillColor:[245,240,230], textColor:[106,31,48], fontStyle:'bold', fontSize:8 }
+  });
+
+  // Rodapé
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pageCount;i++){
+    doc.setPage(i);
+    doc.setFontSize(7); doc.setTextColor(160,120,80);
+    doc.text('Oral Unic Carlos Barbosa · Athena · '+mesLabel, 14, 292);
+    doc.text('Página '+i+'/'+pageCount, 196, 292, {align:'right'});
+  }
+
+  doc.save('despesas-' + (currentMonth.key||mesLabel.replace(/\s/g,'-').toLowerCase()) + '.pdf');
+}
 </script>
 </body>
 </html>
