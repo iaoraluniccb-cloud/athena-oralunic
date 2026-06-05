@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Athena — Construa sua Métrica | Oral Unic</title>
+<meta name="version" content="20260605-v8">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%238B2D42'/><text y='72' x='50' text-anchor='middle' font-size='62' font-family='serif'>📏</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1409,6 +1410,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── Supabase sync functions ──
 async function loadFromSB(){
   try {
+    // Limpa qualquer cache antigo de meses (REAL_DATA é sempre recarregado do código)
+    localStorage.removeItem('ou_athena_v2');
     // REAL_DATA é sempre fonte de verdade — carrega direto no localStorage sem passar pelo Supabase
     const _s = {};
     for(const [k,o] of Object.entries(REAL_DATA)){ _s[k] = {key:k, label:o.label, rows:o.rows}; }
