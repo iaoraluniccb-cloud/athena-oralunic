@@ -2394,14 +2394,19 @@ function dataRowHtml(r, indent){
   } else {
     const realDisplay = r.real!==null?fmt(r.real):'—';
     const realCurVal = r.real !== null ? r.real : '';
-    realCell = `<span class="editable-real" onclick="editReal(this,'${despEsc}',${realCurVal})" title="Clique para editar realizado">${realDisplay}</span>`;
+    if(isExtra){
+      const catEsc = (r.parentCat||'').replace(/'/g,"\\'");
+      realCell = `<span class="editable-real" onclick="editRealExtra(this,'${catEsc}','${despEsc}',${realCurVal||'null'})" title="Clique para editar realizado">${realDisplay}</span>`;
+    } else {
+      realCell = `<span class="editable-real" onclick="editReal(this,'${despEsc}',${realCurVal||'null'})" title="Clique para editar realizado">${realDisplay}</span>`;
+    }
   }
   const realNum = r.real !== null ? r.real : 0;
   // isExtra = linha adicionada pelo usuário → comporta como data-row normal (não sub-row)
   const isLabSub = isSub && !isExtra;
   const trClass = isLabSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
   const trClick = `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.editable-desp,.extra-del-btn'))toggleRowSelection('${despEsc}',${realNum})"`;
-  const ovLabel = (getOverrides()[r.desp]||{}).label || r.desp;
+  const ovLabel = isExtra ? r.desp : ((getOverrides()[r.desp]||{}).label || r.desp);
   const despLabel = isLabSub ? '↳ '+ovLabel : ovLabel;
   const despCell = `<span class="editable-desp" onclick="editDesp(this,'${despEsc}')" title="Clique para editar nome">${despLabel}</span>`;
   const delAction = isExtra
@@ -2843,6 +2848,29 @@ function addCatExtra(cat){
       if(span && span.textContent.includes('Nova linha')){ span.click(); break; }
     }
   }, 80);
+}
+
+function editRealExtra(el, cat, nome, curVal){
+  const inp = document.createElement('input');
+  inp.type='number'; inp.min='0'; inp.step='0.01';
+  inp.value = curVal !== null && curVal !== undefined && curVal !== 'null' ? curVal : '';
+  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--vinho);border-radius:3px;text-align:right;font-family:inherit;background:white;color:#111;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  let _committed = false;
+  function commit(){
+    if(_committed) return; _committed = true;
+    const v = inp.value.trim();
+    const items = getCatExtras(cat);
+    const idx = items.findIndex(it=>it.nome===nome);
+    if(idx >= 0){
+      items[idx].real = v === '' ? null : (parseFloat(v)||null);
+      saveCatExtras(cat, items);
+    }
+    renderAll();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ _committed=true; renderAll(); } });
 }
 
 function deleteCatExtra(cat, nome){
