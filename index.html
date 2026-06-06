@@ -2170,7 +2170,7 @@ function buildRows(monthRows){
     } else if(desp === AVAL_COMISSAO){
       real = avalHasSplit ? Math.max(0, avalTotal - avalProLabore) : (realMap[desp] !== undefined ? realMap[desp] : null);
     } else {
-      real = realMap[desp] !== undefined ? realMap[desp] : null;
+      real = ov.real !== undefined ? ov.real : (realMap[desp] !== undefined ? realMap[desp] : null);
     }
     return makeRow(cat,desp,metricaEff,tipoEff,real);
   });
