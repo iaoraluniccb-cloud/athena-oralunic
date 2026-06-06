@@ -4496,7 +4496,17 @@ window.addEventListener('DOMContentLoaded', async ()=>{
       document.getElementById('login-email')?.focus();
     }
   } else {
-    // Sem sessão — define currentMonth pelos dados locais para pré-visualização
+    // Sem sessão — carrega overrides públicos do Supabase antes de renderizar
+    try {
+      const oRes = await sbFetch('GET', '/rest/v1/overrides?select=desp,field,value');
+      const ovObj = {};
+      for(const rec of oRes){
+        if(!ovObj[rec.desp]) ovObj[rec.desp] = {};
+        try { ovObj[rec.desp][rec.field] = JSON.parse(rec.value); }
+        catch(e2) { ovObj[rec.desp][rec.field] = rec.value; }
+      }
+      localStorage.setItem('ou_athena_overrides', JSON.stringify(ovObj));
+    } catch(e){ /* continua sem overrides */ }
     const _initKeys = Object.keys(getAll()).sort().reverse();
     if(_initKeys.length){ currentMonth = getAll()[_initKeys[0]]; renderAll(); }
     setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
