@@ -2397,7 +2397,8 @@ function dataRowHtml(r, indent){
   const realNum = r.real !== null ? r.real : 0;
   const trClass = isSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
   const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.editable-desp'))toggleRowSelection('${despEsc}',${realNum})"`;
-  const despLabel = isSub ? '↳ '+r.desp : r.desp;
+  const ovLabel = (getOverrides()[r.desp]||{}).label || r.desp;
+  const despLabel = isSub ? '↳ '+ovLabel : ovLabel;
   const despCell = `<span class="editable-desp" onclick="editDesp(this,'${despEsc}')" title="Clique para editar nome">${despLabel}</span>`;
   const extraDelBtn = isExtra ? `<button class="extra-del-btn" onclick="deleteCatExtra('${r.parentCat.replace(/'/g,"\\'")}','${despEsc}')" title="Excluir linha">✕</button>` : '';
   const extraAttr = isExtra ? ` data-parent-cat="${(r.parentCat||'').replace(/"/g,'&quot;')}"` : '';
@@ -2696,8 +2697,9 @@ function _labRenderRows(){
   const rowsEl = document.getElementById('lab-modal-rows');
   rowsEl.innerHTML = lines.map((d,i) => {
     const cur = (ovs[d]||{}).real;
-    return `<div class="lab-row" data-idx="${i}">
-      <input class="li-nome" type="text" value="${d.replace(/"/g,'&quot;')}" placeholder="Nome do laboratório" onchange="labRenameRow(${i},this.value)">
+    const displayName = (ovs[d]||{}).label || d;
+    return `<div class="lab-row" data-idx="${i}" data-internal="${d.replace(/"/g,'&quot;')}">
+      <input class="li-nome" type="text" value="${displayName.replace(/"/g,'&quot;')}" placeholder="Nome do laboratório">
       <input class="li-val" type="number" min="0" step="0.01" value="${cur !== undefined ? cur : ''}" placeholder="0,00" oninput="updateLabUnallocated()">
       <button class="li-del" onclick="labDeleteRow(${i})" title="Excluir">✕</button>
     </div>`;
@@ -2777,35 +2779,28 @@ function saveLabDist(){
   const ovs = getOverrides();
 
   rows.forEach((row, i) => {
-    const nome = (row.querySelector('.li-nome')||{}).value?.trim();
+    const labelDigitado = (row.querySelector('.li-nome')||{}).value?.trim();
     const valInp = row.querySelector('.li-val');
-    if(!nome) return;
-    const oldName = oldLines[i] || nome;
-    newLines.push(nome);
+    if(!labelDigitado) return;
+    const internalKey = row.dataset.internal || oldLines[i] || labelDigitado;
+    newLines.push(internalKey); // chave interna não muda
 
-    // migra overrides se o nome mudou
-    if(oldName !== nome && ovs[oldName]){
-      ovs[nome] = ovs[oldName];
-      delete ovs[oldName];
-      for(const [field, val] of Object.entries(ovs[nome]||{})){
-        pbSaveOverride(nome, field, val);
-      }
-      pbDeleteOverrideField(oldName, 'real');
-      pbDeleteOverrideField(oldName, 'metrica');
-    }
+    // salva o label (nome visível) no override
+    if(!ovs[internalKey]) ovs[internalKey] = {};
+    ovs[internalKey].label = labelDigitado;
+    pbSaveOverride(internalKey, 'label', labelDigitado);
 
     // salva o valor realizado
     if(valInp){
       const v = valInp.value.trim();
       if(v === ''){
-        if(ovs[nome]) delete ovs[nome].real;
-        pbDeleteOverrideField(nome, 'real');
+        if(ovs[internalKey]) delete ovs[internalKey].real;
+        pbDeleteOverrideField(internalKey, 'real');
       } else {
         const n = parseFloat(v.replace(',','.'));
         if(!isNaN(n)){
-          if(!ovs[nome]) ovs[nome] = {};
-          ovs[nome].real = n;
-          pbSaveOverride(nome, 'real', n);
+          ovs[internalKey].real = n;
+          pbSaveOverride(internalKey, 'real', n);
         }
       }
     }
