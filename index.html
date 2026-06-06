@@ -354,8 +354,12 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 #lab-modal .lab-total-line,#dist-modal .dist-total-line { font-size:12px; color:var(--moka); opacity:.6; margin-bottom:16px; }
 #lab-modal .lab-rows,#dist-modal .dist-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
 #lab-modal .lab-row,#dist-modal .dist-row { display:flex; align-items:center; gap:8px; }
-#lab-modal .lab-row label { flex:1; font-size:13px; color:var(--vinho-deep,#3a1a2e); }
-#lab-modal .lab-row input { width:110px; font-size:13px; padding:4px 8px; border:1px solid var(--warm,#d4b8a0); border-radius:4px; text-align:right; font-family:inherit; background:white; }
+#lab-modal .lab-row input.li-nome { flex:1; font-size:13px; padding:4px 8px; border:1px solid var(--warm,#d4b8a0); border-radius:4px; font-family:inherit; background:white; }
+#lab-modal .lab-row input.li-val { width:110px; font-size:13px; padding:4px 8px; border:1px solid var(--warm,#d4b8a0); border-radius:4px; text-align:right; font-family:inherit; background:white; }
+#lab-modal .lab-row button.li-del { background:none; border:none; color:#c0392b; cursor:pointer; font-size:15px; padding:0 4px; line-height:1; opacity:.7; }
+#lab-modal .lab-row button.li-del:hover { opacity:1; }
+#lab-modal .lab-add-btn { background:none; border:1px dashed var(--warm,#d4b8a0); color:var(--moka,#7a5c4d); border-radius:4px; padding:5px 12px; font-family:inherit; font-size:12px; cursor:pointer; width:100%; margin-bottom:12px; }
+#lab-modal .lab-add-btn:hover { background:rgba(0,0,0,.03); }
 #lab-modal .lab-unallocated,#dist-modal .dist-unallocated { font-size:12px; padding:8px 10px; background:rgba(0,0,0,.04); border-radius:5px; margin-bottom:16px; }
 #lab-modal .lab-unallocated.negative,#dist-modal .dist-unallocated.negative { color:#c0392b; }
 #lab-modal .lab-btn-row,#dist-modal .dist-btn-row { display:flex; gap:10px; justify-content:flex-end; }
@@ -1638,6 +1642,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <h3>Distribuir Laboratório Externo</h3>
     <div class="lab-total-line" id="lab-total-line"></div>
     <div class="lab-rows" id="lab-modal-rows"></div>
+    <button class="lab-add-btn" onclick="labAddRow()">+ Adicionar laboratório</button>
     <div class="lab-unallocated" id="lab-unallocated"></div>
     <div class="lab-btn-row">
       <button class="lab-btn lab-btn-cancel" onclick="closeLabModal()">Cancelar</button>
@@ -2118,7 +2123,14 @@ function resetOverrides(){ localStorage.removeItem('ou_athena_overrides'); rende
 // ═══════════════════════════════════════
 // BUILD ROWS
 // ═══════════════════════════════════════
-const LAB_SUB_DESPS = ["AGA","Marcelo","Fabio","Breda","Kion Mensalidade","Kion Trabalhos"];
+const LAB_SUB_DESPS_DEFAULT = ["AGA","Marcelo","Fabio","Breda","Kion Mensalidade","Kion Trabalhos"];
+function getLabSubDesps(){
+  const ovs = getOverrides();
+  const saved = ovs['__lab_lines__'];
+  if(saved && Array.isArray(saved.list)) return saved.list;
+  return [...LAB_SUB_DESPS_DEFAULT];
+}
+function saveLabSubDesps(arr){ saveOverride('__lab_lines__', 'list', arr); }
 const LAB_CONSOL    = "Lab. Externo (consolidado)";
 
 // Avaliador split: Comissao recebe valor total da planilha; Pro-Labore vem de override
@@ -2142,8 +2154,8 @@ function buildRows(monthRows){
   // Sub-lab allocation
   const labTotal = realMap[LAB_CONSOL] || 0;
   let labAllocated = 0;
-  for(const d of LAB_SUB_DESPS){ const ov=overrides[d]||{}; if(ov.real!==undefined) labAllocated+=ov.real; }
-  const labHasDist = LAB_SUB_DESPS.some(d => (overrides[d]||{}).real !== undefined);
+  for(const d of getLabSubDesps()){ const ov=overrides[d]||{}; if(ov.real!==undefined) labAllocated+=ov.real; }
+  const labHasDist = getLabSubDesps().some(d => (overrides[d]||{}).real !== undefined);
 
   // Avaliador split
   const avalTotal = realMap[AVAL_COMISSAO] || 0;
@@ -2163,7 +2175,7 @@ function buildRows(monthRows){
     let real;
     if(desp === LAB_CONSOL){
       real = labHasDist ? Math.max(0, labTotal - labAllocated) : (realMap[desp] !== undefined ? realMap[desp] : null);
-    } else if(LAB_SUB_DESPS.includes(desp)){
+    } else if(getLabSubDesps().includes(desp)){
       real = ov.real !== undefined ? ov.real : (realMap[desp] !== undefined ? realMap[desp] : null);
     } else if(desp === AVAL_PROLABORE){
       real = avalHasSplit ? avalProLabore : (realMap[desp] !== undefined ? realMap[desp] : null);
@@ -2339,7 +2351,7 @@ function dataRowHtml(r, indent){
   const metDisplay = r.metrica !== null ? fmt(r.metrica) : '—';
   let realCell;
   if(r.desp === LAB_CONSOL){
-    const ovHasDist = LAB_SUB_DESPS.some(d => (getOverrides()[d]||{}).real !== undefined);
+    const ovHasDist = getLabSubDesps().some(d => (getOverrides()[d]||{}).real !== undefined);
     const tooltip = ovHasDist ? 'Distribuído — clique para editar' : 'Clique para distribuir por laboratório';
     realCell = `<span class="editable-real" onclick="openLabModal()" title="${tooltip}">⚗ ${r.real!==null?fmt(r.real):'—'}</span>`;
   } else if(r.desp === AVAL_COMISSAO){
@@ -2574,7 +2586,7 @@ function createBlankMonth(){
   // Build rows from METRIC_BASE with value 0
   const rows = METRIC_BASE.map(([,desp])=>({d: desp, v: 0}));
   // Also add sub-lab names so they can receive values
-  for(const d of LAB_SUB_DESPS) rows.push({d, v:0});
+  for(const d of getLabSubDesps()) rows.push({d, v:0});
   clearLog();
   saveMonth(key, label, rows);
   currentMonth = getAll()[key];
@@ -2618,8 +2630,10 @@ function parseCSV(text){
 // ═══════════════════════════════════════
 // LAB EXTERNO DISTRIBUTION MODAL
 // ═══════════════════════════════════════
+let _labTotal = 0;
+
 function openLabModal(){
-  const total = (() => {
+  _labTotal = (() => {
     if(!currentMonth) return 0;
     let t=0;
     for(const r of currentMonth.rows){
@@ -2628,27 +2642,83 @@ function openLabModal(){
     }
     return t;
   })();
-  const ovs = getOverrides();
-  document.getElementById('lab-total-line').textContent = 'Total Laboratório Externo: ' + fmt(total);
-  const rowsEl = document.getElementById('lab-modal-rows');
-  rowsEl.innerHTML = LAB_SUB_DESPS.map(d => {
-    const cur = (ovs[d]||{}).real;
-    return `<div class="lab-row">
-      <label>${d}</label>
-      <input type="number" min="0" step="0.01" data-desp="${d}" value="${cur !== undefined ? cur : ''}" placeholder="0,00" oninput="updateLabUnallocated(${total})">
-    </div>`;
-  }).join('');
-  updateLabUnallocated(total);
+  document.getElementById('lab-total-line').textContent = 'Total Laboratório Externo: ' + fmt(_labTotal);
+  _labRenderRows();
+  updateLabUnallocated();
   document.getElementById('lab-modal-overlay').classList.add('open');
 }
 
-function updateLabUnallocated(total){
+function _labRenderRows(){
+  const ovs = getOverrides();
+  const lines = getLabSubDesps();
+  const rowsEl = document.getElementById('lab-modal-rows');
+  rowsEl.innerHTML = lines.map((d,i) => {
+    const cur = (ovs[d]||{}).real;
+    return `<div class="lab-row" data-idx="${i}">
+      <input class="li-nome" type="text" value="${d.replace(/"/g,'&quot;')}" placeholder="Nome do laboratório" onchange="labRenameRow(${i},this.value)">
+      <input class="li-val" type="number" min="0" step="0.01" value="${cur !== undefined ? cur : ''}" placeholder="0,00" oninput="updateLabUnallocated()">
+      <button class="li-del" onclick="labDeleteRow(${i})" title="Excluir">✕</button>
+    </div>`;
+  }).join('');
+  rowsEl.insertAdjacentHTML('afterend', '');
+}
+
+function labRenameRow(idx, newName){
+  const lines = getLabSubDesps();
+  const oldName = lines[idx];
+  if(!newName.trim() || newName.trim() === oldName) return;
+  newName = newName.trim();
+  // migra overrides do nome antigo para o novo
+  const ovs = getOverrides();
+  if(ovs[oldName]){
+    ovs[newName] = ovs[oldName];
+    delete ovs[oldName];
+    localStorage.setItem('ou_athena_overrides', JSON.stringify(ovs));
+    // persiste no Supabase
+    for(const [field, val] of Object.entries(ovs[newName])) pbSaveOverride(newName, field, val);
+    pbDeleteOverrideField(oldName, 'real');
+    pbDeleteOverrideField(oldName, 'metrica');
+    pbDeleteOverrideField(oldName, 'label');
+  }
+  lines[idx] = newName;
+  saveLabSubDesps(lines);
+}
+
+function labDeleteRow(idx){
+  const lines = getLabSubDesps();
+  const d = lines[idx];
+  // remove overrides da linha excluída
+  const ovs = getOverrides();
+  if(ovs[d]){
+    delete ovs[d];
+    localStorage.setItem('ou_athena_overrides', JSON.stringify(ovs));
+    pbDeleteOverrideField(d, 'real');
+    pbDeleteOverrideField(d, 'metrica');
+  }
+  lines.splice(idx, 1);
+  saveLabSubDesps(lines);
+  _labRenderRows();
+  updateLabUnallocated();
+}
+
+function labAddRow(){
+  const lines = getLabSubDesps();
+  lines.push('Novo Laboratório');
+  saveLabSubDesps(lines);
+  _labRenderRows();
+  updateLabUnallocated();
+  // foca no último nome adicionado
+  const inputs = document.querySelectorAll('#lab-modal-rows .li-nome');
+  if(inputs.length) { const last = inputs[inputs.length-1]; last.focus(); last.select(); }
+}
+
+function updateLabUnallocated(){
   let used = 0;
-  document.querySelectorAll('#lab-modal-rows input').forEach(inp => {
+  document.querySelectorAll('#lab-modal-rows .li-val').forEach(inp => {
     const v = parseFloat(inp.value.replace(',','.'));
     if(!isNaN(v)) used += v;
   });
-  const rem = total - used;
+  const rem = _labTotal - used;
   const el = document.getElementById('lab-unallocated');
   el.textContent = 'Restante não alocado: ' + fmt(rem);
   el.classList.toggle('negative', rem < -0.005);
@@ -2659,21 +2729,26 @@ function closeLabModal(){
 }
 
 function saveLabDist(){
-  LAB_SUB_DESPS.forEach(d => {
-    const inp = document.querySelector(`#lab-modal-rows input[data-desp="${d}"]`);
-    if(!inp) return;
-    const v = inp.value.trim();
-    if(v === ''){ const o=getOverrides(); if(o[d]) delete o[d].real; localStorage.setItem('ou_athena_overrides',JSON.stringify(o)); }
-    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(d,'real',n); }
+  const lines = getLabSubDesps();
+  const rows = document.querySelectorAll('#lab-modal-rows .lab-row');
+  rows.forEach((row, i) => {
+    const nome = (row.querySelector('.li-nome')||{}).value?.trim();
+    const valInp = row.querySelector('.li-val');
+    if(!nome || !valInp) return;
+    // renomeia se mudou
+    if(lines[i] && lines[i] !== nome) labRenameRow(i, nome);
+    const v = valInp.value.trim();
+    const finalName = nome;
+    if(v === ''){ deleteOverrideField(finalName,'real'); }
+    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(finalName,'real',n); }
   });
   closeLabModal();
   renderAll();
 }
 
 function clearLabDist(){
-  const o = getOverrides();
-  LAB_SUB_DESPS.forEach(d => { if(o[d]) delete o[d].real; });
-  localStorage.setItem('ou_athena_overrides', JSON.stringify(o));
+  const lines = getLabSubDesps();
+  lines.forEach(d => deleteOverrideField(d,'real'));
   closeLabModal();
   renderAll();
 }
