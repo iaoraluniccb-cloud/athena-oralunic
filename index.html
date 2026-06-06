@@ -2181,7 +2181,7 @@ function buildRows(monthRows){
   const outrasItems = outrasOv.items || [];
   const outrasTotal = realMap[OUTRAS_CONSOL] || 0;
 
-  const baseRows = METRIC_BASE.map(([cat,desp,metrica,tipo])=>{
+  const baseRows = METRIC_BASE.filter(([,desp])=>!(overrides[desp]||{})._hidden).map(([cat,desp,metrica,tipo])=>{
     const ov = overrides[desp] || {};
     const metricaEff = ov.metrica !== undefined ? ov.metrica : metrica;
     const tipoEff    = ov.tipo    !== undefined ? ov.tipo    : tipo;
@@ -2404,7 +2404,10 @@ function dataRowHtml(r, indent){
   const ovLabel = (getOverrides()[r.desp]||{}).label || r.desp;
   const despLabel = isLabSub ? '↳ '+ovLabel : ovLabel;
   const despCell = `<span class="editable-desp" onclick="editDesp(this,'${despEsc}')" title="Clique para editar nome">${despLabel}</span>`;
-  const extraDelBtn = isExtra ? `<button class="extra-del-btn" onclick="deleteCatExtra('${r.parentCat.replace(/'/g,"\\'")}','${despEsc}')" title="Excluir linha">✕</button>` : '';
+  const delAction = isExtra
+    ? `deleteCatExtra('${(r.parentCat||'').replace(/'/g,"\\'")}','${despEsc}')`
+    : `hideBaseRow('${despEsc}')`;
+  const extraDelBtn = `<button class="extra-del-btn" onclick="${delAction}" title="Excluir linha">✕</button>`;
   const extraAttr = isExtra ? ` data-parent-cat="${(r.parentCat||'').replace(/"/g,'&quot;')}"` : '';
   return `<tr class="${trClass}" data-desp="${despEsc}"${extraAttr} ${trClick}>
     <td class="${isLabSub?'label-col':lc}">${despCell}${extraDelBtn}</td>
@@ -2851,10 +2854,18 @@ function addCatExtra(cat){
 function deleteCatExtra(cat, nome){
   const items = getCatExtras(cat).filter(it => it.nome !== nome);
   saveCatExtras(cat, items);
-  // remove overrides da linha excluída
   deleteOverrideField(nome, 'real');
   deleteOverrideField(nome, 'metrica');
   deleteOverrideField(nome, 'tipo');
+  renderAll();
+}
+
+function hideBaseRow(desp){
+  if(!confirm(`Excluir linha "${desp}"?`)) return;
+  const o = getOverrides();
+  if(!o[desp]) o[desp] = {};
+  o[desp]._hidden = true;
+  localStorage.setItem('ou_athena_overrides', JSON.stringify(o));
   renderAll();
 }
 
