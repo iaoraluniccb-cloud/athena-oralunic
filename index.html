@@ -1746,6 +1746,10 @@ const METRIC_BASE = [
   ["Laboratorio Externo",    "Marcelo",                       2500.00,"V"],
   ["Laboratorio Externo",    "Fabio",                          500.00,"V"],
   ["Laboratorio Externo",    "Breda",                         1000.00,"V"],
+  ["Laboratorio Externo",    "Contencoes",                     500.00,"V"],
+  ["Laboratorio Externo",    "Artis",                        15000.00,"V"],
+  ["Laboratorio Externo",    "Rad Flux",                          0,  "V"],
+  ["Laboratorio Externo",    "Alinhadores",                       0,  "V"],
   ["Laboratorio Externo",    "Kion Mensalidade",              2500.00,"F"],
   ["Laboratorio Externo",    "Kion Trabalhos",                null,   "V"],
   ["Laboratorio Interno",    "Insumos para Lab.",             5000.00,"V"],
@@ -2130,7 +2134,7 @@ function resetOverrides(){ localStorage.removeItem('ou_athena_overrides'); rende
 // ═══════════════════════════════════════
 // BUILD ROWS
 // ═══════════════════════════════════════
-const LAB_SUB_DESPS_DEFAULT = ["AGA","Marcelo","Fabio","Breda","Kion Mensalidade","Kion Trabalhos"];
+const LAB_SUB_DESPS_DEFAULT = ["AGA","Marcelo","Fabio","Breda","Contencoes","Artis","Rad Flux","Alinhadores","Kion Mensalidade","Kion Trabalhos"];
 function getLabSubDesps(){
   const ovs = getOverrides();
   const saved = ovs['__lab_lines__'];
