@@ -2371,7 +2371,7 @@ function dataRowHtml(r, indent){
   else                       sHtml=`<span class="metric-pill mp-nf">Sem métrica</span>`;
   const isSub = !!r.isSub;
   const isExtra = !!r.isExtra;
-  const lc = (indent && !isSub) ? 'label-col' : '';
+  const lc = (indent && (!isSub || isExtra)) ? 'label-col' : '';
   const metVal = r.metrica !== null ? r.metrica : '';
   const metDisplay = r.metrica !== null ? fmt(r.metrica) : '—';
   let realCell;
