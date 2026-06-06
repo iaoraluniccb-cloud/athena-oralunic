@@ -1236,6 +1236,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
       <div class="month-badge" id="current-month-badge">—</div>
       <div class="month-switcher" id="month-switcher"></div>
       <button onclick="exportMetricaPDF()" title="Exportar PDF" style="margin-left:auto;display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--cobre);border-radius:4px;color:var(--cobre);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.12em;font-weight:300;padding:5px 14px;cursor:pointer;transition:background .2s,color .2s;" onmouseover="this.style.background='var(--cobre)';this.style.color='var(--tinta)'" onmouseout="this.style.background='transparent';this.style.color='var(--cobre)'">&#8595; PDF</button>
+      <button onclick="backupMetricas()" title="Baixar backup dos dados" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--vinho);border-radius:4px;color:var(--vinho);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.12em;font-weight:300;padding:5px 14px;cursor:pointer;transition:background .2s,color .2s;" onmouseover="this.style.background='var(--vinho)';this.style.color='var(--marfim)'" onmouseout="this.style.background='transparent';this.style.color='var(--vinho)'">&#8595; Backup</button>
     </div>
 
     <!-- Sub-barra de navegação interna -->
@@ -2524,6 +2525,22 @@ function renderMonthsList(){
 
 // ═══════════════════════════════════════
 // ACTIONS
+// ── Backup ──────────────────────────────────────────────────────────────────
+function backupMetricas(){
+  const data = {
+    exportedAt: new Date().toISOString(),
+    months: getAll(),
+    overrides: getOverrides(),
+    fechamento: getFechData()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date();
+  a.download = `backup-metricas-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 // ── Export PDF ──────────────────────────────────────────────────────────────
 function exportMetricaPDF(){
   if(!currentMonth){ alert('Nenhum mês carregado.'); return; }
