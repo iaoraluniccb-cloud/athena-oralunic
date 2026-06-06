@@ -1139,31 +1139,36 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 
 /* Breakdown table */
 #dir-divisao-breakdown {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 0;
 }
 .div-breakdown-row {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
   border-bottom: 1px solid rgba(196,149,90,0.12);
-  border-right: 1px solid rgba(196,149,90,0.12);
-  gap: 4px;
+  gap: 8px;
 }
-.div-breakdown-row:nth-child(even) { border-right: none; }
-.div-breakdown-row:nth-last-child(-n+2) { border-bottom: none; }
+.div-breakdown-row:last-child { border-bottom: none; }
 .div-breakdown-row:hover { background: rgba(196,149,90,0.05); }
+.div-socio-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .div-socio-name {
   font-family: 'Josefin Sans', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--moka);
   letter-spacing: .06em;
   text-transform: uppercase;
-  opacity: .75;
-  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .div-socio-pct {
   font-family: 'Josefin Sans', sans-serif;
@@ -1175,6 +1180,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   padding: 1px 6px;
   border-radius: 8px;
   white-space: nowrap;
+  align-self: flex-start;
 }
 .div-socio-val {
   font-family: 'Cormorant SC', serif;
@@ -1182,7 +1188,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   color: var(--vinho);
   letter-spacing: .03em;
   white-space: nowrap;
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 </style>
 </head>
@@ -4608,9 +4614,9 @@ function saveDirItem(card, idx, field, value){
 
 // ── Divisão automática ────────────────────────────────────────────────────
 const DIVISAO_SOCIOS = [
-  { nome: 'MB participações empresariais', pct: 52.5 },
-  { nome: 'AGO participações empresariais', pct: 23.5 },
-  { nome: 'Torres participações empresariais', pct: 20.0 },
+  { nome: 'MB Participações', pct: 52.5 },
+  { nome: 'AGO Participações', pct: 23.5 },
+  { nome: 'Torres Participações', pct: 20.0 },
   { nome: 'Thalis Ryan', pct: 4.0 },
 ];
 
@@ -4624,8 +4630,10 @@ function renderDivisaoBreakdown(total){
   el.innerHTML = DIVISAO_SOCIOS.map(s=>{
     const val = total * s.pct / 100;
     return `<div class="div-breakdown-row">
-      <span class="div-socio-name">${s.nome}</span>
-      <span class="div-socio-pct">${s.pct}%</span>
+      <div class="div-socio-left">
+        <span class="div-socio-name">${s.nome}</span>
+        <span class="div-socio-pct">${s.pct}%</span>
+      </div>
       <span class="div-socio-val">${fmt(val)}</span>
     </div>`;
   }).join('');
