@@ -1894,7 +1894,7 @@ function setSyncDot(state){
   d.className = 'sync-dot ' + state;
 }
 
-async function sbFetch(method, path, body, useAuth){
+async function sbFetch(method, path, body, useAuth, extraHeaders){
   setSyncDot('spin');
   try {
     const headers = {
@@ -1907,6 +1907,7 @@ async function sbFetch(method, path, body, useAuth){
     } else {
       headers['Prefer'] = 'return=representation,resolution=merge-duplicates';
     }
+    if(extraHeaders) Object.assign(headers, extraHeaders);
     const r = await fetch(SB_URL + path, {
       method,
       headers,
@@ -2068,12 +2069,7 @@ async function pbSaveOverride(desp, field, val){
   if(!pbToken) return;
   try {
     const valueStr = JSON.stringify(val);
-    const check = await sbFetch('GET', `/rest/v1/overrides?desp=eq.${encodeURIComponent(desp)}&field=eq.${encodeURIComponent(field)}&select=id`, null, true);
-    if(check && check.length > 0){
-      await sbFetch('PATCH', `/rest/v1/overrides?desp=eq.${encodeURIComponent(desp)}&field=eq.${encodeURIComponent(field)}`, {value: valueStr}, true);
-    } else {
-      await sbFetch('POST', '/rest/v1/overrides', {desp, field, value: valueStr}, true);
-    }
+    await sbFetch('POST', '/rest/v1/overrides?on_conflict=desp,field', {desp, field, value: valueStr}, true);
   } catch(e){ console.warn('sbSaveOverride error:', e); }
 }
 
