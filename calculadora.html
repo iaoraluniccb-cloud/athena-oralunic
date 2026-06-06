@@ -1804,9 +1804,9 @@ function renderMpInsumos(){
     const total = calcInsumoTotal(i);
     return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
       <input type="text" placeholder="Nome do insumo" value="${i.nome}" oninput="mpInsumos.find(x=>x.id==='${i.id}').nome=this.value">
-      <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtd=+this.value" onchange="renderMpInsumos()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}">
-      <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 máscaras, 500g)" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtdEmb=+this.value||0" onchange="renderMpInsumos()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}">
-      <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="mpInsumos.find(x=>x.id==='${i.id}').preco=+this.value" onchange="renderMpInsumos()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}">
+      <input type="text" inputmode="decimal" value="${i.qtd}" placeholder="1" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtd=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
+      <input type="text" inputmode="decimal" placeholder="—" value="${i.qtdEmb||''}" title="Qtd na embalagem (ex: 50 máscaras, 500g)" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtdEmb=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
+      <input type="text" inputmode="decimal" placeholder="0,00" value="${i.preco||''}" oninput="mpInsumos.find(x=>x.id==='${i.id}').preco=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
         <span style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
         ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
@@ -1906,9 +1906,9 @@ function renderMlInsumos(){
     const total = calcInsumoTotal(i);
     return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
       <input type="text" placeholder="Nome do insumo" value="${i.nome}" oninput="mlInsumos.find(x=>x.id==='${i.id}').nome=this.value">
-      <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtd=+this.value" onchange="renderMlInsumos()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}">
-      <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 unid, 500g)" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtdEmb=+this.value||0" onchange="renderMlInsumos()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}">
-      <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="mlInsumos.find(x=>x.id==='${i.id}').preco=+this.value" onchange="renderMlInsumos()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}">
+      <input type="text" inputmode="decimal" value="${i.qtd}" placeholder="1" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtd=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
+      <input type="text" inputmode="decimal" placeholder="—" value="${i.qtdEmb||''}" title="Qtd na embalagem (ex: 50 unid, 500g)" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtdEmb=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
+      <input type="text" inputmode="decimal" placeholder="0,00" value="${i.preco||''}" oninput="mlInsumos.find(x=>x.id==='${i.id}').preco=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
         <span style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
         ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
