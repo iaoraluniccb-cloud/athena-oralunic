@@ -2397,15 +2397,17 @@ function dataRowHtml(r, indent){
     realCell = `<span class="editable-real" onclick="editReal(this,'${despEsc}',${realCurVal})" title="Clique para editar realizado">${realDisplay}</span>`;
   }
   const realNum = r.real !== null ? r.real : 0;
-  const trClass = isSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
-  const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.editable-desp'))toggleRowSelection('${despEsc}',${realNum})"`;
+  // isExtra = linha adicionada pelo usuário → comporta como data-row normal (não sub-row)
+  const isLabSub = isSub && !isExtra;
+  const trClass = isLabSub ? `sub-row ${r.rowClass}` : `data-row ${r.rowClass}${_sel.has(r.desp)?' row-selected':''}`;
+  const trClick = `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.editable-desp,.extra-del-btn'))toggleRowSelection('${despEsc}',${realNum})"`;
   const ovLabel = (getOverrides()[r.desp]||{}).label || r.desp;
-  const despLabel = isSub ? '↳ '+ovLabel : ovLabel;
+  const despLabel = isLabSub ? '↳ '+ovLabel : ovLabel;
   const despCell = `<span class="editable-desp" onclick="editDesp(this,'${despEsc}')" title="Clique para editar nome">${despLabel}</span>`;
   const extraDelBtn = isExtra ? `<button class="extra-del-btn" onclick="deleteCatExtra('${r.parentCat.replace(/'/g,"\\'")}','${despEsc}')" title="Excluir linha">✕</button>` : '';
   const extraAttr = isExtra ? ` data-parent-cat="${(r.parentCat||'').replace(/"/g,'&quot;')}"` : '';
   return `<tr class="${trClass}" data-desp="${despEsc}"${extraAttr} ${trClick}>
-    <td class="${isSub?'label-col':lc}">${despCell}${extraDelBtn}</td>
+    <td class="${isLabSub?'label-col':lc}">${despCell}${extraDelBtn}</td>
     <td>${badge}</td>
     <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
     <td class="right">${realCell}</td>
