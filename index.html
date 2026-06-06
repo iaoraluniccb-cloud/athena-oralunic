@@ -380,8 +380,9 @@ tr.cat-add-row td { padding: 3px 8px; }
 #dist-modal .dist-row select.di-tipo { font-size:11px; padding:3px 5px; border:1px solid var(--warm); border-radius:4px; font-family:inherit; background:white; color:var(--tinta); }
 #dist-modal .dist-row .di-del { background:none; border:none; cursor:pointer; color:#c0392b; font-size:15px; padding:0 4px; }
 #dist-modal .dist-add-btn { font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px dashed var(--cobre); border-radius:4px; padding:5px 14px; cursor:pointer; color:var(--cobre); margin-bottom:14px; width:100%; }
-/* sub-item rows in table */
-tr.sub-row td { background:#f5f0ea; font-size:12px; padding:6px 14px; }
+/* sub-item rows in table — herda cor de status; fallback neutro apenas se não tiver classe de cor */
+tr.sub-row td { font-size:12px; padding:6px 14px; }
+tr.sub-row:not(.row-ok):not(.row-over):not(.row-warn):not(.row-nf-high) td { background:#f5f0ea; }
 tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka); }
 
 /* status pill */
