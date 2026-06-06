@@ -337,6 +337,13 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 .editable-real:hover { color: var(--vinho); }
 .editable-desp { cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,.3); transition: color .15s; }
 .editable-desp:hover { color: var(--cobre); }
+/* Botão + Adicionar linha por categoria */
+tr.cat-add-row td { padding: 3px 8px; }
+.cat-add-btn { background: none; border: 1px dashed var(--warm,#d4b8a0); color: var(--moka,#7a5c4d); border-radius: 4px; padding: 3px 14px; font-family: inherit; font-size: 11px; letter-spacing: .08em; cursor: pointer; opacity: .7; }
+.cat-add-btn:hover { opacity: 1; background: rgba(0,0,0,.03); }
+/* Botão excluir linha extra */
+.extra-del-btn { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 13px; opacity: .6; padding: 0 4px; }
+.extra-del-btn:hover { opacity: 1; }
 /* ── Print / PDF ── */
 @media print {
   body { background:#fff !important; color:#1A0F0A !important; }
@@ -2140,6 +2147,10 @@ const AVAL_PROLABORE = "Pro-Labore Avaliador";
 // Outras Despesas: sub-itens dinâmicos salvos em override como { items:[{nome,valor,tipo}] }
 const OUTRAS_CONSOL = "Outras Despesas";
 
+// Extras por categoria: override key = '__extras__' + cat
+function getCatExtras(cat){ const ov=getOverrides(); return (ov['__extras__'+cat]||{}).items||[]; }
+function saveCatExtras(cat, items){ saveOverride('__extras__'+cat,'items',items); }
+
 function buildRows(monthRows){
   const realMap = {};
   if(monthRows){
@@ -2187,13 +2198,26 @@ function buildRows(monthRows){
     return makeRow(cat,desp,metricaEff,tipoEff,real);
   });
 
-  // Inject Outras Despesas sub-rows after OUTRAS_CONSOL
+  // Inject sub-rows: Outras Despesas + extras por categoria
   const result = [];
-  for(const r of baseRows){
+  const injectedExtras = new Set();
+  // group baseRows by cat to know last row of each cat
+  const catLastIdx = {};
+  baseRows.forEach((r,i) => { catLastIdx[r.cat] = i; });
+  for(let i=0; i<baseRows.length; i++){
+    const r = baseRows[i];
     result.push(r);
     if(r.desp === OUTRAS_CONSOL && outrasItems.length > 0){
       for(const it of outrasItems){
         result.push({...makeRow(r.cat, it.nome, null, it.tipo||'V', it.valor||0), isSub:true, parentDesp:OUTRAS_CONSOL});
+      }
+    }
+    // after last row of each category, inject cat extras
+    if(i === catLastIdx[r.cat] && !injectedExtras.has(r.cat)){
+      injectedExtras.add(r.cat);
+      const extras = getCatExtras(r.cat);
+      for(const ex of extras){
+        result.push({...makeRow(r.cat, ex.nome, ex.metrica||null, ex.tipo||'V', ex.real||null), isSub:true, isExtra:true, parentCat:r.cat});
       }
     }
   }
@@ -2275,8 +2299,10 @@ function renderMainTable(rows){
     const cr=cats[cat];
     const cTotal=cr.reduce((s,r)=>s+(r.real||0),0);
     const cMet=cr.reduce((s,r)=>s+(r.metrica||0),0);
+    const catEsc = cat.replace(/'/g,"\\'");
     html+=`<tr class="cat-row"><td colspan="2">${cat}</td><td class="right">${cMet>0?fmt(cMet):'—'}</td><td class="right">${cTotal>0?fmt(cTotal):'—'}</td><td></td><td></td></tr>`;
     for(const r of cr) html += dataRowHtml(r, true);
+    html+=`<tr class="cat-add-row"><td colspan="6"><button class="cat-add-btn" onclick="addCatExtra('${catEsc}')">+ Adicionar linha</button></td></tr>`;
   }
   document.getElementById('metrics-tbody').innerHTML = html;
   const totalMet = rows.reduce((s,r)=>s+(r.metrica||0),0);
@@ -2346,6 +2372,7 @@ function dataRowHtml(r, indent){
   else if(r.status==='warn') sHtml=`<span class="metric-pill mp-warn">— Aguard.</span>`;
   else                       sHtml=`<span class="metric-pill mp-nf">Sem métrica</span>`;
   const isSub = !!r.isSub;
+  const isExtra = !!r.isExtra;
   const lc = (indent && !isSub) ? 'label-col' : '';
   const metVal = r.metrica !== null ? r.metrica : '';
   const metDisplay = r.metrica !== null ? fmt(r.metrica) : '—';
@@ -2372,8 +2399,10 @@ function dataRowHtml(r, indent){
   const trClick = isSub ? '' : `onclick="if(!event.target.closest('.editable-metrica,.editable-tipo,.editable-real,.editable-desp'))toggleRowSelection('${despEsc}',${realNum})"`;
   const despLabel = isSub ? '↳ '+r.desp : r.desp;
   const despCell = `<span class="editable-desp" onclick="editDesp(this,'${despEsc}')" title="Clique para editar nome">${despLabel}</span>`;
-  return `<tr class="${trClass}" data-desp="${despEsc}" ${trClick}>
-    <td class="${isSub?'label-col':lc}">${despCell}</td>
+  const extraDelBtn = isExtra ? `<button class="extra-del-btn" onclick="deleteCatExtra('${r.parentCat.replace(/'/g,"\\'")}','${despEsc}')" title="Excluir linha">✕</button>` : '';
+  const extraAttr = isExtra ? ` data-parent-cat="${(r.parentCat||'').replace(/"/g,'&quot;')}"` : '';
+  return `<tr class="${trClass}" data-desp="${despEsc}"${extraAttr} ${trClick}>
+    <td class="${isSub?'label-col':lc}">${despCell}${extraDelBtn}</td>
     <td>${badge}</td>
     <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
     <td class="right">${realCell}</td>
@@ -2434,6 +2463,9 @@ function editReal(el, desp, curVal){
 }
 
 function editDesp(el, oldDesp){
+  // detecta se é linha extra de categoria
+  const tr = el.closest('tr');
+  const parentCat = tr ? tr.dataset.parentCat : null;
   const inp = document.createElement('input');
   inp.type='text';
   inp.value = oldDesp;
@@ -2451,7 +2483,17 @@ function editDesp(el, oldDesp){
   function commit(){
     clearTimeout(_saveTimer);
     const v=inp.value.trim();
-    if(v && v!==oldDesp) saveOverride(oldDesp,'label',v);
+    if(v && v!==oldDesp){
+      // se é linha extra, atualiza o array da categoria
+      const cat = tr?.dataset.parentCat;
+      if(cat){
+        const items = getCatExtras(cat);
+        const idx = items.findIndex(it=>it.nome===oldDesp);
+        if(idx>=0){ items[idx].nome=v; saveCatExtras(cat,items); }
+      } else {
+        saveOverride(oldDesp,'label',v);
+      }
+    }
     renderAll();
   }
   inp.addEventListener('input', autoSave);
@@ -2750,6 +2792,35 @@ function clearLabDist(){
   const lines = getLabSubDesps();
   lines.forEach(d => deleteOverrideField(d,'real'));
   closeLabModal();
+  renderAll();
+}
+
+// ═══════════════════════════════════════
+// EXTRAS POR CATEGORIA
+// ═══════════════════════════════════════
+function addCatExtra(cat){
+  const items = getCatExtras(cat);
+  const nome = 'Nova linha';
+  items.push({nome, tipo:'V', metrica:null, real:null});
+  saveCatExtras(cat, items);
+  renderAll();
+  // foca no nome da nova linha para edição imediata
+  setTimeout(()=>{
+    const rows = document.querySelectorAll('tr.sub-row');
+    for(const tr of [...rows].reverse()){
+      const span = tr.querySelector('.editable-desp');
+      if(span && span.textContent.includes('Nova linha')){ span.click(); break; }
+    }
+  }, 80);
+}
+
+function deleteCatExtra(cat, nome){
+  const items = getCatExtras(cat).filter(it => it.nome !== nome);
+  saveCatExtras(cat, items);
+  // remove overrides da linha excluída
+  deleteOverrideField(nome, 'real');
+  deleteOverrideField(nome, 'metrica');
+  deleteOverrideField(nome, 'tipo');
   renderAll();
 }
 
