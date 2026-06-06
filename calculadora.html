@@ -1790,9 +1790,15 @@ function abrirModalProc(id=null){
   renderMpInsumos();
   abrirModal('modal-proc-overlay');
 }
+function parseQtdEmb(val){
+  // Aceita "15g", "50 unid", "100ml", "50" — extrai o número
+  if(!val && val !== 0) return 0;
+  const n = parseFloat(String(val).replace(',','.'));
+  return isNaN(n) ? 0 : n;
+}
 function calcInsumoTotal(i){
-  // Se qtdEmb preenchido: preço_emb ÷ qtdEmb × qtd_usada
-  if(i.qtdEmb && i.qtdEmb > 0) return (i.preco||0) / i.qtdEmb * (i.qtd||1);
+  const qtdEmb = parseQtdEmb(i.qtdEmb);
+  if(qtdEmb > 0) return (i.preco||0) / qtdEmb * (i.qtd||1);
   return (i.qtd||1) * (i.preco||0);
 }
 function renderMpInsumos(){
@@ -1802,14 +1808,15 @@ function renderMpInsumos(){
     const hasEmb = i.qtdEmb && i.qtdEmb > 0;
     const unitCost = hasEmb ? (i.preco||0)/i.qtdEmb : (i.preco||0);
     const total = calcInsumoTotal(i);
+    const embLabel = hasEmb ? `/${String(i.qtdEmb)}` : '';
     return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
       <input type="text" placeholder="Nome do insumo" value="${i.nome}" oninput="mpInsumos.find(x=>x.id==='${i.id}').nome=this.value">
       <input type="text" inputmode="decimal" value="${i.qtd}" placeholder="1" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtd=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
-      <input type="text" inputmode="decimal" placeholder="—" value="${i.qtdEmb||''}" title="Qtd na embalagem (ex: 50 máscaras, 500g)" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtdEmb=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
+      <input type="text" placeholder="ex: 15g, 50un" value="${i.qtdEmb||''}" title="Qtd na embalagem — pode incluir unidade: 15g, 50 unid, 500ml" oninput="mpInsumos.find(x=>x.id==='${i.id}').qtdEmb=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
       <input type="text" inputmode="decimal" placeholder="0,00" value="${i.preco||''}" oninput="mpInsumos.find(x=>x.id==='${i.id}').preco=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMpInsumos()}" onblur="renderMpInsumos()">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
         <span style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
-        ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
+        ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')}${embLabel}</span>`:''}
       </div>
       <button class="btn-icon" onclick="mpInsumos=mpInsumos.filter(x=>x.id!=='${i.id}');renderMpInsumos()">✕</button>
     </div>`;
@@ -1904,14 +1911,15 @@ function renderMlInsumos(){
     const hasEmb = i.qtdEmb && i.qtdEmb > 0;
     const unitCost = hasEmb ? (i.preco||0)/i.qtdEmb : (i.preco||0);
     const total = calcInsumoTotal(i);
+    const embLabel = hasEmb ? `/${String(i.qtdEmb)}` : '';
     return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
       <input type="text" placeholder="Nome do insumo" value="${i.nome}" oninput="mlInsumos.find(x=>x.id==='${i.id}').nome=this.value">
       <input type="text" inputmode="decimal" value="${i.qtd}" placeholder="1" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtd=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
-      <input type="text" inputmode="decimal" placeholder="—" value="${i.qtdEmb||''}" title="Qtd na embalagem (ex: 50 unid, 500g)" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtdEmb=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
+      <input type="text" placeholder="ex: 15g, 50un" value="${i.qtdEmb||''}" title="Qtd na embalagem — pode incluir unidade: 15g, 50 unid, 500ml" oninput="mlInsumos.find(x=>x.id==='${i.id}').qtdEmb=this.value" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
       <input type="text" inputmode="decimal" placeholder="0,00" value="${i.preco||''}" oninput="mlInsumos.find(x=>x.id==='${i.id}').preco=parseFloat(this.value.replace(',','.'))||0" onkeydown="if(event.key==='Enter'){event.preventDefault();renderMlInsumos()}" onblur="renderMlInsumos()">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
         <span style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
-        ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
+        ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')}${embLabel}</span>`:''}
       </div>
       <button class="btn-icon" onclick="mlInsumos=mlInsumos.filter(x=>x.id!=='${i.id}');renderMlInsumos()">✕</button>
     </div>`;
