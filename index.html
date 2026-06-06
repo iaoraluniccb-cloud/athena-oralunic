@@ -2771,19 +2771,54 @@ function closeLabModal(){
 }
 
 function saveLabDist(){
-  const lines = getLabSubDesps();
+  const oldLines = getLabSubDesps();
   const rows = document.querySelectorAll('#lab-modal-rows .lab-row');
+  const newLines = [];
+  const ovs = getOverrides();
+
   rows.forEach((row, i) => {
     const nome = (row.querySelector('.li-nome')||{}).value?.trim();
     const valInp = row.querySelector('.li-val');
-    if(!nome || !valInp) return;
-    // renomeia se mudou
-    if(lines[i] && lines[i] !== nome) labRenameRow(i, nome);
-    const v = valInp.value.trim();
-    const finalName = nome;
-    if(v === ''){ deleteOverrideField(finalName,'real'); }
-    else { const n=parseFloat(v.replace(',','.')); if(!isNaN(n)) saveOverride(finalName,'real',n); }
+    if(!nome) return;
+    const oldName = oldLines[i] || nome;
+    newLines.push(nome);
+
+    // migra overrides se o nome mudou
+    if(oldName !== nome && ovs[oldName]){
+      ovs[nome] = ovs[oldName];
+      delete ovs[oldName];
+      for(const [field, val] of Object.entries(ovs[nome]||{})){
+        pbSaveOverride(nome, field, val);
+      }
+      pbDeleteOverrideField(oldName, 'real');
+      pbDeleteOverrideField(oldName, 'metrica');
+    }
+
+    // salva o valor realizado
+    if(valInp){
+      const v = valInp.value.trim();
+      if(v === ''){
+        if(ovs[nome]) delete ovs[nome].real;
+        pbDeleteOverrideField(nome, 'real');
+      } else {
+        const n = parseFloat(v.replace(',','.'));
+        if(!isNaN(n)){
+          if(!ovs[nome]) ovs[nome] = {};
+          ovs[nome].real = n;
+          pbSaveOverride(nome, 'real', n);
+        }
+      }
+    }
   });
+
+  // salva overrides e lista de nomes
+  localStorage.setItem('ou_athena_overrides', JSON.stringify(ovs));
+  // salva nova lista diretamente no override
+  if(!ovs['__lab_lines__']) ovs['__lab_lines__'] = {};
+  ovs['__lab_lines__'].list = newLines;
+  localStorage.setItem('ou_athena_overrides', JSON.stringify(ovs));
+  pbSaveOverride('__lab_lines__', 'list', newLines);
+
   closeLabModal();
   renderAll();
 }
