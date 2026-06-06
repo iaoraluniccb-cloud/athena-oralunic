@@ -147,6 +147,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 .item-row input,.item-row select{padding:5px 7px;border:1px solid var(--warm);border-radius:5px;font-family:'Josefin Sans',sans-serif;font-size:.79rem;background:white;color:var(--tinta);outline:none;}
 .item-row input:focus{border-color:var(--vinho-c);}
 .col-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6;text-align:center;margin-bottom:1px;}
+.emb-badge{font-size:.6rem;color:var(--cobre);background:rgba(196,149,90,.12);border-radius:4px;padding:1px 4px;margin-left:3px;white-space:nowrap;}
+.insumo-preco-unit{font-size:.65rem;color:var(--moka);opacity:.55;text-align:center;margin-top:1px;}
 
 /* BUSCA */
 .busca-dropdown{max-height:200px;overflow-y:auto;border:1px solid var(--warm);border-radius:8px;background:white;margin-top:4px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
@@ -1784,17 +1786,39 @@ function abrirModalProc(id=null){
   renderMpInsumos();
   abrirModal('modal-proc-overlay');
 }
+function calcInsumoTotal(i){
+  // Se qtdEmb preenchido: preço_emb ÷ qtdEmb × qtd_usada
+  if(i.qtdEmb && i.qtdEmb > 0) return (i.preco||0) / i.qtdEmb * (i.qtd||1);
+  return (i.qtd||1) * (i.preco||0);
+}
 function renderMpInsumos(){
   const el=$('mp-insumos-list');
   if(!mpInsumos.length){el.innerHTML='';return;}
-  el.innerHTML=mpInsumos.map(i=>`
-    <div class="item-row" style="grid-template-columns:2fr 1fr 1fr 1fr auto">
+  el.innerHTML=mpInsumos.map(i=>{
+    const hasEmb = i.qtdEmb && i.qtdEmb > 0;
+    const unitCost = hasEmb ? (i.preco||0)/i.qtdEmb : (i.preco||0);
+    const total = calcInsumoTotal(i);
+    return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
       <input type="text" placeholder="Nome" value="${i.nome}" oninput="mpInsumos.find(x=>x.id==='${i.id}').nome=this.value">
-      <input type="number" placeholder="Qtd" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
-      <input type="number" placeholder="R$" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
-      <span class="total-col" style="display:flex;align-items:center;font-size:.78rem;color:var(--vinho);font-weight:600">${fmt((i.qtd||1)*(i.preco||0))}</span>
+      <div>
+        <div class="col-label">Qtd usada</div>
+        <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;renderMpInsumos()">
+      </div>
+      <div>
+        <div class="col-label">Qtd/emb</div>
+        <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 máscaras, 500g)" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtdEmb=+this.value||0;renderMpInsumos()">
+      </div>
+      <div>
+        <div class="col-label">R$ emb</div>
+        <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;renderMpInsumos()">
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <span class="total-col" style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
+        ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
+      </div>
       <button class="btn-icon" onclick="mpInsumos=mpInsumos.filter(x=>x.id!=='${i.id}');renderMpInsumos()">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function addInsumoProc(item=null){
   if(item){
@@ -1839,7 +1863,7 @@ function renderProcCards(){
   const db=getDB();const el=$('lista-proc-cards');
   if(!db.procs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhum procedimento cadastrado.</div>';return;}
   el.innerHTML=db.procs.map(p=>{
-    const custoIns=p.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0);
+    const custoIns=p.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
     return `<div class="cad-card">
       <div class="cad-card-actions">
         <button class="btn btn-sec btn-sm" onclick="abrirModalProc('${p.id}')">✏️</button>
@@ -1872,14 +1896,31 @@ function abrirModalLab(id=null){
 function renderMlInsumos(){
   const el=$('ml-insumos-list');
   if(!mlInsumos.length){el.innerHTML='';return;}
-  el.innerHTML=mlInsumos.map(i=>`
-    <div class="item-row" style="grid-template-columns:2fr 1fr 1fr 1fr auto">
+  el.innerHTML=mlInsumos.map(i=>{
+    const hasEmb = i.qtdEmb && i.qtdEmb > 0;
+    const unitCost = hasEmb ? (i.preco||0)/i.qtdEmb : (i.preco||0);
+    const total = calcInsumoTotal(i);
+    return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
       <input type="text" placeholder="Nome" value="${i.nome}" oninput="mlInsumos.find(x=>x.id==='${i.id}').nome=this.value">
-      <input type="number" placeholder="Qtd" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
-      <input type="number" placeholder="R$" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;this.closest('.item-row').querySelector('.total-col').textContent=fmt(r.qtd*r.preco)">
-      <span class="total-col" style="display:flex;align-items:center;font-size:.78rem;color:var(--vinho);font-weight:600">${fmt((i.qtd||1)*(i.preco||0))}</span>
+      <div>
+        <div class="col-label">Qtd usada</div>
+        <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;renderMlInsumos()">
+      </div>
+      <div>
+        <div class="col-label">Qtd/emb</div>
+        <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 unid, 500g)" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtdEmb=+this.value||0;renderMlInsumos()">
+      </div>
+      <div>
+        <div class="col-label">R$ emb</div>
+        <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;renderMlInsumos()">
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <span class="total-col" style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
+        ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
+      </div>
       <button class="btn-icon" onclick="mlInsumos=mlInsumos.filter(x=>x.id!=='${i.id}');renderMlInsumos()">✕</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function addInsumoLab(item=null){
   if(item){
@@ -1920,7 +1961,7 @@ function deletarLab(id){
   const db=getDB();db.labs=db.labs.filter(x=>x.id!==id);saveDB(db);renderLabCards();toast('Excluído.');
 }
 function custoLab(l,profHora=0){
-  const ins=l.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0);
+  const ins=l.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
   const mo=l.horas*(profHora||0);
   return ins+mo+(+l.labext||0);
 }
@@ -1928,7 +1969,7 @@ function renderLabCards(){
   const db=getDB();const el=$('lista-lab-cards');
   if(!db.labs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhuma etapa cadastrada.</div>';return;}
   el.innerHTML=db.labs.map(l=>{
-    const ins=l.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0);
+    const ins=l.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
     return `<div class="cad-card">
       <div class="cad-card-actions">
         <button class="btn btn-sec btn-sm" onclick="abrirModalLab('${l.id}')">✏️</button>
@@ -2195,9 +2236,9 @@ function onEngChange(){
     return;
   }
 
-  const custoInsProc=proc?proc.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0):0;
+  const custoInsProc=proc?proc.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0):0;
   const custoMO=prof&&tempo?prof.hora*(tempo/60):0;
-  const custoInsLab=lab?lab.insumos.reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0),0):0;
+  const custoInsLab=lab?lab.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0):0;
   const custoMOLab=lab&&prof?lab.horas*(prof.hora):0;
   const custoLabExt=lab?(+lab.labext||0):0;
   const total=custoInsProc+custoMO+custoInsLab+custoMOLab+custoLabExt+desc+ester+custoFixoUsado;
