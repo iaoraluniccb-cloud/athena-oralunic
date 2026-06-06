@@ -167,7 +167,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 
 /* CADASTRO CARDS */
 .cadastro-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;}
-.cad-card{background:white;border:1px solid var(--blush);border-radius:11px;padding:16px 72px 16px 18px;box-shadow:0 1px 6px rgba(106,31,48,.06);position:relative;}
+.cad-card{background:white;border:1px solid var(--blush);border-radius:11px;padding:16px 108px 16px 18px;box-shadow:0 1px 6px rgba(106,31,48,.06);position:relative;}
 .cad-card-title{font-weight:700;font-size:.85rem;color:var(--tinta);margin-bottom:4px;}
 .cad-card-sub{font-size:.72rem;color:var(--moka);opacity:.65;}
 .cad-card-actions{position:absolute;top:12px;right:12px;display:flex;gap:4px;}
@@ -1854,6 +1854,14 @@ function deletarProc(id){
   if(!confirm('Excluir este procedimento?'))return;
   const db=getDB();db.procs=db.procs.filter(x=>x.id!==id);saveDB(db);renderProcCards();toast('Excluído.');
 }
+function duplicarProc(id){
+  const db=getDB();
+  const p=db.procs.find(x=>x.id===id);
+  if(!p)return;
+  const copia={...JSON.parse(JSON.stringify(p)),id:uid(),nome:p.nome+' (cópia)'};
+  db.procs.push(copia);
+  saveDB(db);renderProcCards();toast('Procedimento duplicado!');
+}
 function renderProcCards(){
   const db=getDB();const el=$('lista-proc-cards');
   if(!db.procs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhum procedimento cadastrado.</div>';return;}
@@ -1861,8 +1869,9 @@ function renderProcCards(){
     const custoIns=p.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
     return `<div class="cad-card">
       <div class="cad-card-actions">
-        <button class="btn btn-sec btn-sm" onclick="abrirModalProc('${p.id}')">✏️</button>
-        <button class="btn-danger btn-sm" onclick="deletarProc('${p.id}')">✕</button>
+        <button class="btn btn-sec btn-sm" onclick="abrirModalProc('${p.id}')" title="Editar">✏️</button>
+        <button class="btn btn-sec btn-sm" onclick="duplicarProc('${p.id}')" title="Duplicar" style="opacity:.75">⧉</button>
+        <button class="btn-danger btn-sm" onclick="deletarProc('${p.id}')" title="Excluir">✕</button>
       </div>
       <div class="cad-card-title">${p.nome}</div>
       <div class="cad-card-sub">${p.tempo?p.tempo+' min · ':''} ${p.insumos.length} insumo(s) · Custo insumos: <b>${fmt(custoIns)}</b></div>
@@ -1946,6 +1955,14 @@ function deletarLab(id){
   if(!confirm('Excluir esta etapa?'))return;
   const db=getDB();db.labs=db.labs.filter(x=>x.id!==id);saveDB(db);renderLabCards();toast('Excluído.');
 }
+function duplicarLab(id){
+  const db=getDB();
+  const l=db.labs.find(x=>x.id===id);
+  if(!l)return;
+  const copia={...JSON.parse(JSON.stringify(l)),id:uid(),nome:l.nome+' (cópia)'};
+  db.labs.push(copia);
+  saveDB(db);renderLabCards();toast('Etapa duplicada!');
+}
 function custoLab(l,profHora=0){
   const ins=l.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
   const mo=l.horas*(profHora||0);
@@ -1958,8 +1975,9 @@ function renderLabCards(){
     const ins=l.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
     return `<div class="cad-card">
       <div class="cad-card-actions">
-        <button class="btn btn-sec btn-sm" onclick="abrirModalLab('${l.id}')">✏️</button>
-        <button class="btn-danger btn-sm" onclick="deletarLab('${l.id}')">✕</button>
+        <button class="btn btn-sec btn-sm" onclick="abrirModalLab('${l.id}')" title="Editar">✏️</button>
+        <button class="btn btn-sec btn-sm" onclick="duplicarLab('${l.id}')" title="Duplicar" style="opacity:.75">⧉</button>
+        <button class="btn-danger btn-sm" onclick="deletarLab('${l.id}')" title="Excluir">✕</button>
       </div>
       <div class="cad-card-title">${l.nome}</div>
       <div class="cad-card-sub">${l.horas?l.horas+'h produção · ':''}${l.insumos.length} insumo(s)${l.labext?` · Lab ext: ${fmt(l.labext)}`:''} · Custo insumos: <b>${fmt(ins)}</b></div>
