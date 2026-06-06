@@ -2371,6 +2371,7 @@ function dataRowHtml(r, indent){
   else                       sHtml=`<span class="metric-pill mp-nf">Sem métrica</span>`;
   const isSub = !!r.isSub;
   const isExtra = !!r.isExtra;
+  const catEsc = (r.parentCat||'').replace(/'/g,"\\'");
   const lc = (indent && (!isSub || isExtra)) ? 'label-col' : '';
   const metVal = r.metrica !== null ? r.metrica : '';
   const metDisplay = r.metrica !== null ? fmt(r.metrica) : '—';
@@ -2391,7 +2392,6 @@ function dataRowHtml(r, indent){
     const realDisplay = r.real!==null?fmt(r.real):'—';
     const realCurVal = r.real !== null ? r.real : '';
     if(isExtra){
-      const catEsc = (r.parentCat||'').replace(/'/g,"\\'");
       realCell = `<span class="editable-real" onclick="editRealExtra(this,'${catEsc}','${despEsc}',${realCurVal||'null'})" title="Clique para editar realizado">${realDisplay}</span>`;
     } else {
       realCell = `<span class="editable-real" onclick="editReal(this,'${despEsc}',${realCurVal||'null'})" title="Clique para editar realizado">${realDisplay}</span>`;
@@ -2413,7 +2413,7 @@ function dataRowHtml(r, indent){
   return `<tr class="${trClass}" data-desp="${despEsc}"${extraAttr} ${trClick}>
     <td class="${isLabSub?'label-col':lc}">${despCell}${extraDelBtn}</td>
     <td>${badge}</td>
-    <td class="right"><span class="editable-metrica" onclick="editMetrica(this,'${despEsc}',${metVal})" title="Clique para editar métrica">${metDisplay}</span></td>
+    <td class="right"><span class="editable-metrica" onclick="${isExtra?`editMetricaExtra(this,'${catEsc}','${despEsc}',${metVal||'null'})`:`editMetrica(this,'${despEsc}',${metVal||'null'})`}" title="Clique para editar métrica">${metDisplay}</span></td>
     <td class="right">${realCell}</td>
     <td class="right">${dHtml}</td>
     <td class="right">${sHtml}</td>
@@ -2844,6 +2844,29 @@ function addCatExtra(cat){
       if(span && span.textContent.includes('Nova linha')){ span.click(); break; }
     }
   }, 80);
+}
+
+function editMetricaExtra(el, cat, nome, curVal){
+  const inp = document.createElement('input');
+  inp.type='number'; inp.min='0'; inp.step='0.01';
+  inp.value = curVal !== null && curVal !== undefined && curVal !== 'null' ? curVal : '';
+  inp.style.cssText='width:90px;font-size:12px;padding:2px 6px;border:1px solid var(--cobre);border-radius:3px;text-align:right;font-family:inherit;background:white;color:#111;';
+  el.replaceWith(inp);
+  inp.focus(); inp.select();
+  let _committed = false;
+  function commit(){
+    if(_committed) return; _committed = true;
+    const v = inp.value.trim();
+    const items = getCatExtras(cat);
+    const idx = items.findIndex(it=>it.nome===nome);
+    if(idx >= 0){
+      items[idx].metrica = v === '' ? null : (parseFloat(v)||null);
+      saveCatExtras(cat, items);
+    }
+    renderAll();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){ _committed=true; renderAll(); } });
 }
 
 function editRealExtra(el, cat, nome, curVal){
