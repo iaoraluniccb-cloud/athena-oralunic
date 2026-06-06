@@ -175,7 +175,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(26,15,10,.45);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:white;border-radius:16px;padding:28px 28px 24px;max-width:600px;width:calc(100%-32px);max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(106,31,48,.2);transform:translateY(20px);transition:transform .2s;}
+.modal{background:white;border-radius:16px;padding:28px 32px 24px;max-width:860px;width:calc(100%-32px);max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(106,31,48,.2);transform:translateY(20px);transition:transform .2s;}
+/* Cabeçalho de colunas dos insumos */
+.insumos-header{display:grid;gap:7px;align-items:center;padding:0 9px 4px;grid-template-columns:2fr .7fr .7fr .9fr .9fr auto;}
+.insumos-header span{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.55;text-align:center;}
+.insumos-header span:first-child{text-align:left;}
 .modal-overlay.open .modal{transform:translateY(0);}
 .modal-title{font-family:'Cormorant SC',serif;font-size:1.1rem;color:var(--vinho);letter-spacing:.1em;margin-bottom:4px;}
 .modal-sub{font-size:.68rem;color:var(--moka);opacity:.65;letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
@@ -800,8 +804,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
   </div>
   <div class="divider" style="margin:16px 0"></div>
   <div class="card-title">Insumos utilizados</div>
-  <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
-    <span class="col-label">Insumo</span><span class="col-label">Qtd</span><span class="col-label">R$ unit.</span><span class="col-label">Total</span><span></span>
+  <div class="insumos-header">
+    <span>Insumo</span><span>Qtd usada</span><span>Qtd/emb</span><span>R$ embalagem</span><span>Total</span><span></span>
   </div>
   <div class="item-list" id="mp-insumos-list"></div>
   <div style="margin-bottom:8px">
@@ -840,8 +844,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
   </div>
   <div class="divider" style="margin:14px 0"></div>
   <div class="card-title">Insumos / Peças</div>
-  <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:5px;padding:0 2px">
-    <span class="col-label">Insumo / Peça</span><span class="col-label">Qtd</span><span class="col-label">R$ unit.</span><span class="col-label">Total</span><span></span>
+  <div class="insumos-header">
+    <span>Insumo / Peça</span><span>Qtd usada</span><span>Qtd/emb</span><span>R$ embalagem</span><span>Total</span><span></span>
   </div>
   <div class="item-list" id="ml-insumos-list"></div>
   <div style="margin-bottom:8px">
@@ -1799,21 +1803,12 @@ function renderMpInsumos(){
     const unitCost = hasEmb ? (i.preco||0)/i.qtdEmb : (i.preco||0);
     const total = calcInsumoTotal(i);
     return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
-      <input type="text" placeholder="Nome" value="${i.nome}" oninput="mpInsumos.find(x=>x.id==='${i.id}').nome=this.value">
-      <div>
-        <div class="col-label">Qtd usada</div>
-        <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;renderMpInsumos()">
-      </div>
-      <div>
-        <div class="col-label">Qtd/emb</div>
-        <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 máscaras, 500g)" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtdEmb=+this.value||0;renderMpInsumos()">
-      </div>
-      <div>
-        <div class="col-label">R$ emb</div>
-        <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;renderMpInsumos()">
-      </div>
+      <input type="text" placeholder="Nome do insumo" value="${i.nome}" oninput="mpInsumos.find(x=>x.id==='${i.id}').nome=this.value">
+      <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;renderMpInsumos()">
+      <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 máscaras, 500g)" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.qtdEmb=+this.value||0;renderMpInsumos()">
+      <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mpInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;renderMpInsumos()">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <span class="total-col" style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
+        <span style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
         ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
       </div>
       <button class="btn-icon" onclick="mpInsumos=mpInsumos.filter(x=>x.id!=='${i.id}');renderMpInsumos()">✕</button>
@@ -1901,21 +1896,12 @@ function renderMlInsumos(){
     const unitCost = hasEmb ? (i.preco||0)/i.qtdEmb : (i.preco||0);
     const total = calcInsumoTotal(i);
     return `<div class="item-row" style="grid-template-columns:2fr .7fr .7fr .9fr .9fr auto">
-      <input type="text" placeholder="Nome" value="${i.nome}" oninput="mlInsumos.find(x=>x.id==='${i.id}').nome=this.value">
-      <div>
-        <div class="col-label">Qtd usada</div>
-        <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;renderMlInsumos()">
-      </div>
-      <div>
-        <div class="col-label">Qtd/emb</div>
-        <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 unid, 500g)" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtdEmb=+this.value||0;renderMlInsumos()">
-      </div>
-      <div>
-        <div class="col-label">R$ emb</div>
-        <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;renderMlInsumos()">
-      </div>
+      <input type="text" placeholder="Nome do insumo" value="${i.nome}" oninput="mlInsumos.find(x=>x.id==='${i.id}').nome=this.value">
+      <input type="number" value="${i.qtd}" min="0.01" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtd=+this.value;renderMlInsumos()">
+      <input type="number" placeholder="—" value="${i.qtdEmb||''}" min="0.01" step="0.01" title="Qtd na embalagem (ex: 50 unid, 500g)" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.qtdEmb=+this.value||0;renderMlInsumos()">
+      <input type="number" placeholder="0,00" value="${i.preco||''}" min="0" step="0.01" oninput="const r=mlInsumos.find(x=>x.id==='${i.id}');r.preco=+this.value;renderMlInsumos()">
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
-        <span class="total-col" style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
+        <span style="font-size:.78rem;color:var(--vinho);font-weight:600">${fmt(total)}</span>
         ${hasEmb?`<span class="insumo-preco-unit">R$ ${unitCost.toFixed(4).replace('.',',')} /un</span>`:''}
       </div>
       <button class="btn-icon" onclick="mlInsumos=mlInsumos.filter(x=>x.id!=='${i.id}');renderMlInsumos()">✕</button>
