@@ -359,7 +359,10 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
           <span class="col-label">Descrição</span><span class="col-label">R$/mês</span><span></span>
         </div>
         <div class="item-list" id="cf-list"></div>
-        <button class="btn btn-ghost" onclick="addCF()">+ Adicionar Linha</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-ghost" onclick="addCF()">+ Adicionar Linha</button>
+          <button class="btn btn-sec btn-sm" onclick="importarDaMetrica()" title="Importa despesas tipo Fixo da aba Métricas" style="font-size:.72rem;padding:5px 10px">↓ Importar da Métrica</button>
+        </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:7px 10px;background:var(--blush);border-radius:7px">
           <span style="font-size:.75rem;font-weight:600;color:var(--moka)">Subtotal Custos Fixos</span>
           <span style="font-weight:700;color:var(--vinho)" id="cf-subtotal">R$ 0,00</span>
@@ -2115,6 +2118,84 @@ function addCF(){const db=getDB();if(!db.fixos)db.fixos=[];db.fixos.push({id:uid
 function addCFDep(){const db=getDB();if(!db.dep)db.dep=[];db.dep.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFDep();}
 function addCFFolha(){const db=getDB();if(!db.folha)db.folha=[];db.folha.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFFolha();}
 function addCFBon(){const db=getDB();if(!db.bon)db.bon=[];db.bon.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFBon();}
+
+function importarDaMetrica(){
+  // Lê os dados da aba Métricas (index.html) do mesmo localStorage
+  let overrides = {};
+  let meses = {};
+  try { overrides = JSON.parse(localStorage.getItem('ou_athena_overrides')||'{}'); } catch(e){}
+  try { meses = JSON.parse(localStorage.getItem('ou_athena_v2')||'{}'); } catch(e){}
+
+  // Pega o mês mais recente disponível
+  const chaves = Object.keys(meses).sort();
+  const mesAtual = chaves[chaves.length - 1];
+  const rowsDoMes = mesAtual ? (meses[mesAtual]?.rows || []) : [];
+
+  // Monta mapa de realizado por despesa
+  const realMap = {};
+  for(const r of rowsDoMes){
+    const desp = r.d || r.desp;
+    if(desp) realMap[desp] = (realMap[desp]||0) + Number(r.v || r.valor || 0);
+  }
+
+  // METRIC_BASE fixas — mesmas do index.html
+  const FIXAS = [
+    ["Agencia de Publicidade","Mensalidade de Agencia",1098.30],
+    ["Beneficios","Vale Refeicao",1800.00],
+    ["Beneficios","Vale Transporte",null],
+    ["Despesas Gerais","Copa e Cozinha",700.00],
+    ["Despesas Gerais","Material de Limpeza",1000.00],
+    ["Encargos Trabalhistas","FGTS",1800.00],
+    ["Encargos Trabalhistas","INSS (GPS/DCTFWEB)",9500.00],
+    ["Folha de Pagamento","R. Auxiliar de Cobranca",2000.00],
+    ["Folha de Pagamento","R. ASB",4600.00],
+    ["Folha de Pagamento","R. ASG",2000.00],
+    ["Folha de Pagamento","R. Gerente",3123.00],
+    ["Folha de Pagamento","R. Recepcionista",4000.00],
+    ["Folha de Pagamento","R. Relacionamento",3230.00],
+    ["Folha de Pagamento","R. TSB",3000.00],
+    ["Franqueadora","Fundo de Propaganda (FNP)",null],
+    ["Franqueadora","Royalty",null],
+    ["Laboratorio Externo","Kion Mensalidade",2500.00],
+    ["Laboratorio Interno","R. Auxiliar de Protese",2000.00],
+    ["Laboratorio Interno","R. Protetico",800.00],
+    ["Ocupacao","Agua",260.00],
+    ["Ocupacao","Aluguel",14000.00],
+    ["Ocupacao","Celular",192.00],
+    ["Ocupacao","Coleta de Lixo",290.03],
+    ["Ocupacao","Energia Eletrica",3000.00],
+    ["Ocupacao","Internet/Telefone",314.19],
+    ["Ocupacao","IPTU",null],
+    ["Terceiros","Assistencia Juridica",521.15],
+    ["Terceiros","Contabilidade",null],
+    ["Terceiros","Medicina do Trabalho",269.00],
+  ];
+
+  // Para cada fixa: usa realizado do mês > override de metrica > metrica padrão
+  const novosFixos = FIXAS.map(([cat, desp, metricaPadrao]) => {
+    const ov = overrides[desp] || {};
+    // Pula se oculto
+    if(ov._hidden) return null;
+    const real = realMap[desp];
+    const metrica = ov.metrica !== undefined ? ov.metrica : metricaPadrao;
+    // Usa realizado se disponível, senão métrica
+    const valor = real != null ? real : (metrica || 0);
+    return { id: uid(), nome: `[${cat}] ${desp}`, valor: Math.round(valor*100)/100 };
+  }).filter(Boolean).filter(x => x.valor > 0);
+
+  if(!novosFixos.length){
+    toast('Nenhum dado encontrado na Métrica. Abra a aba de Métricas primeiro.');
+    return;
+  }
+
+  if(!confirm(`Importar ${novosFixos.length} despesas fixas da Métrica?\nIsso substituirá a lista atual de Custos Fixos.`)) return;
+
+  const db = getDB();
+  db.fixos = novosFixos;
+  saveDB(db);
+  renderCF();
+  toast(`${novosFixos.length} despesas importadas da Métrica!`);
+}
 
 function getCustoMinClínica(){
   // Retorna {custoMinBase, custoMinAjustado, totalGeral, minDisp}
