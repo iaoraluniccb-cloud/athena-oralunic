@@ -2068,13 +2068,32 @@ function renderCF(){
     el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';
     recalcCF();return;
   }
-  el.innerHTML=db.fixos.map(c=>`
-    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
-      <input type="text" placeholder="Descrição" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.fixos.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
-      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
-        oninput="(()=>{const db=getDB();db.fixos.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
-      <button class="btn-icon" onclick="(()=>{const db=getDB();db.fixos=db.fixos.filter(x=>x.id!=='${c.id}');saveDB(db);renderCF();})()">✕</button>
-    </div>`).join('');
+  // Agrupa por categoria (cat), itens sem cat ficam em "Outros"
+  const grupos = {};
+  for(const c of db.fixos){
+    const g = c.cat || 'Outros';
+    if(!grupos[g]) grupos[g] = [];
+    grupos[g].push(c);
+  }
+  let html = '';
+  for(const [cat, itens] of Object.entries(grupos)){
+    const subtotal = itens.reduce((s,c)=>s+(+c.valor||0),0);
+    html += `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 2px 4px 4px;border-bottom:1px solid var(--warm);margin-bottom:4px">
+        <span style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--cobre);font-weight:600">${cat}</span>
+        <span style="font-size:.7rem;color:var(--moka);opacity:.6">${fmt(subtotal)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        ${itens.map(c=>`
+        <div class="item-row" style="grid-template-columns:1fr auto auto;gap:5px;padding:5px 7px">
+          <input type="text" placeholder="Descrição" value="${(c.nome||'').replace(/"/g,'&quot;')}" style="font-size:.75rem" oninput="(()=>{const db=getDB();const it=db.fixos.find(x=>x.id==='${c.id}');if(it)it.nome=this.value;saveDB(db);})()">
+          <input type="text" inputmode="decimal" placeholder="R$" value="${c.valor||''}" style="font-size:.75rem;width:72px;text-align:right" oninput="(()=>{const db=getDB();const it=db.fixos.find(x=>x.id==='${c.id}');if(it){it.valor=parseFloat(this.value.replace(',','.'))||0;saveDB(db);recalcCF();}})()">
+          <button class="btn-icon" style="font-size:.7rem;padding:2px 5px" onclick="(()=>{const db=getDB();db.fixos=db.fixos.filter(x=>x.id!=='${c.id}');saveDB(db);renderCF();})()">✕</button>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  el.innerHTML = html;
   recalcCF();
 }
 function renderCFDep(){
@@ -2180,7 +2199,7 @@ function importarDaMetrica(){
     const metrica = ov.metrica !== undefined ? ov.metrica : metricaPadrao;
     // Usa realizado se disponível, senão métrica
     const valor = real != null ? real : (metrica || 0);
-    return { id: uid(), nome: `[${cat}] ${desp}`, valor: Math.round(valor*100)/100 };
+    return { id: uid(), nome: desp, cat, valor: Math.round(valor*100)/100 };
   }).filter(Boolean).filter(x => x.valor > 0);
 
   if(!novosFixos.length){
