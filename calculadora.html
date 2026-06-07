@@ -347,11 +347,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
   </div>
   <div class="section-sub">Componentes do custo/min — base para a Engenharia do Produto</div>
 
-  <!-- LAYOUT: grid esquerda + painel direito fixo -->
-  <div style="display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start">
+  <!-- LAYOUT: coluna única responsiva -->
+  <div style="display:flex;flex-direction:column;gap:16px">
 
     <!-- GRADE 2×2 — os 4 blocos de custo -->
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
 
       <!-- BLOCO 1: Custos Fixos -->
       <div class="card" style="min-width:0">
@@ -411,8 +411,8 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 
     </div><!-- fim grade 2×2 -->
 
-    <!-- PAINEL DIREITO: parâmetros + resultado -->
-    <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:80px">
+    <!-- PAINEL INFERIOR: parâmetros + resultado em linha -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start">
 
       <!-- Total Geral destaque -->
       <div style="background:linear-gradient(135deg,var(--vinho-p),var(--vinho));border-radius:12px;padding:14px 16px;color:white;text-align:center">
@@ -466,7 +466,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
         💡 O <b>custo/min ajustado</b> flui automaticamente para a <b>Engenharia do Produto</b>.
       </div>
 
-    </div><!-- fim painel direito -->
+    </div><!-- fim painel inferior -->
   </div>
 </div>
 </div>
