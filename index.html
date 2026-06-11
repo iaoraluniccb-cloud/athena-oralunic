@@ -883,6 +883,229 @@ function salvarNovoColab(){
 function editarColab(id){alert('Edição em desenvolvimento.');}
 
 document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+function removeDirItem(card, idx){
+  const key  = document.getElementById('dir-month-sel').value;
+  if(!key) return;
+  const data = getDirData();
+  data[key].cards[card].splice(idx, 1);
+  saveDirData(data);
+  renderDirecao();
+}
+
+function toggleDirCard(card){
+  const body  = document.getElementById('dir-body-'+card);
+  const arrow = document.getElementById('dir-arrow-'+card);
+  const open  = body.style.display === 'none';
+  body.style.display  = open ? '' : 'none';
+  arrow.classList.toggle('open', open);
+}
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// SUB-TABS (dentro de Métricas)
+// ═══════════════════════════════════════
+function switchSubTab(sub){
+  ['overview','fixed','variable','compare','import'].forEach((s,i)=>{
+    document.getElementById('subtab-'+s).style.display = s===sub ? '' : 'none';
+    document.querySelectorAll('.subtab-btn')[i]?.classList.toggle('active', s===sub);
+  });
+  if(sub==='compare'){ populateCompareSelects(); renderCompare(); }
+}
+
+function isAlexandre(){
+  return pbUser && (pbUser.email||'').toLowerCase().includes('alexandre');
+}
+
+function applyTabVisibility(){
+  const alex = isAlexandre();
+  const btnDir  = document.querySelector('.tab-btn[onclick*="direcao"]');
+  const btnFech = document.getElementById('tab-btn-fechamento');
+  if(btnDir)  btnDir.style.display  = alex ? 'none' : '';
+  if(btnFech) btnFech.style.display = alex ? 'none' : '';
+}
+
+function switchTab(tab){
+  // Redirecionar sub-abas antigas para dentro de Métricas
+  const subMap = { fixed:'fixed', variable:'variable', compare:'compare', import:'import' };
+  if(subMap[tab]){ switchTab('metrics'); switchSubTab(subMap[tab]); return; }
+  // Bloquear Fechamento e Direção para Alexandre
+  if(isAlexandre() && (tab==='fechamento'||tab==='direcao')) tab='metrics';
+  ['metrics','direcao','fechamento','calculadora','financeiro'].forEach((t,i)=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'':'none';
+    document.querySelectorAll('.tab-btn')[i]?.classList.toggle('active',t===tab);
+  });
+  if(tab==='direcao')   { populateDirMonthSel(); renderDirecao(); }
+  if(tab==='fechamento'){ populateFechMonthSel(); renderFechamento(); }
+  if(tab==='calculadora'||tab==='financeiro'){
+    const hdr = document.querySelector('header');
+    const tbs = document.querySelector('.tabs-bar');
+    const topPx = (hdr ? hdr.offsetHeight : 0) + (tbs ? tbs.offsetHeight : 0);
+    document.getElementById('tab-'+tab).style.top = topPx + 'px';
+  }
+}
+
+// ═══════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='var(--vinho)';});
+dz.addEventListener('dragleave',()=>dz.style.borderColor='');
+dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';const f=e.dataTransfer.files[0];if(f)handleFile({target:{files:e.dataTransfer.files}});});
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Sincroniza REAL_DATA no localStorage (adiciona meses novos sem apagar existentes)
+  { const _s=getAll();
+    for(const [k,o] of Object.entries(REAL_DATA)){ if(!_s[k]){ _s[k]={key:k,label:o.label,rows:o.rows}; } }
+    localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
+  // Auto-login via parâmetros na URL (enviados pelo athena-unified via iframe src)
+  try {
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _tkFromUrl = _urlParams.get('tk');
+    const _usFromUrl = _urlParams.get('us');
+    if (_tkFromUrl && _usFromUrl) {
+      localStorage.setItem('ou_athena_token', decodeURIComponent(_tkFromUrl));
+      localStorage.setItem('ou_athena_user',  decodeURIComponent(_usFromUrl));
+    }
+  } catch(e) {}
+  // Se já há sessão salva (token no localStorage), recarrega do SB direto
+  const _savedToken = localStorage.getItem('ou_athena_token');
+  const _savedUser  = localStorage.getItem('ou_athena_user');
+  if(_savedToken && _savedUser){
+    try {
+      pbToken = _savedToken;
+      pbUser  = JSON.parse(_savedUser);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+      document.getElementById('user-pill').style.display = 'flex';
+      document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
+      applyTabVisibility();
+      setSyncDot('ok');
+      await loadFromSB();
+    } catch(e) {
+      // token inválido — mostra login
+      localStorage.removeItem('ou_athena_token');
+      localStorage.removeItem('ou_athena_user');
+      document.getElementById('login-email')?.focus();
+    }
+  } else {
+    // Sem sessão — carrega overrides públicos do Supabase antes de renderizar
+    try {
+      const oRes = await sbFetch('GET', '/rest/v1/overrides?select=desp,field,value');
+      const ovObj = {};
+      for(const rec of oRes){
+        if(!ovObj[rec.desp]) ovObj[rec.desp] = {};
+        try { ovObj[rec.desp][rec.field] = JSON.parse(rec.value); }
+        catch(e2) { ovObj[rec.desp][rec.field] = rec.value; }
+      }
+      localStorage.setItem('ou_athena_overrides', JSON.stringify(ovObj));
+    } catch(e){ /* continua sem overrides */ }
+    const _initKeys = Object.keys(getAll()).sort().reverse();
+    if(_initKeys.length){ currentMonth = getAll()[_initKeys[0]]; renderAll(); }
+    setTimeout(()=>document.getElementById('login-email')?.focus(), 100);
+  }
+});
+
+// ── Sync em tempo real via polling (15s) ─────────────────────────────────────
+async function syncFromSBSilent(){
+  if(!pbToken) return;
+  try {
+    // Meses
+    const mRes = await sbFetch('GET', '/rest/v1/months?select=key,label,rows&order=key.asc');
+    let mudouMes = false;
+    for(const rec of mRes){
+      const local = getAll()[rec.key];
+      if(!local || JSON.stringify(local.rows) !== JSON.stringify(rec.rows)){
+        const a = getAll(); a[rec.key]={key:rec.key,label:rec.label,rows:rec.rows};
+        localStorage.setItem('ou_athena_v2',JSON.stringify(a));
+        mudouMes = true;
+      }
+    }
+    // Fechamento — converte "cards" do SB para "acards" no app
+    const fRes = await sbFetch('GET', '/rest/v1/fechamento?select=key,label,rows,cards');
+    const fLocal = JSON.parse(localStorage.getItem('ou_athena_fechamento')||'{}');
+    let mudouFech = false;
+    for(const rec of fRes){
+      const converted = { key: rec.key, label: rec.label, rows: rec.rows||[], acards: rec.cards||{} };
+      if(JSON.stringify(fLocal[rec.key]) !== JSON.stringify(converted)){
+        fLocal[rec.key] = converted; mudouFech = true;
+      }
+    }
+    if(mudouFech) localStorage.setItem('ou_athena_fechamento', JSON.stringify(fLocal));
+    // Direção
+    const dRes = await sbFetch('GET', '/rest/v1/direcao?select=key,label,data');
+    const dLocal = JSON.parse(localStorage.getItem('ou_athena_direcao')||'{}');
+    let mudouDir = false;
+    for(const rec of dRes){
+      const converted = { label: rec.label, ...(rec.data||{}) };
+      if(JSON.stringify(dLocal[rec.key]) !== JSON.stringify(converted)){
+        dLocal[rec.key] = converted; mudouDir = true;
+      }
+    }
+    if(mudouDir) localStorage.setItem('ou_athena_direcao', JSON.stringify(dLocal));
+    // Re-renderiza se algo mudou
+    if(mudouMes){
+      const keys = Object.keys(getAll()).sort().reverse();
+      if(keys.length && currentMonth){ currentMonth = getAll()[currentMonth.key] || getAll()[keys[0]]; }
+      renderAll();
+    }
+    if(mudouFech){
+      const activeTab = document.querySelector('.tab-btn.active')?.textContent?.trim();
+      if(activeTab === 'Fechamento') renderFechamento();
+    }
+    if(mudouDir){
+      const activeTab = document.querySelector('.tab-btn.active')?.textContent?.trim();
+      if(activeTab === 'Direção') renderDirecao();
+    }
+  } catch(e){ /* silencioso */ }
+}
+
+setInterval(syncFromSBSilent, 15000);
+
+// ── Salvar tudo manualmente ───────────────────────────────────────────────────
+async function doSaveAll(){
+  const btn = document.getElementById('save-btn');
+  if(btn){ btn.textContent = '⏳ Salvando...'; btn.disabled = true; }
+  setSyncDot('spin');
+  try {
+    // Meses
+    const all = getAll();
+    for(const [k, m] of Object.entries(all)){
+      await pbSaveMonth(k, m.label, m.rows);
+    }
+    // Overrides
+    const ovs = getOverrides();
+    for(const [desp, fields] of Object.entries(ovs)){
+      for(const [field, val] of Object.entries(fields)){
+        await pbSaveOverride(desp, field, val);
+      }
+    }
+    // Fechamento
+    const fData = getFechData();
+    for(const [k, mes] of Object.entries(fData)){
+      await sbSaveFechamento(k, mes.label||k, mes.rows||[], mes.cards||mes.acards||{});
+    }
+    // Direção
+    const dData = getDirData();
+    for(const [k, mes] of Object.entries(dData)){
+      const label = mes.label || k;
+      const { label: _l, ...data } = mes;
+      await sbSaveDirecao(k, label, data);
+    }
+    setSyncDot('ok');
+    if(btn){ btn.textContent = '✓ Salvo!'; }
+    setTimeout(()=>{ if(btn){ btn.textContent = '💾 Salvar'; btn.disabled = false; } }, 2000);
+  } catch(e){
+    setSyncDot('err');
+    if(btn){ btn.textContent = '✗ Erro'; btn.disabled = false; }
+    setTimeout(()=>{ if(btn) btn.textContent = '💾 Salvar'; }, 2000);
+  }
+}
 </script>
 </body>
 </html>
