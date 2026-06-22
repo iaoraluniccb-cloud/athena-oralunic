@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Athena RH — Oral Unic Carlos Barbosa</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪻</text></svg>">
+<title>Athena RH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cormorant+SC:wght@300;400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet"/>
 <style>
+
 :root{
   --wine:#8B2D42;--wine-dk:#6A1F30;--wine-lt:#B85C72;--wine-pale:#D4899A;
   --copper:#C4955A;--copper-lt:#D4AA7A;
@@ -23,45 +23,29 @@ a{text-decoration:none;color:inherit;}
 ::-webkit-scrollbar-track{background:var(--blush);}
 ::-webkit-scrollbar-thumb{background:var(--wine-pale);border-radius:3px;}
 
-/* ══ LOGIN ══ */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--wine-dk) 0%,var(--wine) 60%,var(--wine-lt) 100%);}
-.login-box{background:var(--ivory);border-radius:20px;padding:44px 40px;width:380px;box-shadow:0 24px 80px rgba(26,15,10,0.25);}
-.login-brand{font-family:'Cormorant SC',serif;font-size:1.6rem;font-weight:300;letter-spacing:0.28em;color:var(--wine-dk);text-align:center;}
-.login-sub{font-size:0.52rem;font-weight:200;letter-spacing:0.32em;text-transform:uppercase;color:var(--copper);text-align:center;margin:6px 0 28px;}
-.login-divider{width:40px;height:1px;background:var(--copper);margin:0 auto 24px;}
-.login-box input{width:100%;padding:12px 16px;border:1px solid var(--warm);border-radius:8px;font-family:'Josefin Sans',sans-serif;font-size:0.75rem;font-weight:300;letter-spacing:0.08em;margin-bottom:12px;outline:none;background:var(--cream);color:var(--ink);transition:border 0.2s;}
-.login-box input:focus{border-color:var(--wine-pale);}
-.login-btn{width:100%;padding:13px;background:var(--wine);color:var(--ivory);border:none;border-radius:8px;font-family:'Josefin Sans',sans-serif;font-size:0.62rem;font-weight:400;letter-spacing:0.22em;text-transform:uppercase;cursor:pointer;transition:all 0.22s;margin-top:4px;}
-.login-btn:hover{background:var(--wine-lt);transform:translateY(-1px);}
-.login-quick{margin-top:20px;text-align:center;}
-.login-quick-label{font-size:0.5rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--copper);margin-bottom:10px;}
-.login-quick-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
-.qbtn{padding:6px 14px;border:1px solid var(--warm);border-radius:100px;font-family:'Josefin Sans',sans-serif;font-size:0.55rem;font-weight:300;letter-spacing:0.14em;color:var(--moka);background:transparent;cursor:pointer;transition:all 0.2s;}
-.qbtn:hover{background:var(--blush);border-color:var(--wine-pale);color:var(--wine);}
-
 /* ══ APP LAYOUT ══ */
-#app{display:none;}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--wine-dk);display:flex;flex-direction:column;z-index:100;}
-.sb-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(224,201,184,0.12);}
-.sb-brand{font-family:'Cormorant SC',serif;font-size:1.1rem;font-weight:300;letter-spacing:0.28em;color:var(--copper-lt);}
-.sb-sub{font-size:0.45rem;font-weight:200;letter-spacing:0.3em;text-transform:uppercase;color:rgba(212,136,154,0.6);margin-top:3px;}
-.sb-module{font-size:0.42rem;font-weight:300;letter-spacing:0.26em;text-transform:uppercase;color:rgba(224,201,184,0.35);margin-top:8px;}
-.sb-user{padding:14px 20px;border-bottom:1px solid rgba(224,201,184,0.08);display:flex;align-items:center;gap:10px;}
-.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--copper);display:flex;align-items:center;justify-content:center;font-family:'Cormorant SC',serif;font-size:0.85rem;font-weight:400;color:var(--ivory);flex-shrink:0;}
-.sb-uname{font-size:0.68rem;font-weight:300;letter-spacing:0.06em;color:var(--ivory);}
-.sb-urole{font-size:0.5rem;font-weight:200;letter-spacing:0.1em;color:rgba(212,136,154,0.6);}
-.sb-nav{flex:1;padding:10px 0;overflow-y:auto;}
-.sb-group{padding:14px 20px 4px;font-size:0.42rem;font-weight:200;letter-spacing:0.3em;text-transform:uppercase;color:rgba(224,201,184,0.3);}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:rgba(224,201,184,0.55);font-size:0.62rem;font-weight:300;letter-spacing:0.1em;transition:all 0.2s;border-left:2px solid transparent;}
-.sb-item:hover{background:rgba(224,201,184,0.05);color:rgba(224,201,184,0.85);}
-.sb-item.active{background:rgba(196,149,90,0.1);color:var(--copper-lt);border-left:2px solid var(--copper);}
-.sb-icon{font-size:14px;width:18px;text-align:center;opacity:0.8;}
-.sb-footer{padding:14px 20px;border-top:1px solid rgba(224,201,184,0.08);}
-.sb-logout{width:100%;padding:8px;background:transparent;color:rgba(224,201,184,0.35);border:1px solid rgba(224,201,184,0.12);border-radius:6px;font-family:'Josefin Sans',sans-serif;font-size:0.52rem;font-weight:200;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
-.sb-logout:hover{color:var(--copper-lt);border-color:rgba(196,149,90,0.3);}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ══ MAIN ══ */
-.main{margin-left:220px;padding:32px 36px;min-height:100vh;}
+.main{padding:28px 32px;min-height:calc(100vh - 48px);}
 .page{display:none;}
 .page.active{display:block;}
 .page-eyebrow{display:flex;align-items:center;gap:0.75rem;margin-bottom:10px;}
@@ -179,6 +163,16 @@ a{text-decoration:none;color:inherit;}
 .fc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
 .fc-col-label{font-size:0.44rem;font-weight:200;letter-spacing:0.3em;text-transform:uppercase;color:var(--copper);margin-bottom:6px;}
 .fc-col-text{font-size:0.65rem;font-weight:200;letter-spacing:0.03em;color:var(--moka);line-height:1.7;}
+.fc-edit-btn{background:transparent;border:1px solid var(--warm);border-radius:8px;padding:4px 12px;font-family:'Josefin Sans',sans-serif;font-size:0.46rem;font-weight:300;letter-spacing:0.18em;text-transform:uppercase;color:var(--copper);cursor:pointer;transition:all 0.18s;}
+.fc-edit-btn:hover{background:var(--copper);color:var(--ivory);border-color:var(--copper);}
+.fc-del-btn{background:transparent;border:1px solid var(--warm);border-radius:8px;padding:4px 10px;font-family:'Josefin Sans',sans-serif;font-size:0.46rem;font-weight:300;letter-spacing:0.18em;color:var(--wine-pale);cursor:pointer;transition:all 0.18s;}
+.fc-del-btn:hover{background:#fef2f2;border-color:#fca5a5;color:#b91c1c;}
+.funcoes-toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.btn-import{background:transparent;border:1.5px solid var(--copper);border-radius:100px;padding:0.5rem 1.4rem;font-family:'Josefin Sans',sans-serif;font-size:0.52rem;font-weight:400;letter-spacing:0.2em;text-transform:uppercase;color:var(--copper);cursor:pointer;transition:all 0.22s;display:inline-flex;align-items:center;gap:6px;}
+.btn-import:hover{background:var(--copper);color:var(--ivory);}
+.btn-export{background:transparent;border:1.5px solid var(--warm);border-radius:100px;padding:0.5rem 1.4rem;font-family:'Josefin Sans',sans-serif;font-size:0.52rem;font-weight:400;letter-spacing:0.2em;text-transform:uppercase;color:var(--moka);cursor:pointer;transition:all 0.22s;}
+.btn-export:hover{background:var(--blush);}
+.import-hint{font-size:0.55rem;font-weight:200;letter-spacing:0.06em;color:var(--wine-pale);margin-top:6px;}
 
 /* ══ COPPER DIVIDER ══ */
 .c-divider{display:flex;align-items:center;gap:12px;margin:6px 0 14px;}
@@ -207,10 +201,26 @@ a{text-decoration:none;color:inherit;}
 
 /* ══ RESPONSIVE ══ */
 @media(max-width:900px){
-  .sidebar{width:56px;}
-  .sb-brand,.sb-sub,.sb-module,.sb-uname,.sb-urole,.sb-item span,.sb-group,.sb-footer .sb-logout span{display:none;}
-  .sb-item{padding:12px;justify-content:center;}
+  
+  
+  
   .main{margin-left:56px;padding:20px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .colab-grid{grid-template-columns:1fr;}
+  .perfil-grid,.disc-info-grid,.fc-grid{grid-template-columns:1fr;}
+}
+
+/* === ABAS TOP === */
+#topnav{background:var(--wine-dk);display:flex;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;padding:0 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(26,15,10,0.18);}
+.tn-brand{display:flex;flex-direction:column;justify-content:center;padding:10px 20px 10px 4px;border-right:1px solid rgba(224,201,184,0.12);margin-right:8px;}
+.tn-brand-name{font-family:'Cormorant SC',serif;font-size:1rem;font-weight:300;letter-spacing:0.22em;color:var(--copper-lt);}
+.tn-brand-sub{font-size:0.42rem;font-weight:200;letter-spacing:0.26em;text-transform:uppercase;color:rgba(212,136,154,0.55);}
+.tn-tab{display:flex;align-items:center;gap:5px;padding:14px 14px;cursor:pointer;color:rgba(224,201,184,0.5);font-size:0.56rem;font-weight:300;letter-spacing:0.1em;text-transform:uppercase;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;}
+.tn-tab:hover{color:rgba(224,201,184,0.85);background:rgba(224,201,184,0.05);}
+.tn-tab.active{color:var(--copper-lt);border-bottom:2px solid var(--copper);}
+@media(max-width:900px){
+  .tn-tab{padding:10px 8px;font-size:0.46rem;}
+  .main{padding:16px 12px;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
   .colab-grid{grid-template-columns:1fr;}
   .perfil-grid,.disc-info-grid,.fc-grid{grid-template-columns:1fr;}
@@ -218,60 +228,19 @@ a{text-decoration:none;color:inherit;}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
-<div id="login-screen" style="display:none">
-  <div class="login-box">
-    <div class="login-brand">Athena</div>
-    <div class="login-divider"></div>
-    <div class="login-sub">Gestão de Pessoas</div>
-    <input type="email" id="login-email" placeholder="E-mail">
-    <input type="password" id="login-pass" placeholder="Senha">
-    <button class="login-btn" onclick="fazerLogin()">Entrar</button>
-    <div class="login-quick">
-      <div class="login-quick-label">Acesso rápido</div>
-      <div class="login-quick-btns">
-        <button class="qbtn" onclick="loginRapido('laizmone@gmail.com')">Mone</button>
-        <button class="qbtn" onclick="loginRapido('jarinachagas@hotmail.com')">Jarina</button>
-        <button class="qbtn" onclick="loginRapido('ia.oraluniccb@gmail.com')">Adm</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app">
-  <div class="sidebar">
-    <div class="sb-logo">
-      <div class="sb-brand">Athena</div>
-      <div class="sb-sub">Oral Unic</div>
-      <div class="sb-module">Gestão de Pessoas</div>
-    </div>
-    <div class="sb-user">
-      <div class="sb-avatar" id="sb-avatar">M</div>
-      <div><div class="sb-uname" id="sb-name">Mone</div><div class="sb-urole">Administrador</div></div>
-    </div>
-    <nav class="sb-nav">
-      <div class="sb-group">Principal</div>
-      <div class="sb-item active" onclick="ir('dashboard')"><span class="sb-icon">◈</span><span>Dashboard</span></div>
-      <div class="sb-item" onclick="ir('colaboradores')"><span class="sb-icon">◎</span><span>Colaboradores</span></div>
-      <div class="sb-group">Gestão</div>
-      <div class="sb-item" onclick="ir('disc')"><span class="sb-icon">◉</span><span>Perfil DISC</span></div>
-      <div class="sb-item" onclick="ir('avaliacoes')"><span class="sb-icon">◇</span><span>Avaliações</span></div>
-      <div class="sb-item" onclick="ir('pdi')"><span class="sb-icon">◈</span><span>PDI</span></div>
-      <div class="sb-group">Operacional</div>
-      <div class="sb-item" onclick="ir('documentos')"><span class="sb-icon">◻</span><span>Documentos</span></div>
-      <div class="sb-item" onclick="ir('funcoes')"><span class="sb-icon">◫</span><span>Funções</span></div>
-      <div class="sb-item" onclick="ir('clima')"><span class="sb-icon">◌</span><span>Clima / eNPS</span></div>
-    </nav>
-    <div class="sb-footer">
-      <button class="sb-logout" onclick="fazerLogout()">↩ <span>Sair</span></button>
-    </div>
-  </div>
-
-  <div class="main">
-
-    <!-- DASHBOARD -->
+<nav id="topnav">
+  <div class="tn-brand"><div class="tn-brand-name">Athena RH</div><div class="tn-brand-sub">Gestao de Pessoas</div></div>
+  <div class="tn-tab active" onclick="ir('dashboard')">&#9672; Dashboard</div>
+  <div class="tn-tab" onclick="ir('colaboradores')">&#9678; Colaboradores</div>
+  <div class="tn-tab" onclick="ir('disc')">&#9673; Perfil DISC</div>
+  <div class="tn-tab" onclick="ir('avaliacoes')">&#9671; Avaliacoes</div>
+  <div class="tn-tab" onclick="ir('pdi')">&#9672; PDI</div>
+  <div class="tn-tab" onclick="ir('documentos')">&#9723; Documentos</div>
+  <div class="tn-tab" onclick="ir('funcoes')">&#9643; Funcoes</div>
+  <div class="tn-tab" onclick="ir('clima')">&#9675; Clima/eNPS</div>
+</nav>
+<div class="main">
+<!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="page-eyebrow"><div class="pe-line"></div><div class="pe-text">Visão Geral</div></div>
       <div class="page-title">Dashboard RH</div>
@@ -388,7 +357,61 @@ a{text-decoration:none;color:inherit;}
       <div class="page-eyebrow"><div class="pe-line"></div><div class="pe-text">Cargos</div></div>
       <div class="page-title">Funções</div>
       <div class="page-sub">Missão, responsabilidades e indicadores por cargo</div>
+      <div class="funcoes-toolbar">
+        <button class="btn-filled" onclick="abrirModalNovaFuncao()">+ Nova Função</button>
+        <button class="btn-import" onclick="abrirModalImportarFuncoes()">↑ Importar JSON / CSV</button>
+        <button class="btn-export" onclick="exportarFuncoes()">↓ Exportar JSON</button>
+      </div>
       <div id="funcoes-list"></div>
+    </div>
+
+    <!-- MODAL EDITAR / NOVA FUNÇÃO -->
+    <div class="modal-overlay" id="modal-funcao">
+      <div class="modal" style="width:620px;">
+        <div class="modal-eyebrow">Gestão de Cargos</div>
+        <div class="modal-title" id="mf-title">Editar Função</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Cargo *</label><input class="form-input" id="mf-cargo" placeholder="Ex: Recepcionista"></div>
+          <div class="form-group"><label class="form-label">DISC Ideal</label><input class="form-input" id="mf-disc" placeholder="Ex: S/I"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Missão</label><textarea class="form-input" id="mf-missao" rows="2" style="resize:vertical;"></textarea></div>
+        <div class="form-group"><label class="form-label">Responsabilidades <span style="font-size:0.45rem;color:var(--wine-pale);">(separe com ponto e vírgula ;)</span></label><textarea class="form-input" id="mf-resp" rows="4" style="resize:vertical;"></textarea></div>
+        <div class="form-group"><label class="form-label">Indicadores / KPIs <span style="font-size:0.45rem;color:var(--wine-pale);">(separe com ponto e vírgula ;)</span></label><textarea class="form-input" id="mf-kpis" rows="3" style="resize:vertical;"></textarea></div>
+        <div class="form-group"><label class="form-label">Competências <span style="font-size:0.45rem;color:var(--wine-pale);">(separe com ponto e vírgula ;)</span></label><textarea class="form-input" id="mf-competencias" rows="2" style="resize:vertical;"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Horário</label><input class="form-input" id="mf-horario" placeholder="Ex: 8:00–18:00 | Sábado 8:00–12:00"></div>
+          <div class="form-group"><label class="form-label">Formação</label><input class="form-input" id="mf-formacao" placeholder="Ex: Técnico em Saúde Bucal"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Vínculo</label><input class="form-input" id="mf-vinculo" placeholder="CLT / PJ / Sócio"></div>
+          <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:22px;"><input type="checkbox" id="mf-atualizado" style="accent-color:var(--copper);width:16px;height:16px;"><label class="form-label" style="margin:0;cursor:pointer;" for="mf-atualizado">Marcar como Atualizado</label></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-export" onclick="fecharModal('modal-funcao')">Cancelar</button>
+          <button class="btn-filled" onclick="salvarFuncao()">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL IMPORTAR FUNÇÕES -->
+    <div class="modal-overlay" id="modal-importar-funcoes">
+      <div class="modal" style="width:580px;">
+        <div class="modal-eyebrow">Importar</div>
+        <div class="modal-title">Importar Funções</div>
+        <div class="form-group">
+          <label class="form-label">Cole o JSON ou CSV abaixo</label>
+          <textarea class="form-input" id="import-funcoes-text" rows="10" style="resize:vertical;font-family:monospace;font-size:0.65rem;" placeholder='JSON: [{"cargo":"Nome","missao":"...","resp":"...","kpis":"...","disc":"D/I"}]&#10;&#10;CSV: cargo;missao;resp;kpis;disc;horario;formacao;vinculo;competencias'></textarea>
+          <div class="import-hint">Modo JSON: array de objetos com campos cargo, missao, resp, kpis, disc (e opcionais: horario, formacao, vinculo, competencias, atualizado).<br>Modo CSV: primeira linha = cabeçalho com os mesmos nomes; separador ponto e vírgula.</div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.55rem;font-weight:200;letter-spacing:0.08em;color:var(--moka);cursor:pointer;"><input type="radio" name="import-modo" value="substituir" checked style="accent-color:var(--wine);"> Substituir tudo</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.55rem;font-weight:200;letter-spacing:0.08em;color:var(--moka);cursor:pointer;"><input type="radio" name="import-modo" value="adicionar" style="accent-color:var(--wine);"> Adicionar ao final</label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-export" onclick="fecharModal('modal-importar-funcoes')">Cancelar</button>
+          <button class="btn-filled" onclick="confirmarImportarFuncoes()">Importar</button>
+        </div>
+      </div>
     </div>
 
     <!-- CLIMA -->
@@ -410,12 +433,7 @@ a{text-decoration:none;color:inherit;}
         <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;font-style:italic;color:var(--wine-pale);margin-bottom:10px;">Nenhuma pesquisa aplicada ainda</div>
         <div style="font-size:0.62rem;font-weight:200;letter-spacing:0.06em;color:var(--copper);margin-bottom:24px;">Inicie a primeira pesquisa para mapear o engajamento da equipe</div>
         <button class="btn-filled" style="margin:0 auto;">+ Criar Pesquisa de Clima</button>
-      </div>
-    </div>
-
-  </div>
 </div>
-
 <!-- MODAL NOVO COLABORADOR -->
 <div class="modal-overlay" id="modal-novo-colab">
   <div class="modal">
@@ -458,6 +476,7 @@ a{text-decoration:none;color:inherit;}
     </div>
   </div>
 </div>
+
 
 <script>
 let usuarioAtual=null,colaboradorAtivo=null,discRespostas={};
@@ -528,35 +547,9 @@ colaboradores.forEach(c=>{
 function ini(n){return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();}
 function bdg(v){if(v==='CLT')return'<span class="badge badge-clt">CLT</span>';if(v==='PJ')return'<span class="badge badge-pj">PJ</span>';return'<span class="badge badge-socio">Sócio</span>';}
 
-function loginRapido(e){const u=usuarios.find(x=>x.email===e);document.getElementById('login-email').value=e;document.getElementById('login-pass').value=u?u.senha:'';fazerLogin();}
-// Auto-login baseado no usuário do Vello — sem mostrar tela de login
-(function autoLogin(){
-  const MAP = {mone:'laizmone@gmail.com', thais:'ia.oraluniccb@gmail.com', jarina:'jarinachagas@hotmail.com'};
-  function tryLogin(){
-    try {
-      let velloUser = localStorage.getItem('ou_currentUser');
-      if (!velloUser) { try { velloUser = window.parent.localStorage.getItem('ou_currentUser'); } catch(e){} }
-      const email = MAP[velloUser] || 'ia.oraluniccb@gmail.com';
-      loginRapido(email);
-    } catch(e){ loginRapido('ia.oraluniccb@gmail.com'); }
-  }
-  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ()=>setTimeout(tryLogin,100)); }
-  else { setTimeout(tryLogin, 100); }
-})();
-function fazerLogin(){
-  const e=document.getElementById('login-email').value;
-  const s=document.getElementById('login-pass').value;
-  const u=usuarios.find(x=>x.email===e);
-  if(!u){alert('Usuário não encontrado.');return;}
-  if(u.senha!==s){alert('Senha incorreta.');return;}
-  usuarioAtual=u;
-  document.getElementById('sb-name').textContent=u.nome;
-  document.getElementById('sb-avatar').textContent=u.nome[0].toUpperCase();
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  renderColabs();renderDocs();renderFuncoes();renderDiscGrid();renderAvalColabs();renderPdiColabs();renderDashboard();
-}
-function fazerLogout(){document.getElementById('app').style.display='none';document.getElementById('login-screen').style.display='flex';}
+function loginRapido(e){}
+function fazerLogin(){}
+function fazerLogout(){}
 
 function renderDashboard(){
   const total=colaboradores.length;
@@ -574,33 +567,50 @@ function renderDashboard(){
     return `<div><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:0.62rem;letter-spacing:0.06em;font-weight:200">${n}</span><span style="font-size:0.62rem;font-weight:300;color:${cor}">${cnt}</span></div><div style="background:var(--blush);border-radius:2px;height:4px;"><div style="width:${pct}%;background:${cor};height:100%;border-radius:2px;"></div></div></div>`;
   }).join('');
   const today=new Date();const todayM=today.getMonth()+1;const todayD=today.getDate();
-  const upcomingAniv=colaboradores.filter(c=>c.aniversario).map(c=>{
+  const todayRef=new Date(today.getFullYear(),todayM-1,todayD);
+  // aniversários de nascimento
+  const anivNasc=colaboradores.filter(c=>c.aniversario).map(c=>{
     const [dd,mm]=c.aniversario.split('/').map(Number);
-    let daysUntil=(new Date(today.getFullYear(),mm-1,dd)-new Date(today.getFullYear(),todayM-1,todayD))/(1000*60*60*24);
-    if(daysUntil<0)daysUntil=(new Date(today.getFullYear()+1,mm-1,dd)-new Date(today.getFullYear(),todayM-1,todayD))/(1000*60*60*24);
-    return{...c,daysUntil:Math.round(daysUntil),ddmm:c.aniversario};
-  }).filter(c=>c.daysUntil<=60).sort((a,b)=>a.daysUntil-b.daysUntil);
+    let daysUntil=(new Date(today.getFullYear(),mm-1,dd)-todayRef)/(1000*60*60*24);
+    if(daysUntil<0)daysUntil=(new Date(today.getFullYear()+1,mm-1,dd)-todayRef)/(1000*60*60*24);
+    return{...c,daysUntil:Math.round(daysUntil),ddmm:dd+'/'+String(mm).padStart(2,'0'),tipo:'nascimento',extra:''};
+  }).filter(c=>c.daysUntil<=60);
+  // aniversários de empresa (anos completos nos próximos 60 dias)
+  const anivEmpresa=colaboradores.filter(c=>c.inicio).flatMap(c=>{
+    const [dd,mm,yyyy]=c.inicio.split('/').map(Number);
+    const results=[];
+    for(let yr=today.getFullYear();yr<=today.getFullYear()+1;yr++){
+      let daysUntil=(new Date(yr,mm-1,dd)-todayRef)/(1000*60*60*24);
+      daysUntil=Math.round(daysUntil);
+      const anos=yr-yyyy;
+      if(anos>=1&&daysUntil>=0&&daysUntil<=60){
+        results.push({...c,daysUntil,ddmm:dd+'/'+String(mm).padStart(2,'0'),tipo:'empresa',extra:anos+' ano'+(anos>1?'s':'')});
+      }
+    }
+    return results;
+  });
+  const upcomingAniv=[...anivNasc,...anivEmpresa].sort((a,b)=>a.daysUntil-b.daysUntil);
   const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const anivEl=document.getElementById('dash-aniversarios');
   if(upcomingAniv.length===0){anivEl.innerHTML='<div style="font-size:0.62rem;font-weight:200;letter-spacing:0.06em;color:var(--wine-pale);padding:8px 0">Nenhum aniversário nos próximos 60 dias.</div>';return;}
   anivEl.innerHTML=upcomingAniv.map(c=>{
     const [dd,mm]=c.ddmm.split('/').map(Number);
-    const label=c.daysUntil===0?'Hoje! 🎂':c.daysUntil===1?'Amanhã':c.daysUntil+' dias';
+    const isEmpresa=c.tipo==='empresa';
+    const emoji=isEmpresa?'🏆':'🎂';
+    const labelHoje=isEmpresa?'Hoje! 🏆':'Hoje! 🎂';
+    const label=c.daysUntil===0?labelHoje:c.daysUntil===1?'Amanhã':c.daysUntil+' dias';
     const corLabel=c.daysUntil<=3?'var(--copper)':'var(--wine-pale)';
-    return `<div style="display:flex;align-items:center;gap:14px;padding:9px 12px;background:var(--blush-lt);border:1px solid var(--warm);border-radius:10px;border-left:3px solid ${corLabel};">
+    const corBorda=isEmpresa?'var(--wine-dk)':corLabel;
+    const subLabel=isEmpresa?c.extra+' de clínica':'';
+    return `<div style="display:flex;align-items:center;gap:14px;padding:9px 12px;background:var(--blush-lt);border:1px solid var(--warm);border-radius:10px;border-left:3px solid ${corBorda};">
       <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:300;color:var(--wine-dk);min-width:42px;text-align:center;">${dd}<span style="font-size:0.55rem;font-weight:300;display:block;color:var(--copper);letter-spacing:0.1em;">${meses[mm-1]}</span></div>
-      <div style="flex:1;"><div style="font-size:0.62rem;font-weight:300;letter-spacing:0.04em;color:var(--wine-dk)">${c.nome}</div><div style="font-size:0.48rem;font-weight:200;letter-spacing:0.1em;color:var(--wine-pale)">${c.cargo}</div></div>
+      <div style="flex:1;"><div style="font-size:0.62rem;font-weight:300;letter-spacing:0.04em;color:var(--wine-dk)">${emoji} ${c.nome}</div><div style="font-size:0.48rem;font-weight:200;letter-spacing:0.1em;color:var(--wine-pale)">${isEmpresa?subLabel:c.cargo}</div></div>
       <div style="font-size:0.52rem;font-weight:400;letter-spacing:0.1em;color:${corLabel}">${label}</div>
     </div>`;
   }).join('');
 }
 
-function ir(p){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(x=>{if(x.getAttribute('onclick')&&x.getAttribute('onclick').includes("'"+p+"'"))x.classList.add('active');});
-}
+/* ir() defined below */
 
 function badgesColab(c){
   const hoje=new Date();const mesAtual=hoje.getMonth()+1;const diaAtual=hoje.getDate();
@@ -758,6 +768,13 @@ function toggleFuncao(idx){
   el.style.display=open?'none':'block';
   arr.style.transform=open?'rotate(0deg)':'rotate(180deg)';
 }
+// ── Persistência de funções em localStorage ──
+(function(){
+  const saved=localStorage.getItem('ou_funcoes');
+  if(saved){try{const p=JSON.parse(saved);if(Array.isArray(p)&&p.length)funcoes.splice(0,funcoes.length,...p);}catch(e){}}
+})();
+function _salvarFuncoesLS(){localStorage.setItem('ou_funcoes',JSON.stringify(funcoes));}
+
 function renderFuncoes(){
   document.getElementById('funcoes-list').innerHTML=funcoes.map((f,i)=>`
     <div class="funcao-card${f.atualizado?' atualizado':''}">
@@ -768,21 +785,117 @@ function renderFuncoes(){
           ${f.horario?`<span style="font-size:0.48rem;font-weight:300;letter-spacing:0.1em;color:var(--wine-pale);">🕐 ${f.horario}</span>`:''}
           <div class="fc-disc">DISC ideal: ${f.disc}</div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:0.5rem;font-weight:200;letter-spacing:0.18em;text-transform:uppercase;color:var(--copper);">Ver funções</span>
-          <span id="fc-arr-${i}" style="font-size:14px;color:var(--copper);transition:transform 0.25s;">▼</span>
+        <div style="display:flex;align-items:center;gap:12px;" onclick="event.stopPropagation()">
+          <button class="fc-edit-btn" onclick="editarFuncao(${i})">✏ Editar</button>
+          <button class="fc-del-btn" onclick="excluirFuncao(${i})">✕</button>
+          <span id="fc-arr-${i}" style="font-size:14px;color:var(--copper);transition:transform 0.25s;cursor:pointer;" onclick="event.stopPropagation();toggleFuncao(${i})">▼</span>
         </div>
       </div>
       <div id="fc-body-${i}" style="display:none;margin-top:14px;">
-        <div style="font-size:0.62rem;font-weight:200;letter-spacing:0.04em;color:var(--moka);line-height:1.7;padding:12px 14px;background:var(--cream);border-radius:10px;margin-bottom:12px;border-left:3px solid var(--copper);">${f.missao}</div>
+        <div style="font-size:0.62rem;font-weight:200;letter-spacing:0.04em;color:var(--moka);line-height:1.7;padding:12px 14px;background:var(--cream);border-radius:10px;margin-bottom:12px;border-left:3px solid var(--copper);">${f.missao||''}</div>
         <div class="fc-grid">
-          <div><div class="fc-col-label">Responsabilidades</div><div class="fc-col-text">${f.resp.split(';').map(r=>`<div style="padding:3px 0;border-bottom:1px solid var(--blush);">· ${r.trim()}</div>`).join('')}</div></div>
-          <div><div class="fc-col-label">Indicadores</div><div class="fc-col-text">${f.kpis.split(';').map(k=>`<div style="padding:3px 0;border-bottom:1px solid var(--blush);">📊 ${k.trim()}</div>`).join('')}</div></div>
+          <div><div class="fc-col-label">Responsabilidades</div><div class="fc-col-text">${(f.resp||'').split(';').map(r=>`<div style="padding:3px 0;border-bottom:1px solid var(--blush);">· ${r.trim()}</div>`).join('')}</div></div>
+          <div><div class="fc-col-label">Indicadores</div><div class="fc-col-text">${(f.kpis||'').split(';').map(k=>`<div style="padding:3px 0;border-bottom:1px solid var(--blush);">📊 ${k.trim()}</div>`).join('')}</div></div>
           ${f.competencias?`<div><div class="fc-col-label">Competências</div><div class="fc-col-text">${f.competencias.split(';').map(c=>`<div style="padding:3px 0;border-bottom:1px solid var(--blush);">✓ ${c.trim()}</div>`).join('')}</div></div>`:''}
         </div>
         ${f.formacao?`<div style="margin-top:10px;font-size:0.52rem;font-weight:200;letter-spacing:0.1em;color:var(--copper);">📋 Formação: ${f.formacao}</div>`:''}
+        ${f.vinculo?`<div style="margin-top:6px;font-size:0.52rem;font-weight:200;letter-spacing:0.1em;color:var(--wine-pale);">🔗 Vínculo: ${f.vinculo}</div>`:''}
       </div>
     </div>`).join('');
+}
+
+let _mfIdx=null;
+function abrirModalNovaFuncao(){
+  _mfIdx=null;
+  document.getElementById('mf-title').textContent='Nova Função';
+  ['cargo','missao','resp','kpis','competencias','horario','formacao','vinculo','disc'].forEach(k=>document.getElementById('mf-'+k).value='');
+  document.getElementById('mf-atualizado').checked=false;
+  document.getElementById('modal-funcao').classList.add('open');
+}
+function editarFuncao(i){
+  _mfIdx=i;
+  const f=funcoes[i];
+  document.getElementById('mf-title').textContent='Editar Função';
+  document.getElementById('mf-cargo').value=f.cargo||'';
+  document.getElementById('mf-missao').value=f.missao||'';
+  document.getElementById('mf-resp').value=f.resp||'';
+  document.getElementById('mf-kpis').value=f.kpis||'';
+  document.getElementById('mf-competencias').value=f.competencias||'';
+  document.getElementById('mf-horario').value=f.horario||'';
+  document.getElementById('mf-formacao').value=f.formacao||'';
+  document.getElementById('mf-vinculo').value=f.vinculo||'';
+  document.getElementById('mf-disc').value=f.disc||'';
+  document.getElementById('mf-atualizado').checked=!!f.atualizado;
+  document.getElementById('modal-funcao').classList.add('open');
+}
+function salvarFuncao(){
+  const cargo=document.getElementById('mf-cargo').value.trim();
+  if(!cargo){alert('Informe o cargo.');return;}
+  const obj={
+    cargo,
+    missao:document.getElementById('mf-missao').value.trim(),
+    resp:document.getElementById('mf-resp').value.trim(),
+    kpis:document.getElementById('mf-kpis').value.trim(),
+    disc:document.getElementById('mf-disc').value.trim(),
+    competencias:document.getElementById('mf-competencias').value.trim()||undefined,
+    horario:document.getElementById('mf-horario').value.trim()||undefined,
+    formacao:document.getElementById('mf-formacao').value.trim()||undefined,
+    vinculo:document.getElementById('mf-vinculo').value.trim()||undefined,
+    atualizado:document.getElementById('mf-atualizado').checked||undefined,
+  };
+  Object.keys(obj).forEach(k=>{if(obj[k]===undefined)delete obj[k];});
+  if(_mfIdx===null) funcoes.push(obj);
+  else funcoes[_mfIdx]=obj;
+  _salvarFuncoesLS();
+  fecharModal('modal-funcao');
+  renderFuncoes();
+}
+function excluirFuncao(i){
+  if(!confirm(`Excluir a função "${funcoes[i].cargo}"?`))return;
+  funcoes.splice(i,1);
+  _salvarFuncoesLS();
+  renderFuncoes();
+}
+function abrirModalImportarFuncoes(){
+  document.getElementById('import-funcoes-text').value='';
+  document.querySelector('input[name="import-modo"][value="substituir"]').checked=true;
+  document.getElementById('modal-importar-funcoes').classList.add('open');
+}
+function confirmarImportarFuncoes(){
+  const raw=document.getElementById('import-funcoes-text').value.trim();
+  if(!raw){alert('Cole o conteúdo antes de importar.');return;}
+  const modo=document.querySelector('input[name="import-modo"]:checked').value;
+  let parsed=[];
+  try{
+    // Tenta JSON
+    if(raw.startsWith('[')||raw.startsWith('{')){
+      parsed=JSON.parse(raw);
+      if(!Array.isArray(parsed))parsed=[parsed];
+    } else {
+      // CSV com ; como separador
+      const lines=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+      const headers=lines[0].split(';').map(h=>h.trim().toLowerCase());
+      for(let li=1;li<lines.length;li++){
+        const vals=lines[li].split(';');
+        const obj={};
+        headers.forEach((h,hi)=>{if(vals[hi]!==undefined)obj[h]=vals[hi].trim();});
+        if(obj.atualizado)obj.atualizado=(obj.atualizado==='true'||obj.atualizado==='1'||obj.atualizado.toLowerCase()==='sim');
+        Object.keys(obj).forEach(k=>{if(obj[k]==='')delete obj[k];});
+        if(obj.cargo)parsed.push(obj);
+      }
+    }
+  }catch(e){alert('Formato inválido: '+e.message);return;}
+  if(!parsed.length){alert('Nenhuma função encontrada no conteúdo.');return;}
+  if(modo==='substituir'){funcoes.splice(0,funcoes.length,...parsed);}
+  else{funcoes.push(...parsed);}
+  _salvarFuncoesLS();
+  fecharModal('modal-importar-funcoes');
+  renderFuncoes();
+  alert(`${parsed.length} função(ões) importada(s) com sucesso.`);
+}
+function exportarFuncoes(){
+  const blob=new Blob([JSON.stringify(funcoes,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='funcoes-oral-unic.json';a.click();
 }
 
 function renderAvalColabs(){
@@ -811,7 +924,19 @@ function salvarNovoColab(){
 }
 function editarColab(id){alert('Edição em desenvolvimento.');}
 
-document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+function ir(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tn-tab').forEach(x=>x.classList.remove('active'));
+  const pg=document.getElementById('page-'+p);
+  if(pg)pg.classList.add('active');
+  document.querySelectorAll('.tn-tab').forEach(x=>{if(x.getAttribute('onclick')&&x.getAttribute('onclick').includes("'"+p+"'"))x.classList.add('active');});
+}
+document.addEventListener('DOMContentLoaded',function(){
+  renderColabs();renderDocs();renderFuncoes();
+  renderDiscGrid();renderAvalColabs();renderPdiColabs();
+  renderDashboard();ir('dashboard');
+  document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+});
 </script>
 </body>
 </html>
