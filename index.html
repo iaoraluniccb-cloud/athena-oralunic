@@ -5843,95 +5843,99 @@ window.lcropConfirmar = function() {
 
   // ── ANIVERSARIANTES ──
 
-  // Lista de colaboradores com data de início — fonte para aniversários de empresa automáticos
-  var _COLAB_INICIO = [
-    {userid:'dra-mone',    nome:'Mone Bortoli',          sub:'Diretora Geral',            initials:'MB', cor:'#6A1F30', inicio:'14/10/2022'},
-    {userid:'dr-aurelio',  nome:'Dr. Aurélio Machado',   sub:'Diretor Clínico · Avaliador',initials:'AM', cor:'#8B5E3C', inicio:'14/10/2022'},
-    {userid:'jarina',      nome:'Jarina Chagas',          sub:'Gestão',                    initials:'JC', cor:'#6A1F30', inicio:'14/10/2022'},
-    {userid:'brendha',     nome:'Brendha Bertoldo',       sub:'Gestão',                    initials:'BB', cor:'#8B5E3C', inicio:'14/10/2022'},
-    {userid:'bruna',       nome:'Bruna Figueiredo',       sub:'Coordenadora',              initials:'BF', cor:'#6A1F30', inicio:'21/05/2024'},
-    {userid:'mariele',     nome:'Mariele Padilha Basso',  sub:'Recepcionista',             initials:'MP', cor:'#8B5E3C', inicio:'27/04/2026'},
-    {userid:'alexandre',   nome:'Alexandre Rossi',        sub:'Recepcionista',             initials:'AR', cor:'#6A1F30', inicio:'24/08/2024'},
-    {userid:'thais',       nome:'Thais Gehres',           sub:'Consultora',                initials:'TG', cor:'#8B5E3C', inicio:'20/02/2024'},
-    {userid:'suelen',      nome:'Suelen Herbert',         sub:'Assistente',                initials:'SH', cor:'#6A1F30', inicio:'14/04/2025'},
-    {userid:'junior',      nome:'Junior De Mattos',       sub:'Protético',                 initials:'JM', cor:'#8B5E3C', inicio:'03/07/2024'},
-    {userid:'dr-scharles', nome:'Dr. Scharles Ferri',     sub:'Dentista · Cirurgião',      initials:'SF', cor:'#6A1F30', inicio:'30/01/2024'},
-    {userid:'dra-stefany', nome:'Dra. Stefany Nery',      sub:'Dentista',                  initials:'SN', cor:'#8B5E3C', inicio:'01/04/2025'},
-    {userid:'dra-anapaula',nome:'Dra. Ana Paula Bertuol', sub:'Dentista',                  initials:'AB', cor:'#6A1F30', inicio:'15/12/2025'},
-    {userid:'dra-fernanda',nome:'Dra. Fernanda Berwaldt', sub:'Dentista',                  initials:'FB', cor:'#8B5E3C', inicio:'11/04/2025'},
-    {userid:'marta',       nome:'Marta Goularte',         sub:'Assistente',                initials:'MG', cor:'#6A1F30', inicio:'03/03/2025'},
-    {userid:'francieli',   nome:'Francieli Barbosa',      sub:'Recepcionista',             initials:'FB', cor:'#8B5E3C', inicio:'12/08/2024'},
+  // Fonte única de verdade: nome, cargo, aniversário de nascimento (DD/MM) e de empresa (DD/MM/AAAA)
+  var _COLAB_DATA = [
+    {userid:'dra-mone',    nome:'Mone Bortoli',          sub:'Diretora Geral',             initials:'MB', cor:'#6A1F30', nasc:'09/10', inicio:'14/10/2022'},
+    {userid:'dr-aurelio',  nome:'Dr. Aurélio Machado',   sub:'Diretor Clínico · Avaliador',initials:'AM', cor:'#8B5E3C', nasc:'22/06', inicio:'14/10/2022'},
+    {userid:'jarina',      nome:'Jarina Chagas',          sub:'Gerente Administrativa',     initials:'JC', cor:'#6A1F30', nasc:'08/04', inicio:'14/10/2022'},
+    {userid:'brendha',     nome:'Brendha Bertoldo',       sub:'Gerente Comercial',          initials:'BB', cor:'#8B5E3C', nasc:'17/05', inicio:'14/10/2022'},
+    {userid:'bruna',       nome:'Bruna Figueiredo',       sub:'Coordenadora da Recepção',   initials:'BF', cor:'#6A1F30', nasc:'12/04', inicio:'21/05/2024'},
+    {userid:'mariele',     nome:'Mariele Padilha Basso',  sub:'Recepcionista',              initials:'MP', cor:'#8B5E3C', nasc:'12/08', inicio:'27/04/2026'},
+    {userid:'alexandre',   nome:'Alexandre Rossi',        sub:'Auxiliar Administrativo',    initials:'AR', cor:'#6A1F30', nasc:'03/07', inicio:'24/08/2024'},
+    {userid:'thais',       nome:'Thais Gehres',           sub:'TSB Coordenação',            initials:'TG', cor:'#8B5E3C', nasc:'28/02', inicio:'20/02/2024'},
+    {userid:'suelen',      nome:'Suelen Herbert',         sub:'ASB',                        initials:'SH', cor:'#6A1F30', nasc:'07/09', inicio:'14/04/2025'},
+    {userid:'junior',      nome:'Junior De Mattos',       sub:'TPD — Laboratório',          initials:'JM', cor:'#8B5E3C', nasc:'25/11', inicio:'03/07/2024'},
+    {userid:'dr-scharles', nome:'Dr. Scharles Ferri',     sub:'Dentista · Cirurgião',       initials:'SF', cor:'#6A1F30', nasc:'05/06', inicio:'30/01/2024'},
+    {userid:'dra-stefany', nome:'Dra. Stefany Nery',      sub:'Dentista',                   initials:'SN', cor:'#8B5E3C', nasc:'09/10', inicio:'01/04/2025'},
+    {userid:'dra-anapaula',nome:'Dra. Ana Paula Bertuol', sub:'Dentista',                   initials:'AB', cor:'#6A1F30', nasc:'23/09', inicio:'15/12/2025'},
+    {userid:'dra-fernanda',nome:'Dra. Fernanda Berwaldt', sub:'Dentista',                   initials:'FB', cor:'#8B5E3C', nasc:'',      inicio:'11/04/2025'},
+    {userid:'marta',       nome:'Marta Goularte',         sub:'ASG',                        initials:'MG', cor:'#6A1F30', nasc:'30/10', inicio:'03/03/2025'},
+    {userid:'francieli',   nome:'Francieli Barbosa',      sub:'Recepcionista',              initials:'FB', cor:'#8B5E3C', nasc:'24/04', inicio:'12/08/2024'},
   ];
 
-  function _bdayDiffDays(dateStr) {
-    if (!dateStr) return -1;
-    var parts = dateStr.split('/');
-    if (parts.length < 2) return -1;
+  function _bdayDiffDays(ddmm) {
+    if (!ddmm) return -1;
+    var p = ddmm.split('/');
+    if (p.length < 2) return -1;
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var bday = new Date(now.getFullYear(), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-    if (bday < today) bday = new Date(now.getFullYear() + 1, parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-    return Math.round((bday - today) / 86400000);
+    var d = new Date(now.getFullYear(), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+    if (d < today) d = new Date(now.getFullYear() + 1, parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+    return Math.round((d - today) / 86400000);
   }
 
-  function _getEmpresaAniversarios() {
-    // Retorna lista de aniversários de empresa que caem nos próximos 60 dias
+  function _buildAniversList() {
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     var result = [];
-    _COLAB_INICIO.forEach(function(c) {
-      if (!c.inicio) return;
-      var parts = c.inicio.split('/');
-      if (parts.length < 3) return;
-      var dd = parseInt(parts[0], 10), mm = parseInt(parts[1], 10), yyyy = parseInt(parts[2], 10);
-      [now.getFullYear(), now.getFullYear() + 1].forEach(function(yr) {
-        var aniv = new Date(yr, mm - 1, dd);
-        var diff = Math.round((aniv - today) / 86400000);
-        var anos = yr - yyyy;
-        if (anos >= 1 && diff >= 0 && diff <= 60) {
-          result.push({
-            userid: c.userid, nome: c.nome,
-            sub: anos + ' ano' + (anos > 1 ? 's' : '') + ' de clínica 🏆',
-            initials: c.initials, cor: c.cor,
-            date: dd + '/' + String(mm).padStart(2, '0'),
-            emoji: '🏆', diff: diff, tipo: 'empresa'
+
+    _COLAB_DATA.forEach(function(c) {
+      // Aniversário de nascimento — próximos 30 dias
+      if (c.nasc) {
+        var diff = _bdayDiffDays(c.nasc);
+        if (diff >= 0 && diff <= 30) {
+          result.push({userid:c.userid, nome:c.nome, sub:c.sub, initials:c.initials, cor:c.cor,
+            date:c.nasc, emoji:'🎂', diff:diff, tipo:'nascimento'});
+        }
+      }
+      // Aniversário de empresa — próximos 60 dias (anos completos)
+      if (c.inicio) {
+        var p = c.inicio.split('/');
+        if (p.length >= 3) {
+          var dd = parseInt(p[0],10), mm = parseInt(p[1],10), yyyy = parseInt(p[2],10);
+          [now.getFullYear(), now.getFullYear()+1].forEach(function(yr) {
+            var aniv = new Date(yr, mm-1, dd);
+            var diff2 = Math.round((aniv - today) / 86400000);
+            var anos = yr - yyyy;
+            if (anos >= 1 && diff2 >= 0 && diff2 <= 60) {
+              result.push({userid:c.userid, nome:c.nome,
+                sub: anos + ' ano' + (anos > 1 ? 's' : '') + ' de clínica 🏆',
+                initials:c.initials, cor:c.cor,
+                date: String(dd).padStart(2,'0') + '/' + String(mm).padStart(2,'0'),
+                emoji:'🏆', diff:diff2, tipo:'empresa'});
+            }
           });
         }
-      });
+      }
     });
-    return result;
+
+    return result.sort(function(a,b){ return a.diff - b.diff; });
   }
 
   function _renderAniversariantes() {
-    var listaNasc = _get('aniversariantes');
-    // Adicionar diff para ordenação
-    var comDiff = listaNasc.map(function(p) {
-      return Object.assign({}, p, {diff: _bdayDiffDays(p.date), tipo: 'nascimento'});
-    });
-    // Mesclar com aniversários de empresa automáticos
-    var empresa = _getEmpresaAniversarios();
-    // Evitar duplicata: se o mesmo userid já tem bday manual na mesma data, não duplicar
-    var merged = comDiff.concat(empresa).sort(function(a, b) { return a.diff - b.diff; });
-
+    var merged = _buildAniversList();
     var blist = document.querySelector('.bday-list');
     if (!blist) return;
+
+    if (merged.length === 0) {
+      blist.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">Nenhum aniversário nos próximos 30 dias.</div>';
+      return;
+    }
 
     var banners = '';
     var items = '';
 
     merged.forEach(function(p) {
-      var diff = p.diff;
-      if (diff < 0 || diff > 60) return;
       var photo = localStorage.getItem('ou_photo_' + p.userid);
       var avContent = photo
-        ? '<img src="' + photo + '" alt="' + (p.initials || '') + '">'
-        : (p.initials || p.nome.substring(0, 2).toUpperCase());
+        ? '<img src="' + photo + '" alt="' + (p.initials||'') + '">'
+        : (p.initials || p.nome.substring(0,2).toUpperCase());
       var avBg = photo ? 'transparent' : (p.cor || 'var(--vinho)');
       var isEmpresa = p.tipo === 'empresa';
-      var labelHoje = isEmpresa ? '🏆 Aniversário de Empresa Hoje!' : '🎂 Aniversário Hoje!';
       var emoji = p.emoji || '🎂';
 
-      if (diff === 0) {
+      if (p.diff === 0) {
+        var labelHoje = isEmpresa ? '🏆 Aniversário de Empresa Hoje!' : '🎂 Aniversário Hoje!';
         banners += '<div class="bday-banner"' + (isEmpresa ? ' style="background:linear-gradient(135deg,#4a1525 0%,#8B5E3C 100%)"' : '') + '>'
           + '<div class="bday-banner-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-banner-info">'
@@ -5941,17 +5945,17 @@ window.lcropConfirmar = function() {
           + '</div>'
           + '<div class="bday-banner-emoji">' + (isEmpresa ? '🏆' : '🎉') + '</div>'
           + '</div>';
-      } else if (diff === 1) {
+      } else if (p.diff === 1) {
         items += '<div class="bday-item bday-item-tomorrow">'
-          + '<div class="bday-av" id="bday-av-' + p.userid + '" data-userid="' + p.userid + '" data-initials="' + (p.initials || '') + '" style="background:' + avBg + '">' + avContent + '</div>'
+          + '<div class="bday-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-info"><div class="bday-name">' + p.nome + '</div><div class="bday-sub">' + p.sub + '</div><div style="font-size:10px;color:#C4955A;font-weight:700;margin-top:2px;">' + emoji + ' Amanhã!</div></div>'
-          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span>' + (p.date ? '<span style="font-size:10px;font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span>' : '') + '</div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
           + '</div>';
       } else {
         items += '<div class="bday-item">'
-          + '<div class="bday-av" id="bday-av-' + p.userid + '" data-userid="' + p.userid + '" data-initials="' + (p.initials || '') + '" style="background:' + avBg + '">' + avContent + '</div>'
+          + '<div class="bday-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-info"><div class="bday-name">' + p.nome + '</div><div class="bday-sub">' + p.sub + '</div></div>'
-          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span>' + (p.date ? '<span style="font-size:10px;font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span>' : '') + '</div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
           + '</div>';
       }
     });
