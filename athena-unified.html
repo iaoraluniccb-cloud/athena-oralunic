@@ -2307,9 +2307,18 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
     }
     function bibIsAdmin() {
       try {
-        var u = JSON.parse(localStorage.getItem('ou_currentUser') || '{}');
-        var role = (u.role || 'admin').toLowerCase();
-        return role === 'admin' || role === 'adm';
+        // Usa o mesmo ID que bibGetMe() — sessionStorage primeiro
+        var uid = sessionStorage.getItem('athena_logged_in') || '';
+        if (!uid) {
+          var raw = localStorage.getItem('ou_currentUser') || '';
+          try {
+            var u = JSON.parse(raw);
+            uid = (u && u.id) ? u.id : (typeof u === 'string' ? u : raw);
+          } catch(e) { uid = raw; }
+        }
+        uid = (uid || '').replace(/"/g, '').trim();
+        // ADMs do sistema: thais e dra-mone
+        return uid === 'thais' || uid === 'dra-mone';
       } catch(e) { return false; }
     }
 
