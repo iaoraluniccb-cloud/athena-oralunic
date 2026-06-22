@@ -1383,6 +1383,9 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   <button class="nav-item nav-destaque" data-page="gerador-proposta" data-section="Comercial" data-label="Gerador de Proposta">
     <span class="icon">📝</span><span class="nav-label">Gerador de Proposta</span>
   </button>
+  <button class="nav-item nav-destaque" data-page="calc-relacionamento" data-section="Comercial" data-label="Calculadora Relacionamento">
+    <span class="icon">🤝</span><span class="nav-label">Calc. Relacionamento</span>
+  </button>
   </div>
 
   <div class="sidebar-section-label" onclick="toggleSection('gestao')"><span>📊 Gestão</span><span class="section-arrow" id="arrow-gestao">▼</span></div>
@@ -2068,6 +2071,14 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
       </div>
     </div>
 
+    <!-- ──────────── CALCULADORA RELACIONAMENTO (iframe) ──────────── -->
+    <div class="page-panel" id="page-calc-relacionamento">
+      <iframe class="page-iframe" id="iframe-calc-relacionamento"
+        src="about:blank"
+        data-src="projects/sistema-integrado-oral-unic/calculadora-relacionamento.html"
+        allow="*"></iframe>
+    </div>
+
     <!-- ──────────── PROTOCOLOS CLÍNICOS ──────────── -->
     <div class="page-panel" id="page-protocolos" style="padding:0;overflow:hidden;">
       <div id="prot-app" style="display:flex;flex-direction:column;height:100%;font-family:inherit;"></div>
@@ -2220,6 +2231,7 @@ const iframeMap = {
   'rh':                     'iframe-rh',
   'cobranca':               'iframe-cobranca',
   'resgates':               'iframe-resgates',
+  'calc-relacionamento':    'iframe-calc-relacionamento',
   'atas':                   'iframe-atas',
   'docs-operacao':          'iframe-docs-operacao',
   'banco-conteudo':         'iframe-banco-conteudo',
@@ -4009,17 +4021,17 @@ var PERMISSOES = {
                   'avaliador','laboratorios','cirurgias',
                   'conferencia','agendamentos-protocolo','totem',
                   'perfil-paciente','antes-depois','planejamentos','dio','precificacao',
-                  'resgates','cobranca','gerador-proposta',
+                  'resgates','cobranca','gerador-proposta','calc-relacionamento',
                   'financeiro-completo','calculadora','direcao','rh',
                   'senhas','servicos',
                   'protocolos','docs-operacao','atas','biblioteca','odontohub'],
   'brendha':     ['inicio','vello','agenda','prontuarios',
                   'perfil-paciente','antes-depois','dio','precificacao',
-                  'resgates','cobranca','gerador-proposta',
+                  'resgates','cobranca','gerador-proposta','calc-relacionamento',
                   'financeiro-completo',
                   'protocolos','docs-operacao','atas','biblioteca','odontohub'],
   'alexandre':   ['inicio','vello','agenda','prontuarios',
-                  'resgates','cobranca','gerador-proposta',
+                  'resgates','cobranca','gerador-proposta','calc-relacionamento',
                   'financeiro-completo',
                   'laboratorios','cirurgias','estoque',
                   'calculadora','direcao','precificacao',
