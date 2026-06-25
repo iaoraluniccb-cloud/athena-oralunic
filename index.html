@@ -4508,15 +4508,11 @@ function toggleSidebar() {
   var _GC_CAL = 'aureliomachado79@gmail.com';
 
   function _fetchGoogleCalendar(dateStr, cb) {
-    var dayStart = dateStr + 'T00:00:00-03:00';
-    var dayEnd   = dateStr + 'T23:59:59-03:00';
-    var url = 'https://www.googleapis.com/calendar/v3/calendars/'
-      + encodeURIComponent(_GC_CAL)
-      + '/events?key=' + _GC_KEY
-      + '&timeMin=' + encodeURIComponent(dayStart)
-      + '&timeMax=' + encodeURIComponent(dayEnd)
-      + '&singleEvents=true&orderBy=startTime&maxResults=50';
-    fetch(url)
+    var token = localStorage.getItem('athena_token') || sessionStorage.getItem('athena_token') || '';
+    var url = 'https://athena-prontuario-server.onrender.com/api/google-calendar'
+      + '?calendarId=' + encodeURIComponent(_GC_CAL)
+      + '&date=' + encodeURIComponent(dateStr);
+    fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (!d.items) { cb([]); return; }
