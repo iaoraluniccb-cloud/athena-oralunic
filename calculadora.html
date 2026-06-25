@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oral Unic — Calculadora Financeira</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
   import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import{getFirestore,doc,getDoc,setDoc,onSnapshot}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -15,7 +17,7 @@
   const app=initializeApp(fbCfg);
   const db=getFirestore(app);
   const REF=doc(db,'ou_calc','data');
-  const DEF={procs:[],labs:[],profs:[],fixos:[],dep:[],folha:[],bon:[],engs:[],infAcum:0,custoMinAdj:0};
+  const DEF={procs:[],labs:[],profs:[],fixos:[],dep:[],folha:[],bon:[],mkt:[],engs:[],infAcum:0,custoMinAdj:0};
   let _dbCache=null;
   let _saving=false;
   window._fbReady=false;
@@ -43,7 +45,7 @@
     if(_saving)return;
     if(!snap.exists())return;
     _dbCache=Object.assign({},JSON.parse(JSON.stringify(DEF)),snap.data());
-    if(typeof renderProcCards==='function'){renderProcCards();renderLabCards();renderProfCards();renderCF();renderCFDep();renderCFFolha();renderCFBon();renderEngCards();}
+    if(typeof renderProcCards==='function'){renderProcCards();renderLabCards();renderProfCards();renderCF();renderCFDep();renderCFFolha();renderCFBon();renderCFMkt();renderEngCards();}
   });
 </script>
 <style>
@@ -59,24 +61,32 @@ header { display: none !important; }
   --blush:#EDDDD4;--warm:#E0C9B8;--moka:#3D2A20;--tinta:#1A0F0A;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Josefin Sans',sans-serif;background:var(--marfim);color:var(--tinta);min-height:100vh;}
+body{font-family:'Inter', sans-serif;background:var(--marfim);color:var(--tinta);min-height:100vh;}
 
 /* HEADER */
 header{background:linear-gradient(135deg,var(--vinho-p),var(--vinho));color:white;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 16px rgba(106,31,48,.35);position:sticky;top:0;z-index:200;}
-header h1{font-family:'Cormorant SC',serif;font-size:1.35rem;font-weight:400;letter-spacing:.15em;}
+header h1{font-family:'Inter', sans-serif;font-size:1.35rem;font-weight:400;letter-spacing:.15em;}
 header .sub{font-size:.6rem;letter-spacing:.22em;opacity:.7;text-transform:uppercase;margin-top:2px;}
 
 /* TABS */
 .tabs-bar{background:var(--creme);padding:0 28px;display:flex;gap:0;border-bottom:2px solid var(--warm);overflow-x:auto;scrollbar-width:none;}
 .tabs-bar::-webkit-scrollbar{display:none;}
-.tab-btn{padding:11px 18px;font-size:.72rem;font-weight:600;letter-spacing:.1em;border:none;background:none;color:var(--moka);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:'Josefin Sans',sans-serif;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.tab-btn{padding:11px 18px;font-size:.72rem;font-weight:600;letter-spacing:.1em;border:none;background:none;color:var(--moka);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:'Inter', sans-serif;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .tab-btn:hover{color:var(--vinho);}
 .tab-btn.active{color:var(--vinho);border-bottom-color:var(--vinho);}
 .tab-panel{display:none;}.tab-panel.active{display:block;}
 
+/* EXPORT TOOLBAR */
+.export-bar{background:#fff;border-bottom:1px solid var(--warm);padding:6px 28px;display:flex;align-items:center;gap:8px;font-size:.68rem;letter-spacing:.06em;}
+.export-bar .exp-label{color:var(--moka);opacity:.6;text-transform:uppercase;font-size:.6rem;letter-spacing:.14em;margin-right:4px;}
+.btn-exp{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border:1.5px solid;border-radius:5px;cursor:pointer;font-family:'Inter', sans-serif;font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:all .15s;}
+.btn-exp-pdf{background:#fff;border-color:#c0392b;color:#c0392b;}.btn-exp-pdf:hover{background:#c0392b;color:#fff;}
+.btn-exp-xls{background:#fff;border-color:#217346;color:#217346;}.btn-exp-xls:hover{background:#217346;color:#fff;}
+.btn-exp:disabled{opacity:.45;cursor:not-allowed;}
+
 /* LAYOUT */
 .page{padding:24px 28px;max-width:1140px;}
-.section-title{font-family:'Cormorant SC',serif;font-size:1.1rem;font-weight:400;color:var(--vinho);letter-spacing:.12em;margin-bottom:4px;}
+.section-title{font-family:'Inter', sans-serif;font-size:1.1rem;font-weight:400;color:var(--vinho);letter-spacing:.12em;margin-bottom:4px;}
 .section-sub{font-size:.7rem;color:var(--moka);opacity:.7;letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
 .divider{height:1px;background:var(--blush);margin:24px 0;}
 
@@ -101,7 +111,7 @@ header .sub{font-size:.6rem;letter-spacing:.22em;opacity:.7;text-transform:upper
 .result-card.creme{background:var(--creme);border-color:var(--warm);}
 .result-card.alerta{background:#fff4e5;border-color:#f39c12;}
 .result-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.16em;opacity:.8;margin-bottom:4px;}
-.result-value{font-size:1.5rem;font-weight:700;line-height:1;font-family:'Josefin Sans',sans-serif;}
+.result-value{font-size:1.5rem;font-weight:700;line-height:1;font-family:'Inter', sans-serif;}
 .result-sub{font-size:.65rem;margin-top:3px;opacity:.75;}
 .result-card.blush .result-label,.result-card.creme .result-label{color:var(--moka);}
 .result-card.blush .result-value,.result-card.creme .result-value{color:var(--vinho);}
@@ -111,13 +121,13 @@ header .sub{font-size:.6rem;letter-spacing:.22em;opacity:.7;text-transform:upper
 /* FORM */
 .form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
 .form-group label{font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;color:var(--vinho-p);font-weight:600;}
-.form-group input,.form-group select,.form-group textarea{padding:8px 11px;border:1.5px solid var(--warm);border-radius:7px;font-family:'Josefin Sans',sans-serif;font-size:.83rem;color:var(--tinta);outline:none;transition:border .2s;background:var(--marfim);}
+.form-group input,.form-group select,.form-group textarea{padding:8px 11px;border:1.5px solid var(--warm);border-radius:7px;font-family:'Inter', sans-serif;font-size:.83rem;color:var(--tinta);outline:none;transition:border .2s;background:var(--marfim);}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--vinho-c);}
 .form-group input[readonly]{background:var(--blush);color:var(--vinho);font-weight:600;}
 .hint{font-size:.63rem;color:var(--moka);opacity:.65;margin-top:2px;}
 
 /* BOTÕES */
-.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Josefin Sans',sans-serif;font-weight:600;letter-spacing:.06em;cursor:pointer;border:none;border-radius:9px;transition:all .15s;font-size:.78rem;}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Inter', sans-serif;font-weight:600;letter-spacing:.06em;cursor:pointer;border:none;border-radius:9px;transition:all .15s;font-size:.78rem;}
 .btn-primary{background:var(--vinho);color:white;padding:10px 24px;box-shadow:0 2px 10px rgba(106,31,48,.28);}
 .btn-primary:hover{background:var(--vinho-p);}
 .btn-sec{background:var(--creme);color:var(--vinho);border:1.5px solid var(--warm);padding:7px 16px;}
@@ -143,9 +153,11 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 
 /* ITEM ROWS */
 .item-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
-.item-row{display:grid;gap:7px;align-items:center;background:var(--creme);border:1px solid var(--warm);border-radius:7px;padding:7px 9px;}
-.item-row input,.item-row select{padding:5px 7px;border:1px solid var(--warm);border-radius:5px;font-family:'Josefin Sans',sans-serif;font-size:.79rem;background:white;color:var(--tinta);outline:none;}
+.item-row{display:grid;gap:5px;align-items:center;background:var(--creme);border:1px solid var(--warm);border-radius:7px;padding:6px 8px;min-width:0;overflow:hidden;}
+.item-row input,.item-row select{padding:5px 7px;border:1px solid var(--warm);border-radius:5px;font-family:'Inter', sans-serif;font-size:.79rem;background:white;color:var(--tinta);outline:none;min-width:0;width:100%;box-sizing:border-box;}
 .item-row input:focus{border-color:var(--vinho-c);}
+.btn-del-row{flex-shrink:0;background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:5px;color:#ccc;font-size:.8rem;line-height:1;transition:all .12s;}
+.btn-del-row:hover{color:#ef4444;background:#fee2e2;}
 .col-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6;text-align:center;margin-bottom:1px;}
 .emb-badge{font-size:.6rem;color:var(--cobre);background:rgba(196,149,90,.12);border-radius:4px;padding:1px 4px;margin-left:3px;white-space:nowrap;}
 .insumo-preco-unit{font-size:.65rem;color:var(--moka);opacity:.55;text-align:center;margin-top:1px;}
@@ -181,7 +193,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 .insumos-header span{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.55;text-align:center;}
 .insumos-header span:first-child{text-align:left;}
 .modal-overlay.open .modal{transform:translateY(0);}
-.modal-title{font-family:'Cormorant SC',serif;font-size:1.1rem;color:var(--vinho);letter-spacing:.1em;margin-bottom:4px;}
+.modal-title{font-family:'Inter', sans-serif;font-size:1.1rem;color:var(--vinho);letter-spacing:.1em;margin-bottom:4px;}
 .modal-sub{font-size:.68rem;color:var(--moka);opacity:.65;letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px;}
 .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--blush);}
 
@@ -225,7 +237,7 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 .imp-row:last-child{border-bottom:none;}
 .imp-nome{font-size:.8rem;color:var(--tinta);}
 .imp-hint{font-size:.65rem;color:var(--moka);opacity:.6;}
-.imp-val{padding:5px 8px;border:1.5px solid var(--warm);border-radius:6px;font-family:'Josefin Sans',sans-serif;font-size:.82rem;width:70px;text-align:right;outline:none;background:var(--marfim);}
+.imp-val{padding:5px 8px;border:1.5px solid var(--warm);border-radius:6px;font-family:'Inter', sans-serif;font-size:.82rem;width:70px;text-align:right;outline:none;background:var(--marfim);}
 .imp-val:focus{border-color:var(--vinho-c);}
 .imp-pct{font-size:.75rem;color:var(--moka);width:14px;}
 </style>
@@ -236,31 +248,31 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 <div id="login-screen" style="display:none;position:fixed;inset:0;z-index:999999;background:var(--marfim);display:flex;align-items:center;justify-content:center;flex-direction:column;">
   <div style="text-align:center;margin-bottom:32px">
     <div style="font-size:2rem;margin-bottom:6px">🦷</div>
-    <div style="font-family:'Cormorant SC',serif;font-size:1.15rem;color:var(--vinho);font-weight:600;letter-spacing:.08em">ORAL UNIC</div>
+    <div style="font-family:'Inter', sans-serif;font-size:1.15rem;color:var(--vinho);font-weight:600;letter-spacing:.08em">ORAL UNIC</div>
     <div style="font-size:.68rem;color:var(--moka);letter-spacing:.16em;text-transform:uppercase;opacity:.7">Calculadora Financeira</div>
   </div>
   <!-- Cards de usuário -->
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:28px" id="login-cards">
     <div onclick="selecionarUsuario('dra mone','Dra. Mone','👩‍⚕️')" class="login-card" data-user="dra mone" style="cursor:pointer;background:#fff;border:2px solid var(--warm);border-radius:14px;padding:24px 20px;width:130px;text-align:center;transition:border-color .2s,box-shadow .2s">
       <div style="font-size:2.2rem;margin-bottom:8px">👩‍⚕️</div>
-      <div style="font-family:'Cormorant SC',serif;font-size:.9rem;color:var(--vinho);font-weight:600">Dra. Mone</div>
+      <div style="font-family:'Inter', sans-serif;font-size:.9rem;color:var(--vinho);font-weight:600">Dra. Mone</div>
     </div>
     <div onclick="selecionarUsuario('adm','ADM','🗂️')" class="login-card" data-user="adm" style="cursor:pointer;background:#fff;border:2px solid var(--warm);border-radius:14px;padding:24px 20px;width:130px;text-align:center;transition:border-color .2s,box-shadow .2s">
       <div style="font-size:2.2rem;margin-bottom:8px">🗂️</div>
-      <div style="font-family:'Cormorant SC',serif;font-size:.9rem;color:var(--vinho);font-weight:600">ADM</div>
+      <div style="font-family:'Inter', sans-serif;font-size:.9rem;color:var(--vinho);font-weight:600">ADM</div>
     </div>
     <div onclick="selecionarUsuario('alexandre','Alexandre','👨‍💼')" class="login-card" data-user="alexandre" style="cursor:pointer;background:#fff;border:2px solid var(--warm);border-radius:14px;padding:24px 20px;width:130px;text-align:center;transition:border-color .2s,box-shadow .2s">
       <div style="font-size:2.2rem;margin-bottom:8px">👨‍💼</div>
-      <div style="font-family:'Cormorant SC',serif;font-size:.9rem;color:var(--vinho);font-weight:600">Alexandre</div>
+      <div style="font-family:'Inter', sans-serif;font-size:.9rem;color:var(--vinho);font-weight:600">Alexandre</div>
     </div>
   </div>
   <!-- Painel de senha (aparece após selecionar) -->
   <div id="login-senha-panel" style="display:none;background:#fff;border:1px solid var(--warm);border-radius:12px;padding:28px 32px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(26,15,10,.1)">
     <div id="login-avatar" style="font-size:2rem;margin-bottom:4px"></div>
-    <div id="login-nome-sel" style="font-family:'Cormorant SC',serif;font-size:1rem;color:var(--vinho);font-weight:600;margin-bottom:16px"></div>
+    <div id="login-nome-sel" style="font-family:'Inter', sans-serif;font-size:1rem;color:var(--vinho);font-weight:600;margin-bottom:16px"></div>
     <input id="login-senha" type="password" placeholder="Senha" style="width:100%;padding:10px 14px;border:1px solid var(--warm);border-radius:6px;font-family:inherit;font-size:.85rem;margin-bottom:6px;background:var(--marfim);outline:none" onkeydown="if(event.key==='Enter')fazerLogin()">
     <div id="login-erro" style="font-size:.75rem;color:#c0392b;min-height:18px;margin-bottom:8px"></div>
-    <button onclick="fazerLogin()" style="width:100%;background:var(--vinho);color:#fff;border:none;border-radius:6px;padding:11px;font-family:'Josefin Sans',sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.08em;cursor:pointer;margin-bottom:8px">ENTRAR</button>
+    <button onclick="fazerLogin()" style="width:100%;background:var(--vinho);color:#fff;border:none;border-radius:6px;padding:11px;font-family:'Inter', sans-serif;font-size:.85rem;font-weight:600;letter-spacing:.08em;cursor:pointer;margin-bottom:8px">ENTRAR</button>
     <button onclick="voltarCards()" style="width:100%;background:transparent;color:var(--moka);border:none;font-family:inherit;font-size:.75rem;cursor:pointer;opacity:.6">← Voltar</button>
   </div>
 </div>
@@ -290,6 +302,12 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
   <button class="tab-btn"         onclick="tab('inf')">📈 Inflação / Reajuste</button>
 </div>
 
+<div class="export-bar">
+  <span class="exp-label">Exportar aba atual:</span>
+  <button class="btn-exp btn-exp-pdf" onclick="exportarPDF()">📄 PDF</button>
+  <button class="btn-exp btn-exp-xls" onclick="exportarExcel()">📊 Excel</button>
+</div>
+
 <!-- ══════ ABA: PROCEDIMENTOS ══════ -->
 <div class="tab-panel active" id="panel-proc">
 <div class="page">
@@ -316,8 +334,36 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
     </div>
     <button class="btn btn-primary" onclick="abrirModalLab()">+ Nova Etapa Lab</button>
   </div>
-  <div class="cadastro-grid" id="lista-lab-cards">
-    <div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhuma etapa cadastrada.</div>
+  <!-- Duas colunas: Lab Interno | Lab Externo -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
+    <!-- Coluna Lab Interno -->
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #6A1F30;">
+        <span style="font-size:16px;">🏭</span>
+        <div>
+          <div style="font-family:'Inter', sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6A1F30;">Lab Interno</div>
+          <div style="font-size:11px;color:#94a3b8;">Etapas executadas internamente</div>
+        </div>
+        <span id="lab-interno-count" style="margin-left:auto;background:#6A1F3022;color:#6A1F30;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;font-family:'Inter', sans-serif;"></span>
+      </div>
+      <div id="lista-lab-interno" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;">Nenhuma etapa interna cadastrada.</div>
+      </div>
+    </div>
+    <!-- Coluna Lab Externo -->
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #C4955A;">
+        <span style="font-size:16px;">🔗</span>
+        <div>
+          <div style="font-family:'Inter', sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#C4955A;">Lab Externo</div>
+          <div style="font-size:11px;color:#94a3b8;">Etapas enviadas para laboratório externo</div>
+        </div>
+        <span id="lab-externo-count" style="margin-left:auto;background:#C4955A22;color:#C4955A;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;font-family:'Inter', sans-serif;"></span>
+      </div>
+      <div id="lista-lab-externo" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;">Nenhuma etapa externa cadastrada.</div>
+      </div>
+    </div>
   </div>
 </div>
 </div>
@@ -340,138 +386,203 @@ table.tbl{width:100%;border-collapse:collapse;font-size:.79rem;background:white;
 
 <!-- ══════ ABA: CUSTOS FIXOS ══════ -->
 <div class="tab-panel" id="panel-fixos">
-<div class="page" style="max-width:100%;overflow-x:hidden">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-    <div class="section-title">Custos Fixos & Rateio da Clínica</div>
-    <button class="btn btn-sec btn-sm" onclick="importarDaMetrica()" style="font-size:.72rem;padding:6px 14px">↓ Importar da Métrica</button>
+<div class="page" style="max-width:100%;overflow-x:hidden;padding-bottom:32px">
+
+  <!-- ── CABEÇALHO DA ABA ── -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--blush)">
+    <div>
+      <div class="section-title" style="margin-bottom:2px">Custos Fixos & Rateio da Clínica</div>
+      <div class="section-sub" style="margin-bottom:0">Componentes do custo/min — base para a Engenharia do Produto</div>
+    </div>
+    <button class="btn btn-sec btn-sm" onclick="importarDaMetrica()" style="font-size:.71rem;padding:7px 14px;white-space:nowrap">↓ Importar da Métrica</button>
   </div>
-  <div class="section-sub">Componentes do custo/min — base para a Engenharia do Produto</div>
 
-  <!-- LAYOUT: coluna única responsiva -->
-  <div style="display:flex;flex-direction:column;gap:16px">
+  <!-- ── BLOCO KPI — Total + Custo/min em destaque ── -->
+  <div id="cf-kpi-bar" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+    <div style="background:linear-gradient(135deg,var(--vinho-p),var(--vinho));border-radius:14px;padding:18px 22px;color:white;display:flex;flex-direction:column;justify-content:center">
+      <div style="font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;opacity:.75;margin-bottom:6px">Total Geral / Mês</div>
+      <div style="font-size:2rem;font-family:'Inter', sans-serif;font-weight:400;line-height:1" id="cf-total-val">R$ 0,00</div>
+      <div style="font-size:.65rem;opacity:.65;margin-top:6px">soma de todas as categorias</div>
+    </div>
+    <div id="cf-custo-min-res" style="display:flex;flex-direction:column;justify-content:center"></div>
+  </div>
 
-    <!-- GRADE 2×2 — os 4 blocos de custo -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+  <!-- ── GRID DE BLOCOS DE CUSTO ── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
 
-      <!-- BLOCO 1: Custos Fixos -->
-      <div class="card" style="min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="card-title" style="margin:0">🏢 Custos Fixos</div>
-          <span style="font-size:.7rem;color:var(--vinho);font-weight:700" id="cf-subtotal">R$ 0,00</span>
+    <!-- BLOCO 1: Custos Fixos -->
+    <div class="cf-block" style="background:white;border:1px solid var(--blush);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(106,31,48,.06)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--creme);border-bottom:1px solid var(--blush)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:3px;height:22px;background:var(--vinho);border-radius:2px"></div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--tinta);letter-spacing:.04em">Custos Fixos</div>
+            <div style="font-size:.6rem;color:var(--moka);opacity:.6;text-transform:uppercase;letter-spacing:.1em">despesas operacionais</div>
+          </div>
         </div>
-        <div class="item-list" id="cf-list" style="max-height:260px;overflow-y:auto"></div>
-        <button class="btn btn-ghost" style="margin-top:6px;font-size:.7rem" onclick="addCF()">+ Linha</button>
+        <div style="text-align:right">
+          <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6">subtotal</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--vinho);font-family:'Inter', sans-serif" id="cf-subtotal">R$ 0,00</div>
+        </div>
       </div>
+      <div style="padding:12px 14px">
+        <div class="item-list" id="cf-list" style="max-height:260px;overflow-y:auto"></div>
+        <button class="btn btn-ghost" style="margin-top:6px;font-size:.69rem;width:100%" onclick="addCF()">+ Linha</button>
+      </div>
+    </div>
 
-      <!-- BLOCO 2: Depreciação -->
-      <div class="card" style="min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="card-title" style="margin:0">📉 Depreciação</div>
-          <span style="font-size:.7rem;color:var(--vinho);font-weight:700" id="cf-dep-subtotal">R$ 0,00</span>
+    <!-- BLOCO 2: Depreciação -->
+    <div class="cf-block" style="background:white;border:1px solid var(--blush);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(106,31,48,.06)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--creme);border-bottom:1px solid var(--blush)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:3px;height:22px;background:#6B7280;border-radius:2px"></div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--tinta);letter-spacing:.04em">Depreciação</div>
+            <div style="font-size:.6rem;color:var(--moka);opacity:.6;text-transform:uppercase;letter-spacing:.1em">equipamentos</div>
+          </div>
         </div>
-        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:4px;margin-bottom:4px;padding:0 2px">
-          <span class="col-label">Equipamento</span><span class="col-label">R$/mês</span><span></span>
+        <div style="text-align:right">
+          <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6">subtotal</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--vinho);font-family:'Inter', sans-serif" id="cf-dep-subtotal">R$ 0,00</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px">
+        <div style="display:grid;grid-template-columns:1fr 80px 26px;gap:5px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Equipamento</span><span class="col-label" style="text-align:right">R$/mês</span><span></span>
         </div>
         <div class="item-list" id="cf-dep-list" style="max-height:220px;overflow-y:auto"></div>
-        <button class="btn btn-ghost" style="margin-top:6px;font-size:.7rem" onclick="addCFDep()">+ Equipamento</button>
+        <button class="btn btn-ghost" style="margin-top:6px;font-size:.69rem;width:100%" onclick="addCFDep()">+ Equipamento</button>
       </div>
+    </div>
 
-      <!-- BLOCO 3: Folha -->
-      <div class="card" style="min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="card-title" style="margin:0">👥 Folha + Encargos</div>
-          <span style="font-size:.7rem;color:var(--vinho);font-weight:700" id="cf-folha-subtotal">R$ 0,00</span>
-        </div>
-        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:4px;margin-bottom:4px;padding:0 2px">
-          <span class="col-label">Colaborador</span><span class="col-label">R$/mês</span><span></span>
-        </div>
-        <div class="item-list" id="cf-folha-list" style="max-height:220px;overflow-y:auto"></div>
-        <button class="btn btn-ghost" style="margin-top:6px;font-size:.7rem" onclick="addCFFolha()">+ Colaborador</button>
-      </div>
-
-      <!-- BLOCO 4: Bonificações + Marketing -->
-      <div class="card" style="min-width:0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div class="card-title" style="margin:0">🎁 Bonif. + Ocorrências</div>
-          <span style="font-size:.7rem;color:var(--vinho);font-weight:700" id="cf-bon-subtotal">R$ 0,00</span>
-        </div>
-        <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:4px;margin-bottom:4px;padding:0 2px">
-          <span class="col-label">Descrição</span><span class="col-label">R$/mês</span><span></span>
-        </div>
-        <div class="item-list" id="cf-bon-list" style="max-height:160px;overflow-y:auto"></div>
-        <button class="btn btn-ghost" style="margin-top:6px;font-size:.7rem" onclick="addCFBon()">+ Adicionar</button>
-        <!-- Marketing inline -->
-        <div style="border-top:1px solid var(--warm);margin-top:10px;padding-top:10px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:.72rem;color:var(--moka);flex:1">📣 Marketing / mês (R$)</span>
-            <input type="number" id="cf-mkt" placeholder="0" step="0.01" min="0" oninput="recalcCF()" style="width:90px;font-size:.75rem;text-align:right">
+    <!-- BLOCO 3: Folha -->
+    <div class="cf-block" style="background:white;border:1px solid var(--blush);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(106,31,48,.06)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--creme);border-bottom:1px solid var(--blush)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:3px;height:22px;background:#2563EB;border-radius:2px"></div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--tinta);letter-spacing:.04em">Folha + Encargos</div>
+            <div style="font-size:.6rem;color:var(--moka);opacity:.6;text-transform:uppercase;letter-spacing:.1em">colaboradores</div>
           </div>
         </div>
-      </div>
-
-    </div><!-- fim grade 2×2 -->
-
-    <!-- PAINEL INFERIOR: parâmetros + resultado em linha -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:start">
-
-      <!-- Total Geral destaque -->
-      <div style="background:linear-gradient(135deg,var(--vinho-p),var(--vinho));border-radius:12px;padding:14px 16px;color:white;text-align:center">
-        <div style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;opacity:.8;margin-bottom:4px">Total Geral / Mês</div>
-        <div style="font-size:1.6rem;font-family:'Cormorant SC',serif;font-weight:400" id="cf-total-val">R$ 0,00</div>
-      </div>
-
-      <!-- Custo/min destaque -->
-      <div id="cf-custo-min-res"></div>
-
-      <!-- Parâmetros compactos -->
-      <div class="card bg-creme" style="padding:12px">
-        <div class="card-title" style="font-size:.72rem;margin-bottom:10px">⏱️ Capacidade da Clínica</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="form-group" style="margin:0">
-              <label style="font-size:.65rem">Cadeiras</label>
-              <input type="number" id="cf-cadeiras" placeholder="3" min="1" value="1" oninput="recalcCF()" style="font-size:.8rem;width:100%">
-            </div>
-            <div class="form-group" style="margin:0">
-              <label style="font-size:.65rem">Dias úteis/mês</label>
-              <input type="number" id="cf-dias" placeholder="22" min="1" value="22" oninput="recalcCF()" style="font-size:.8rem;width:100%">
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="form-group" style="margin:0">
-              <label style="font-size:.65rem">Horas/dia</label>
-              <input type="number" id="cf-horas-dia" placeholder="8" min="1" value="8" step="0.5" oninput="recalcCF()" style="font-size:.8rem;width:100%">
-            </div>
-            <div class="form-group" style="margin:0">
-              <label style="font-size:.65rem">Min disponíveis</label>
-              <input type="number" id="cf-min-disp" readonly style="background:var(--blush);color:var(--vinho);font-weight:700;font-size:.8rem;width:100%">
-            </div>
-          </div>
-          <div class="form-group" style="margin:0">
-            <label style="font-size:.65rem">Ocupação média (%)</label>
-            <input type="number" id="cf-ocupacao" placeholder="70" min="1" max="100" value="70" oninput="recalcCF()" style="font-size:.8rem;width:100%">
-            <div class="hint" style="font-size:.65rem">60–75% é típico</div>
-          </div>
+        <div style="text-align:right">
+          <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6">subtotal</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--vinho);font-family:'Inter', sans-serif" id="cf-folha-subtotal">R$ 0,00</div>
         </div>
       </div>
+      <div style="padding:12px 14px">
+        <div style="display:grid;grid-template-columns:1fr 80px 26px;gap:5px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Colaborador</span><span class="col-label" style="text-align:right">R$/mês</span><span></span>
+        </div>
+        <div class="item-list" id="cf-folha-list" style="max-height:260px;overflow-y:auto"></div>
+        <button class="btn btn-ghost" style="margin-top:6px;font-size:.69rem;width:100%" onclick="addCFFolha()">+ Colaborador</button>
+      </div>
+    </div>
 
-      <!-- Resumo por categoria -->
-      <div class="card" style="padding:12px">
-        <div class="card-title" style="font-size:.72rem;margin-bottom:8px">📋 Resumo</div>
-        <div id="cf-resumo-geral"></div>
-        <div id="cf-rateio-resultado"></div>
-        <div class="form-group" style="margin-top:10px;margin-bottom:0">
-          <label style="font-size:.65rem">Atendimentos / mês <span style="opacity:.5">(alt.)</span></label>
-          <input type="number" id="cf-atend" placeholder="200" min="1" oninput="recalcCF()" style="font-size:.8rem">
+    <!-- BLOCO 4: Bonificações -->
+    <div class="cf-block" style="background:white;border:1px solid var(--blush);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(106,31,48,.06)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--creme);border-bottom:1px solid var(--blush)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:3px;height:22px;background:#D97706;border-radius:2px"></div>
+          <div>
+            <div style="font-size:.72rem;font-weight:700;color:var(--tinta);letter-spacing:.04em">Bonif. + Ocorrências</div>
+            <div style="font-size:.6rem;color:var(--moka);opacity:.6;text-transform:uppercase;letter-spacing:.1em">variáveis de pessoal</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6">subtotal</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--vinho);font-family:'Inter', sans-serif" id="cf-bon-subtotal">R$ 0,00</div>
         </div>
       </div>
-
-      <div class="note" style="font-size:.68rem;padding:8px 10px">
-        💡 O <b>custo/min ajustado</b> flui automaticamente para a <b>Engenharia do Produto</b>.
+      <div style="padding:12px 14px">
+        <div style="display:grid;grid-template-columns:1fr 90px 26px;gap:5px;margin-bottom:5px;padding:0 2px">
+          <span class="col-label">Descrição</span><span class="col-label" style="text-align:right">R$/mês</span><span></span>
+        </div>
+        <div class="item-list" id="cf-bon-list" style="max-height:260px;overflow-y:auto"></div>
+        <button class="btn btn-ghost" style="margin-top:6px;font-size:.69rem;width:100%" onclick="addCFBon()">+ Adicionar</button>
       </div>
+    </div>
 
-    </div><!-- fim painel inferior -->
+  </div><!-- fim grid 2x2 -->
+
+  <!-- BLOCO 5: Marketing — largura total -->
+  <div style="background:white;border:1px solid var(--blush);border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(106,31,48,.06);margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(90deg,#FFF5F7,var(--creme));border-bottom:1px solid var(--blush)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:3px;height:22px;background:var(--vinho-c);border-radius:2px"></div>
+        <div>
+          <div style="font-size:.72rem;font-weight:700;color:var(--tinta);letter-spacing:.04em">Marketing & Publicidade</div>
+          <div style="font-size:.6rem;color:var(--moka);opacity:.6;text-transform:uppercase;letter-spacing:.1em">Google Ads, Instagram, agência…</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--moka);opacity:.6">subtotal</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--vinho);font-family:'Inter', sans-serif" id="cf-mkt-subtotal">R$ 0,00</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px">
+      <div style="display:grid;grid-template-columns:1fr 90px 26px;gap:5px;margin-bottom:5px;padding:0 2px">
+        <span class="col-label">Descrição</span><span class="col-label" style="text-align:right">R$/mês</span><span></span>
+      </div>
+      <div class="item-list" id="cf-mkt-list" style="max-height:180px;overflow-y:auto"></div>
+      <button class="btn btn-ghost" style="margin-top:6px;font-size:.69rem;width:100%" onclick="addCFMkt()">+ Adicionar</button>
+    </div>
   </div>
+
+  <!-- ── PAINEL INFERIOR: capacidade + resumo ── -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+
+    <!-- Capacidade da Clínica -->
+    <div style="background:var(--creme);border:1px solid var(--warm);border-radius:14px;padding:16px 18px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <span style="font-size:.9rem">⏱️</span>
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--moka)">Capacidade da Clínica</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group" style="margin:0">
+          <label style="font-size:.65rem">Cadeiras</label>
+          <input type="number" id="cf-cadeiras" placeholder="3" min="1" value="1" oninput="recalcCF()" style="font-size:.8rem;width:100%">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:.65rem">Dias úteis/mês</label>
+          <input type="number" id="cf-dias" placeholder="22" min="1" value="22" oninput="recalcCF()" style="font-size:.8rem;width:100%">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:.65rem">Horas/dia</label>
+          <input type="number" id="cf-horas-dia" placeholder="8" min="1" value="8" step="0.5" oninput="recalcCF()" style="font-size:.8rem;width:100%">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label style="font-size:.65rem">Min disponíveis</label>
+          <input type="number" id="cf-min-disp" readonly style="background:var(--blush);color:var(--vinho);font-weight:700;font-size:.8rem;width:100%">
+        </div>
+      </div>
+      <div class="form-group" style="margin:10px 0 0">
+        <label style="font-size:.65rem">Ocupação média (%)</label>
+        <input type="number" id="cf-ocupacao" placeholder="70" min="1" max="100" value="70" oninput="recalcCF()" style="font-size:.8rem;width:100%">
+        <div class="hint" style="font-size:.65rem">60–75% é típico para clínicas</div>
+      </div>
+      <div class="form-group" style="margin-top:10px;margin-bottom:0">
+        <label style="font-size:.65rem">Atendimentos / mês <span style="opacity:.5">(alt.)</span></label>
+        <input type="number" id="cf-atend" placeholder="200" min="1" oninput="recalcCF()" style="font-size:.8rem">
+      </div>
+    </div>
+
+    <!-- Resumo por categoria -->
+    <div style="background:white;border:1px solid var(--blush);border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(106,31,48,.06)">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+        <span style="font-size:.9rem">📋</span>
+        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--moka)">Distribuição dos Custos</div>
+      </div>
+      <div id="cf-resumo-geral"></div>
+      <div id="cf-rateio-resultado" style="margin-top:10px"></div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--blush)">
+        <div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.14em;color:var(--moka);opacity:.55;margin-bottom:4px">Nota</div>
+        <div style="font-size:.69rem;color:var(--moka);line-height:1.55">O <b style="color:var(--vinho-p)">custo/min ajustado</b> flui automaticamente para a <b style="color:var(--vinho-p)">Engenharia do Produto</b>.</div>
+      </div>
+    </div>
+
+  </div><!-- fim painel inferior -->
+
 </div>
 </div>
 
@@ -1977,21 +2088,43 @@ function custoLab(l,profHora=0){
   return ins+mo+(+l.labext||0);
 }
 function renderLabCards(){
-  const db=getDB();const el=$('lista-lab-cards');
-  if(!db.labs.length){el.innerHTML='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;grid-column:1/-1">Nenhuma etapa cadastrada.</div>';return;}
-  el.innerHTML=db.labs.map(l=>{
+  const db=getDB();
+  const elInt=$('lista-lab-interno');
+  const elExt=$('lista-lab-externo');
+  if(!elInt||!elExt) return;
+
+  const empty='<div style="font-size:.8rem;color:#94a3b8;padding:24px;text-align:center;">Nenhuma etapa cadastrada.</div>';
+
+  function cardHTML(l, isExt){
     const ins=l.insumos.reduce((s,i)=>s+calcInsumoTotal(i),0);
-    return `<div class="cad-card">
+    const accentColor = isExt ? '#C4955A' : '#6A1F30';
+    return `<div class="cad-card" style="border-left:3px solid ${accentColor};">
       <div class="cad-card-actions">
         <button class="btn btn-sec btn-sm" onclick="abrirModalLab('${l.id}')" title="Editar">✏️</button>
         <button class="btn btn-sec btn-sm" onclick="duplicarLab('${l.id}')" title="Duplicar" style="opacity:.75">⧉</button>
         <button class="btn-danger btn-sm" onclick="deletarLab('${l.id}')" title="Excluir">✕</button>
       </div>
       <div class="cad-card-title">${l.nome}</div>
-      <div class="cad-card-sub">${l.horas?l.horas+'h produção · ':''}${l.insumos.length} insumo(s)${l.labext?` · Lab ext: ${fmt(l.labext)}`:''} · Custo insumos: <b>${fmt(ins)}</b></div>
+      <div class="cad-card-sub">
+        ${l.horas?`<span>⏱ ${l.horas}h</span> · `:''}
+        ${l.insumos.length} insumo(s)
+        ${isExt && l.labext ? ` · <span style="color:${accentColor};font-weight:700;">Lab ext: ${fmt(l.labext)}</span>` : ''}
+        · Custo insumos: <b>${fmt(ins)}</b>
+        ${isExt ? ` · <span style="color:${accentColor};font-weight:700;">Total: ${fmt(ins + (l.labext||0))}</span>` : ''}
+      </div>
       ${l.insumos.length?`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">${l.insumos.map(i=>`<span class="badge badge-vinho">${i.nome} ×${i.qtd}</span>`).join('')}</div>`:''}
     </div>`;
-  }).join('');
+  }
+
+  const internos = db.labs.filter(l => !l.labext || l.labext === 0);
+  const externos = db.labs.filter(l => l.labext && l.labext > 0);
+
+  elInt.innerHTML = internos.length ? internos.map(l=>cardHTML(l,false)).join('') : empty;
+  elExt.innerHTML = externos.length ? externos.map(l=>cardHTML(l,true)).join('')  : empty;
+
+  // Contadores nos cabeçalhos
+  const cInt=$('lab-interno-count'); if(cInt) cInt.textContent=internos.length+' etapa'+(internos.length!==1?'s':'');
+  const cExt=$('lab-externo-count'); if(cExt) cExt.textContent=externos.length+' etapa'+(externos.length!==1?'s':'');
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -2095,11 +2228,12 @@ function renderCFDep(){
   const db=getDB();const el=$('cf-dep-list');
   if(!db.dep||!db.dep.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
   el.innerHTML=db.dep.map(c=>`
-    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
-      <input type="text" placeholder="Equipamento" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.dep.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
-      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
-        oninput="(()=>{const db=getDB();db.dep.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
-      <button class="btn-icon" onclick="(()=>{const db=getDB();db.dep=db.dep.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFDep();})()">✕</button>
+    <div class="item-row" style="grid-template-columns:1fr 72px 26px">
+      <input type="text" placeholder="Equipamento" value="${(c.nome||'').replace(/"/g,'&quot;')}"
+        oninput="(()=>{const db=getDB();const it=db.dep.find(x=>x.id==='${c.id}');if(it)it.nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="0,00" value="${c.valor||''}" min="0" step="0.01" style="text-align:right"
+        oninput="(()=>{const db=getDB();const it=db.dep.find(x=>x.id==='${c.id}');if(it){it.valor=+this.value;saveDB(db);recalcCF();}})()">
+      <button class="btn-del-row" title="Excluir" onclick="(()=>{const db=getDB();db.dep=db.dep.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFDep();})()">✕</button>
     </div>`).join('');
   recalcCF();
 }
@@ -2107,11 +2241,12 @@ function renderCFFolha(){
   const db=getDB();const el=$('cf-folha-list');
   if(!db.folha||!db.folha.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
   el.innerHTML=db.folha.map(c=>`
-    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
-      <input type="text" placeholder="Colaborador" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.folha.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
-      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
-        oninput="(()=>{const db=getDB();db.folha.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
-      <button class="btn-icon" onclick="(()=>{const db=getDB();db.folha=db.folha.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFFolha();})()">✕</button>
+    <div class="item-row" style="grid-template-columns:1fr 72px 26px">
+      <input type="text" placeholder="Colaborador" value="${(c.nome||'').replace(/"/g,'&quot;')}"
+        oninput="(()=>{const db=getDB();const it=db.folha.find(x=>x.id==='${c.id}');if(it)it.nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="0,00" value="${c.valor||''}" min="0" step="0.01" style="text-align:right"
+        oninput="(()=>{const db=getDB();const it=db.folha.find(x=>x.id==='${c.id}');if(it){it.valor=+this.value;saveDB(db);recalcCF();}})()">
+      <button class="btn-del-row" title="Excluir" onclick="(()=>{const db=getDB();db.folha=db.folha.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFFolha();})()">✕</button>
     </div>`).join('');
   recalcCF();
 }
@@ -2119,11 +2254,12 @@ function renderCFBon(){
   const db=getDB();const el=$('cf-bon-list');
   if(!db.bon||!db.bon.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
   el.innerHTML=db.bon.map(c=>`
-    <div class="item-row" style="grid-template-columns:2fr 1fr auto">
-      <input type="text" placeholder="Descrição" value="${c.nome||''}" oninput="(()=>{const db=getDB();db.bon.find(x=>x.id==='${c.id}').nome=this.value;saveDB(db);})()">
-      <input type="number" placeholder="R$" value="${c.valor||''}" min="0" step="0.01"
-        oninput="(()=>{const db=getDB();db.bon.find(x=>x.id==='${c.id}').valor=+this.value;saveDB(db);recalcCF();})()">
-      <button class="btn-icon" onclick="(()=>{const db=getDB();db.bon=db.bon.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFBon();})()">✕</button>
+    <div class="item-row" style="grid-template-columns:1fr 90px 26px">
+      <input type="text" placeholder="Descrição" value="${(c.nome||'').replace(/"/g,'&quot;')}"
+        oninput="(()=>{const db=getDB();const it=db.bon.find(x=>x.id==='${c.id}');if(it)it.nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="0,00" value="${c.valor||''}" min="0" step="0.01" style="text-align:right"
+        oninput="(()=>{const db=getDB();const it=db.bon.find(x=>x.id==='${c.id}');if(it){it.valor=+this.value;saveDB(db);recalcCF();}})()">
+      <button class="btn-del-row" title="Excluir" onclick="(()=>{const db=getDB();db.bon=db.bon.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFBon();})()">✕</button>
     </div>`).join('');
   recalcCF();
 }
@@ -2132,6 +2268,22 @@ function addCF(){const db=getDB();if(!db.fixos)db.fixos=[];db.fixos.push({id:uid
 function addCFDep(){const db=getDB();if(!db.dep)db.dep=[];db.dep.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFDep();}
 function addCFFolha(){const db=getDB();if(!db.folha)db.folha=[];db.folha.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFFolha();}
 function addCFBon(){const db=getDB();if(!db.bon)db.bon=[];db.bon.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFBon();}
+function addCFMkt(){const db=getDB();if(!db.mkt)db.mkt=[];db.mkt.push({id:uid(),nome:'',valor:0});saveDB(db);renderCFMkt();}
+
+function renderCFMkt(){
+  const db=getDB();const el=$('cf-mkt-list');
+  if(!el)return;
+  if(!db.mkt||!db.mkt.length){el.innerHTML='<div style="font-size:.78rem;color:#94a3b8;padding:8px;text-align:center">Nenhum item.</div>';recalcCF();return;}
+  el.innerHTML=db.mkt.map(c=>`
+    <div class="item-row" style="grid-template-columns:1fr 90px 26px">
+      <input type="text" placeholder="Ex: Google Ads, Instagram..." value="${(c.nome||'').replace(/"/g,'&quot;')}"
+        oninput="(()=>{const db=getDB();const it=db.mkt.find(x=>x.id==='${c.id}');if(it)it.nome=this.value;saveDB(db);})()">
+      <input type="number" placeholder="0,00" value="${c.valor||''}" min="0" step="0.01" style="text-align:right"
+        oninput="(()=>{const db=getDB();const it=db.mkt.find(x=>x.id==='${c.id}');if(it){it.valor=+this.value;saveDB(db);recalcCF();}})()">
+      <button class="btn-del-row" title="Excluir" onclick="(()=>{const db=getDB();db.mkt=db.mkt.filter(x=>x.id!=='${c.id}');saveDB(db);renderCFMkt();})()">✕</button>
+    </div>`).join('');
+  recalcCF();
+}
 
 function importarDaMetrica(){
   // Lê os dados da aba Métricas (index.html) do mesmo localStorage
@@ -2218,7 +2370,7 @@ function getCustoMinClínica(){
   const sDep=(db.dep||[]).reduce((s,c)=>s+(+c.valor||0),0);
   const sFolha=(db.folha||[]).reduce((s,c)=>s+(+c.valor||0),0);
   const sBon=(db.bon||[]).reduce((s,c)=>s+(+c.valor||0),0);
-  const sMkt=+($('cf-mkt')?.value)||0;
+  const sMkt=(db.mkt||[]).reduce((s,c)=>s+(+c.valor||0),0);
   const totalGeral=sFixos+sDep+sFolha+sBon+sMkt;
 
   const cadeiras=+($('cf-cadeiras')?.value)||1;
@@ -2233,6 +2385,7 @@ function getCustoMinClínica(){
   const custoMinAjustado=minProdutivos>0?totalGeral/minProdutivos:0;
 
   return {custoMinBase,custoMinAjustado,totalGeral,minDisp,minProdutivos,sFixos,sDep,sFolha,sBon,sMkt};
+  // sMkt agora vem de db.mkt array
 }
 
 function recalcCF(){
@@ -2241,13 +2394,14 @@ function recalcCF(){
   const sDep=(db.dep||[]).reduce((s,c)=>s+(+c.valor||0),0);
   const sFolha=(db.folha||[]).reduce((s,c)=>s+(+c.valor||0),0);
   const sBon=(db.bon||[]).reduce((s,c)=>s+(+c.valor||0),0);
-  const sMkt=+($('cf-mkt')?.value)||0;
+  const sMkt=(db.mkt||[]).reduce((s,c)=>s+(+c.valor||0),0);
   const total=sFixos+sDep+sFolha+sBon+sMkt;
 
   if($('cf-subtotal'))$('cf-subtotal').textContent=fmt(sFixos);
   if($('cf-dep-subtotal'))$('cf-dep-subtotal').textContent=fmt(sDep);
   if($('cf-folha-subtotal'))$('cf-folha-subtotal').textContent=fmt(sFolha);
   if($('cf-bon-subtotal'))$('cf-bon-subtotal').textContent=fmt(sBon);
+  if($('cf-mkt-subtotal'))$('cf-mkt-subtotal').textContent=fmt(sMkt);
   if($('cf-total-val'))$('cf-total-val').textContent=fmt(total);
 
   // Minutos disponíveis
@@ -2266,34 +2420,42 @@ function recalcCF(){
   const elMin=$('cf-custo-min-res');
   if(elMin){
     if(total&&custoMinAdj){
-      elMin.innerHTML=`<div style="background:linear-gradient(135deg,var(--cobre),#a07040);border-radius:10px;padding:12px 14px;color:white;text-align:center">
-        <div style="font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;opacity:.85;margin-bottom:3px">Custo/min ajustado</div>
-        <div style="font-size:1.35rem;font-family:'Cormorant SC',serif">${fmt(custoMinAdj)}<span style="font-size:.8rem;opacity:.8">/min</span></div>
-        <div style="font-size:.62rem;opacity:.75;margin-top:2px">${Math.round(ocupacao*100)}% ocup. · base ${fmt(custoMinBase)}/min</div>
+      elMin.innerHTML=`<div style="background:linear-gradient(135deg,var(--cobre),#a07040);border-radius:14px;padding:18px 22px;color:white;display:flex;flex-direction:column;justify-content:center;height:100%">
+        <div style="font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;opacity:.75;margin-bottom:6px">Custo/min ajustado</div>
+        <div style="font-size:2rem;font-family:'Inter', sans-serif;font-weight:400;line-height:1">${fmt(custoMinAdj)}<span style="font-size:.85rem;opacity:.8">/min</span></div>
+        <div style="font-size:.62rem;opacity:.7;margin-top:6px">${Math.round(ocupacao*100)}% ocupação · base ${fmt(custoMinBase)}/min</div>
       </div>`;
-    } else { elMin.innerHTML='';}
+    } else {
+      elMin.innerHTML=`<div style="background:var(--creme);border:1.5px dashed var(--warm);border-radius:14px;padding:18px 22px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:100%">
+        <div style="font-size:1.5rem;margin-bottom:6px;opacity:.4">⏱️</div>
+        <div style="font-size:.7rem;color:var(--moka);opacity:.6">Preencha os custos<br>para calcular o custo/min</div>
+      </div>`;
+    }
   }
 
-  // Resumo por categoria no painel direito
+  // Resumo por categoria com barras visuais
   const elRes=$('cf-resumo-geral');
   if(elRes&&total){
     const cats=[
-      {label:'Custos Fixos',val:sFixos,icon:'🏢'},
-      {label:'Depreciação',val:sDep,icon:'📉'},
-      {label:'Folha',val:sFolha,icon:'👥'},
-      {label:'Bonif./Ocorr.',val:sBon,icon:'🎁'},
-      {label:'Marketing',val:sMkt,icon:'📣'},
+      {label:'Custos Fixos',val:sFixos,cor:'var(--vinho)'},
+      {label:'Depreciação',val:sDep,cor:'#6B7280'},
+      {label:'Folha + Encargos',val:sFolha,cor:'#2563EB'},
+      {label:'Bonif. / Ocorr.',val:sBon,cor:'#D97706'},
+      {label:'Marketing',val:sMkt,cor:'var(--vinho-c)'},
     ].filter(c=>c.val>0);
-    elRes.innerHTML=cats.map(c=>`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--warm)">
-        <span style="font-size:.7rem;color:var(--moka)">${c.icon} ${c.label}</span>
-        <span style="font-size:.72rem;font-weight:600;color:var(--vinho)">${fmt(c.val)}</span>
-      </div>`).join('')+`
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 0">
-        <span style="font-size:.72rem;font-weight:700;color:var(--moka)">TOTAL</span>
-        <span style="font-size:.78rem;font-weight:700;color:var(--vinho)">${fmt(total)}</span>
+    elRes.innerHTML=cats.map(c=>{
+      const pct=Math.round(c.val/total*100);
+      return `<div style="margin-bottom:9px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <span style="font-size:.68rem;color:var(--moka);font-weight:600">${c.label}</span>
+          <span style="font-size:.68rem;color:var(--moka);opacity:.7">${fmt(c.val)} <span style="opacity:.5">(${pct}%)</span></span>
+        </div>
+        <div style="height:5px;background:var(--blush);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${c.cor};border-radius:99px;transition:width .5s ease"></div>
+        </div>
       </div>`;
-  } else if(elRes){ elRes.innerHTML='';}
+    }).join('');
+  } else if(elRes){ elRes.innerHTML='<div style="font-size:.72rem;color:var(--moka);opacity:.5;text-align:center;padding:8px">Nenhum custo cadastrado</div>';}
 
   // Rateio por atendimento (alternativo)
   const atend=+($('cf-atend')?.value)||0;
@@ -2755,6 +2917,203 @@ function exportCSV(){
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// EXPORTAÇÃO — PDF e EXCEL
+// ══════════════════════════════════════════════════════════════════════════
+
+function _abaAtiva(){return TABS.find(t=>$('panel-'+t)&&$('panel-'+t).classList.contains('active'))||'proc';}
+function _dataHoje(){return new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function _nomeArq(aba,ext){return `OralUnic_Calculadora_${aba}_${new Date().toISOString().slice(0,10)}.${ext}`;}
+
+// ── Dados por aba ────────────────────────────────────────────────────────
+function _dadosPDF(aba){
+  const db=getDB(); const hoje=_dataHoje();
+  const hdr=['Oral Unic — Calculadora Financeira','Carlos Barbosa · '+hoje];
+
+  if(aba==='proc'){
+    const rows=db.procs.map(p=>[
+      p.nome,
+      p.tempo+' min',
+      (p.insumos||[]).length+' insumo(s)',
+      fmt((p.insumos||[]).reduce((s,i)=>s+(+i.preco||0)*(+i.qtd||0)/(+i.qtdEmb||1),0))
+    ]);
+    return {titulo:'Procedimentos',colunas:['Procedimento','Tempo','Insumos','Custo Insumos'],hdr,rows};
+  }
+  if(aba==='lab'){
+    const rows=db.labs.map(l=>[
+      l.nome,
+      l.horas+' h',
+      fmt(+l.labext||0),
+      (l.insumos||[]).length+' insumo(s)'
+    ]);
+    return {titulo:'Etapas de Laboratório',colunas:['Etapa','Horas','Lab Ext.','Insumos'],hdr,rows};
+  }
+  if(aba==='prof'){
+    const rows=db.profs.map(p=>[p.nome,p.tipo,fmt(+p.hora||0)]);
+    return {titulo:'Dentistas / Protéticos',colunas:['Nome','Tipo','Valor/hora'],hdr,rows};
+  }
+  if(aba==='fixos'){
+    const blocos=[
+      {t:'Custos Fixos',      lista:db.fixos},
+      {t:'Depreciação',        lista:db.dep},
+      {t:'Folha + Encargos',   lista:db.folha},
+      {t:'Bonif. / Ocorrências',lista:db.bon},
+    ];
+    const rows=[];
+    blocos.forEach(b=>{
+      rows.push(['— '+b.t+' —','']);
+      (b.lista||[]).forEach(i=>rows.push([i.nome, fmt(+i.valor||0)]));
+    });
+    const mktItens=db.mkt||[];
+    if(mktItens.length){rows.push(['— Marketing —','']);mktItens.forEach(i=>rows.push([i.nome||'Marketing',fmt(+i.valor||0)]));}
+    const mkt=mktItens.reduce((s,i)=>s+(+i.valor||0),0);
+    const total=[...db.fixos,...db.dep,...db.folha,...db.bon].reduce((s,i)=>s+(+i.valor||0),0);
+    rows.push(['']);
+    rows.push(['TOTAL MENSAL',fmt(total+mkt)]);
+    const cadeiras=+($('cf-cadeiras')||{value:1}).value||1;
+    const dias=+($('cf-dias')||{value:22}).value||22;
+    const hd=+($('cf-horas-dia')||{value:8}).value||8;
+    const ocup=+($('cf-ocupacao')||{value:70}).value||70;
+    const minDisp=cadeiras*dias*hd*60*(ocup/100);
+    rows.push(['Custo/minuto',minDisp>0?fmt((total+mkt)/minDisp):'—']);
+    return {titulo:'Custos Fixos & Rateio',colunas:['Descrição','R$/mês'],hdr,rows};
+  }
+  if(aba==='eng'){
+    const rows=db.engs.map(e=>[
+      e.nome,
+      e.procNome||'—',
+      e.labNome||'—',
+      e.profNome||'—',
+      fmt(+e.custoTotal||0)
+    ]);
+    return {titulo:'Engenharia do Produto',colunas:['Produto','Procedimento','Lab','Profissional','Custo Total'],hdr,rows};
+  }
+  if(aba==='prec'){
+    const engNome=($('prec-sel-eng')||{}).options?.[($('prec-sel-eng')||{}).selectedIndex]?.text||'—';
+    const custo=($('prec-custo-base-val')||{}).textContent||'—';
+    const margem=($('prec-margem')||{}).value||'0';
+    const imps=['Royalty','FNP','PIS','COFINS','ISS','IRPJ','CSLL','Taxa Cartão'];
+    const impIds=['imp-royalty','imp-fnp','imp-pis','imp-cofins','imp-iss','imp-irpj','imp-csll','imp-cartao'];
+    const rows=[
+      ['Engenharia selecionada', engNome],
+      ['Custo base',custo],
+      ['Margem desejada',margem+'%'],
+      [''],
+    ];
+    imps.forEach((n,i)=>rows.push([n, (($( impIds[i])||{}).value||'0')+'%']));
+    const total=impIds.reduce((s,id)=>s+(+($(id)||{}).value||0),0);
+    rows.push(['Carga tributária total',fmtP(total)]);
+    // cenários
+    const cenRows=Array.from(document.querySelectorAll('#prec-cenarios-body tr'));
+    if(cenRows.length){rows.push(['']);rows.push(['— Cenários —','']);
+      cenRows.forEach(r=>{const tds=r.querySelectorAll('td');rows.push([tds[0]?.textContent||'',tds[1]?.textContent||'',tds[2]?.textContent||'',tds[3]?.textContent||'']);});}
+    return {titulo:'Precificação',colunas:['Campo','Valor'],hdr,rows};
+  }
+  if(aba==='inf'){
+    const r=infAcumGlobal||+($('inf-pct')||{}).value||0;
+    const rows=infListaItens.map(i=>{
+      const p=+i.preco||0, novo=p*(1+r/100);
+      return [i.nome, fmt(p), fmt(novo), fmt(novo-p), fmtP(r)];
+    });
+    if(!rows.length)rows.push(['—','—','—','—','—']);
+    return {titulo:'Inflação / Reajuste',colunas:['Item','Preço Atual','Novo Preço','Diferença','Reajuste'],hdr,rows};
+  }
+  return null;
+}
+
+// ── Excel ────────────────────────────────────────────────────────────────
+function exportarExcel(){
+  const aba=_abaAtiva();
+  const d=_dadosPDF(aba);
+  if(!d){toast('Sem dados para exportar.');return;}
+  if(typeof XLSX==='undefined'){toast('Biblioteca Excel não carregou.');return;}
+
+  const wb=XLSX.utils.book_new();
+
+  // Cabeçalho
+  const wsData=[];
+  wsData.push([d.hdr[0]]); wsData.push([d.hdr[1]]); wsData.push([]);
+  wsData.push(d.colunas);
+  d.rows.forEach(r=>wsData.push(r));
+
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+
+  // Largura automática
+  const cols=d.colunas.map((_,ci)=>{
+    const max=wsData.reduce((m,row)=>Math.max(m,(row[ci]||'').toString().length),0);
+    return {wch:Math.min(Math.max(max,12),40)};
+  });
+  ws['!cols']=cols;
+
+  XLSX.utils.book_append_sheet(wb,ws,d.titulo.substring(0,31));
+  XLSX.writeFile(wb,_nomeArq(aba,'xlsx'));
+  toast('Excel exportado!');
+}
+
+// ── PDF ──────────────────────────────────────────────────────────────────
+function exportarPDF(){
+  const aba=_abaAtiva();
+  const d=_dadosPDF(aba);
+  if(!d){toast('Sem dados para exportar.');return;}
+  if(!window.jspdf){toast('Biblioteca PDF não carregou.');return;}
+  const {jsPDF}=window.jspdf;
+
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const PW=210, ML=14, MR=14, usable=PW-ML-MR;
+  let y=14;
+
+  // Cabeçalho
+  doc.setFillColor(106,31,48); doc.rect(0,0,PW,22,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13); doc.setTextColor(253,249,244);
+  doc.text('Oral Unic — Calculadora Financeira',ML,10);
+  doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(224,201,184);
+  doc.text('Carlos Barbosa  ·  '+_dataHoje(),ML,16);
+  doc.setFontSize(9); doc.setTextColor(196,149,90);
+  doc.text(d.titulo,PW-ML,10,{align:'right'});
+  y=30;
+
+  // Colunas
+  const nCols=d.colunas.length;
+  const cw=usable/nCols;
+
+  // Cabeçalho da tabela
+  doc.setFillColor(139,45,66); doc.rect(ML,y,usable,7,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(253,249,244);
+  d.colunas.forEach((c,i)=>doc.text(c,ML+i*cw+2,y+5,{maxWidth:cw-4}));
+  y+=9;
+
+  // Linhas
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  let alt=false;
+  d.rows.forEach(row=>{
+    if(y>280){doc.addPage();y=14;}
+    const txt=(row[0]||'').toString();
+    const isSep=txt.startsWith('—')&&nCols<=2;
+    if(isSep){
+      doc.setFillColor(237,221,212); doc.rect(ML,y,usable,6,'F');
+      doc.setFont('helvetica','bold'); doc.setTextColor(106,31,48);
+      doc.text(txt.replace(/^—\s*/,'').replace(/\s*—$/,''),ML+2,y+4.5);
+      y+=7; alt=false;
+    } else {
+      if(alt){doc.setFillColor(247,242,236);doc.rect(ML,y,usable,6,'F');}
+      doc.setFont('helvetica','normal'); doc.setTextColor(26,15,10);
+      row.forEach((cel,i)=>{
+        const s=(cel||'').toString();
+        doc.text(s,ML+i*cw+2,y+4.5,{maxWidth:cw-4});
+      });
+      y+=7; alt=!alt;
+    }
+  });
+
+  // Rodapé
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(156,163,175);
+  doc.text('Oral Unic Carlos Barbosa — gerado em '+_dataHoje(),PW/2,292,{align:'center'});
+
+  doc.save(_nomeArq(aba,'pdf'));
+  toast('PDF exportado!');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════════════════════════════════════════
 const _USERS={
@@ -2826,7 +3185,7 @@ function _initApp(){
   if(!db.bon.length){db.bon=[{id:uid(),nome:'Bonificações / comissões',valor:0},{id:uid(),nome:'Ocorrências financeiras',valor:0}];changed=true;}
   if(changed)saveDB(db);
   if(db.infAcum){infAcumGlobal=db.infAcum;const ip=$('prec-inflacao');if(ip)ip.value=db.infAcum.toFixed(2);}
-  renderProcCards();renderLabCards();renderProfCards();renderCF();renderCFDep();renderCFFolha();renderCFBon();renderEngCards();atualizarCargaBadge();
+  renderProcCards();renderLabCards();renderProfCards();renderCF();renderCFDep();renderCFFolha();renderCFBon();renderCFMkt();renderEngCards();atualizarCargaBadge();
 }
 // Ponto de entrada — pula login, entra direto como ADM
 document.getElementById('login-screen').style.display='none';
