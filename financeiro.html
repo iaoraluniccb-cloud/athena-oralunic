@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Athena — Controle Financeiro</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
   /* Oculta header interno e tela de login — já está dentro do Athena */
   .header { display: none !important; }
@@ -593,6 +593,7 @@
 
       <!-- TOP BAR -->
       <div class="cob-topbar">
+        <div class="section-title" style="font-family:var(--font-display);letter-spacing:.12em">Cobrança <span id="cob-user-badge"></span></div>
         <div style="display:flex;gap:10px;align-items:center">
           <label style="font-size:11px;color:var(--text2);letter-spacing:.04em;text-transform:uppercase">Filtrar por mês</label>
           <input type="month" id="cob-filter-month" style="padding:7px 12px;font-size:13px;width:160px" onchange="renderCob()">
@@ -2505,7 +2506,7 @@ function renderDonut(){
   svg.innerHTML='';
   const cx=60,cy=60,r=46,ir=28;
   if(total===0){
-    svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="18"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="11" fill="var(--text2)" font-family="'Inter', sans-serif">R$ 0,00</text>`;
+    svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="18"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="11" fill="var(--text2)" font-family="'Josefin Sans',sans-serif">R$ 0,00</text>`;
   } else {
     let startAngle=-Math.PI/2;
     data.forEach(d=>{
@@ -2529,12 +2530,12 @@ function renderDonut(){
     const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
     txt.setAttribute('x',cx); txt.setAttribute('y',cy-4); txt.setAttribute('text-anchor','middle');
     txt.setAttribute('font-size','9'); txt.setAttribute('fill','var(--text2)');
-    txt.setAttribute('font-family',"'Inter', sans-serif"); txt.textContent='Total Pago';
+    txt.setAttribute('font-family',"'Josefin Sans',sans-serif"); txt.textContent='Total Pago';
     svg.appendChild(txt);
     const txt2=document.createElementNS('http://www.w3.org/2000/svg','text');
     txt2.setAttribute('x',cx); txt2.setAttribute('y',cy+10); txt2.setAttribute('text-anchor','middle');
     txt2.setAttribute('font-size','9'); txt2.setAttribute('fill','var(--tinta)'); txt2.setAttribute('font-weight','bold');
-    txt2.setAttribute('font-family',"'Inter', sans-serif");
+    txt2.setAttribute('font-family',"'Josefin Sans',sans-serif");
     txt2.textContent=fmt(total);
     svg.appendChild(txt2);
   }

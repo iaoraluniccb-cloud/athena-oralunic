@@ -6,7 +6,7 @@
 <title>Athena — Construa sua Métrica | Oral Unic</title>
 <meta name="version" content="20260605-v8">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%238B2D42'/><text y='72' x='50' text-anchor='middle' font-size='62' font-family='serif'>📏</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -53,7 +53,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   background: var(--marfim);
   color: var(--tinta);
@@ -72,7 +72,7 @@ header {
   border-bottom: 3px solid var(--cobre);
 }
 .header-brand h1 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-weight: 300;
   font-size: 28px;
   letter-spacing: 0.2em;
@@ -80,7 +80,7 @@ header {
   line-height: 1;
 }
 .header-brand p {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   font-size: 11px;
   letter-spacing: 0.28em;
@@ -95,7 +95,7 @@ header {
   gap: 6px;
 }
 .month-badge {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   font-size: 11px;
   letter-spacing: 0.28em;
@@ -111,7 +111,7 @@ header {
   gap: 6px;
 }
 .month-pill {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 11px;
   font-weight: 300;
   letter-spacing: 0.1em;
@@ -139,7 +139,7 @@ header {
   border-bottom: 1px solid rgba(196,149,90,0.3);
 }
 .tab-btn {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   font-size: 11px;
   letter-spacing: 0.2em;
@@ -194,9 +194,9 @@ tr.data-row.row-selected td { background: #ede9fe !important; }
 tr.data-row { cursor: pointer; }
 tr.data-row:hover td { filter: brightness(.97); }
 .manual-hint { font-size:9px; letter-spacing:.08em; opacity:.5; margin-top:2px; }
-.clear-sel-btn { font-size:9px; font-family:'Inter', sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px solid #a5b4fc; border-radius:3px; padding:2px 8px; cursor:pointer; color:#4f46e5; margin-top:6px; display:block; }
+.clear-sel-btn { font-size:9px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px solid #a5b4fc; border-radius:3px; padding:2px 8px; cursor:pointer; color:#4f46e5; margin-top:6px; display:block; }
 .s-card label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.28em;
@@ -205,7 +205,7 @@ tr.data-row:hover td { filter: brightness(.97); }
   opacity: .7;
 }
 .s-card .val {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-weight: 400;
   font-size: 22px;
   color: var(--tinta);
@@ -213,7 +213,7 @@ tr.data-row:hover td { filter: brightness(.97); }
   letter-spacing: 0.05em;
 }
 .s-card .sub {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   color: var(--moka);
@@ -264,7 +264,7 @@ thead th {
   color: var(--marfim);
   padding: 11px 14px;
   text-align: left;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   font-size: 10px;
   letter-spacing: 0.25em;
@@ -277,7 +277,7 @@ thead th.right { text-align: right; }
 tr.cat-row td {
   background: var(--vinho);
   color: var(--marfim);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-weight: 400;
   font-size: 13px;
   letter-spacing: 0.12em;
@@ -285,7 +285,7 @@ tr.cat-row td {
 }
 tr.cat-row td.right {
   text-align: right;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 12px;
   font-weight: 300;
   color: var(--cobre);
@@ -302,7 +302,7 @@ tr.data-row:last-child td { border-bottom: none; }
 tr.data-row td.right { text-align: right; font-variant-numeric: tabular-nums; }
 tr.data-row td.label-col {
   padding-left: 26px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   font-size: 12.5px;
   color: var(--tinta);
@@ -320,7 +320,7 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
   display: inline-block;
   border-radius: 10px;
   padding: 2px 9px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 9px;
   font-weight: 300;
   letter-spacing: 0.2em;
@@ -336,13 +336,13 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 .editable-real:hover { color: var(--vinho); }
 .row-del-btn { background:none;border:none;cursor:pointer;color:var(--moka);opacity:.25;font-size:11px;padding:1px 3px;border-radius:3px;transition:all .15s;line-height:1; }
 .row-del-btn:hover { opacity:1;color:#c0392b;background:rgba(192,57,43,.08); }
-.add-row-btn { width:100%;background:transparent;border:1px dashed rgba(196,149,90,.4);border-radius:5px;padding:6px;font-family:'Inter', sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--cobre);cursor:pointer;margin-top:6px;transition:all .15s; }
+.add-row-btn { width:100%;background:transparent;border:1px dashed rgba(196,149,90,.4);border-radius:5px;padding:6px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--cobre);cursor:pointer;margin-top:6px;transition:all .15s; }
 .add-row-btn:hover { background:var(--creme);border-color:var(--cobre); }
 /* Distribution modals (Lab Externo + generic) */
 #lab-modal-overlay,#dist-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; align-items:center; justify-content:center; }
 #lab-modal-overlay.open,#dist-modal-overlay.open { display:flex; }
-#lab-modal,#dist-modal { background:var(--marfim,#fdf8f2); border-radius:10px; padding:28px 32px; min-width:420px; max-width:96vw; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.25); font-family:'Inter', sans-serif; }
-#lab-modal h3,#dist-modal h3 { font-family:'Inter', sans-serif; color:var(--vinho); margin:0 0 4px; font-size:18px; }
+#lab-modal,#dist-modal { background:var(--marfim,#fdf8f2); border-radius:10px; padding:28px 32px; min-width:420px; max-width:96vw; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.25); font-family:'Josefin Sans',sans-serif; }
+#lab-modal h3,#dist-modal h3 { font-family:'Cormorant SC',serif; color:var(--vinho); margin:0 0 4px; font-size:18px; }
 #lab-modal .lab-total-line,#dist-modal .dist-total-line { font-size:12px; color:var(--moka); opacity:.6; margin-bottom:16px; }
 #lab-modal .lab-rows,#dist-modal .dist-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
 #lab-modal .lab-row,#dist-modal .dist-row { display:flex; align-items:center; gap:8px; }
@@ -360,7 +360,7 @@ tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
 #dist-modal .dist-row input.di-val { width:110px; font-size:12px; padding:4px 8px; border:1px solid var(--warm); border-radius:4px; text-align:right; font-family:inherit; background:white; }
 #dist-modal .dist-row select.di-tipo { font-size:11px; padding:3px 5px; border:1px solid var(--warm); border-radius:4px; font-family:inherit; background:white; color:var(--tinta); }
 #dist-modal .dist-row .di-del { background:none; border:none; cursor:pointer; color:#c0392b; font-size:15px; padding:0 4px; }
-#dist-modal .dist-add-btn { font-size:11px; font-family:'Inter', sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px dashed var(--cobre); border-radius:4px; padding:5px 14px; cursor:pointer; color:var(--cobre); margin-bottom:14px; width:100%; }
+#dist-modal .dist-add-btn { font-size:11px; font-family:'Josefin Sans',sans-serif; font-weight:300; letter-spacing:.1em; background:transparent; border:1px dashed var(--cobre); border-radius:4px; padding:5px 14px; cursor:pointer; color:var(--cobre); margin-bottom:14px; width:100%; }
 /* sub-item rows in table */
 tr.sub-row td { background:#f5f0ea; font-size:12px; padding:6px 14px; }
 tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka); }
@@ -370,7 +370,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   display: inline-block;
   border-radius: 10px;
   padding: 3px 10px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.1em;
@@ -401,7 +401,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border-top: 3px solid var(--vinho);
 }
 .import-card h2 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-weight: 400;
   font-size: 20px;
   letter-spacing: 0.12em;
@@ -434,7 +434,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border: 1px solid var(--warm);
   border-radius: 3px;
   padding: 8px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 12px;
   font-weight: 300;
   color: var(--tinta);
@@ -465,7 +465,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border: none;
   border-radius: 3px;
   padding: 10px 22px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 11px;
   font-weight: 300;
   letter-spacing: 0.2em;
@@ -480,7 +480,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border: 1px solid var(--vinho);
   border-radius: 3px;
   padding: 9px 18px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 11px;
   font-weight: 300;
   letter-spacing: 0.2em;
@@ -496,7 +496,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border-radius: 3px;
   padding: 10px 14px;
   font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   color: var(--moka);
   max-height: 180px;
@@ -518,7 +518,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   align-self: start;
 }
 .months-sidebar h3 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.28em;
@@ -538,7 +538,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border-left: 3px solid var(--cobre);
 }
 .month-item strong {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-size: 13px;
   font-weight: 400;
   color: var(--vinho);
@@ -556,7 +556,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border: none;
   border-radius: 3px;
   padding: 4px 10px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.1em;
@@ -578,12 +578,12 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
 .empty-state .icon {
   font-size: 40px;
   margin-bottom: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   color: var(--vinho-light);
   letter-spacing: 0.2em;
 }
 .empty-state h3 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-size: 18px;
   font-weight: 400;
   color: var(--vinho);
@@ -601,7 +601,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   margin-top: 4px;
 }
 .section-divider span {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.28em;
@@ -635,7 +635,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
 }
 .compare-selector-group { display:flex; align-items:center; gap:8px; }
 .compare-label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 10px;
   font-weight: 300;
   letter-spacing: 0.22em;
@@ -645,7 +645,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   white-space: nowrap;
 }
 .compare-vs {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-size: 16px;
   color: var(--cobre);
   letter-spacing: 0.1em;
@@ -654,7 +654,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   border: 1px solid var(--warm);
   border-radius: 3px;
   padding: 7px 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 12px;
   font-weight: 300;
   color: var(--tinta);
@@ -665,7 +665,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
 }
 .compare-selectors select:focus { border-color: var(--vinho); }
 .compare-toggle-label {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 11px;
   font-weight: 300;
   color: var(--moka);
@@ -698,7 +698,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
   margin-bottom: 3px;
 }
 .cmp-pill .cmp-val {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-size: 17px;
   color: var(--tinta);
   letter-spacing: 0.04em;
@@ -711,7 +711,7 @@ tr.sub-row td.label-col { padding-left:36px; font-style:italic; color:var(--moka
 tr.cmp-cat td {
   background: var(--vinho);
   color: var(--marfim);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-size: 13px;
   letter-spacing: 0.12em;
   padding: 9px 14px;
@@ -751,7 +751,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   border-top: 4px solid var(--cobre);
 }
 .login-box h1 {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Cormorant SC', serif;
   font-weight: 300;
   font-size: 26px;
   letter-spacing: 0.2em;
@@ -781,7 +781,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   padding: 10px 14px;
   border: 1px solid var(--warm);
   border-radius: 4px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
   color: var(--tinta);
@@ -797,7 +797,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   border: none;
   border-radius: 4px;
   padding: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 11px;
   font-weight: 300;
   letter-spacing: 0.25em;
@@ -827,7 +827,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   border-radius: 6px;
   padding: 14px 10px;
   text-align: center;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-size: 13px;
   font-weight: 300;
   color: var(--vinho-deep);
@@ -840,7 +840,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 /* user pill in header */
 .user-pill {
   font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Josefin Sans', sans-serif;
   font-weight: 300;
   letter-spacing: 0.1em;
   color: rgba(253,249,244,0.7);
@@ -927,7 +927,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <!-- ═══ METRICS ═══ -->
   <div id="tab-metrics">
     <div id="summary-cards" class="summary-grid"></div>
-    <div class="section-divider"><span>Detalhamento por categoria</span><button onclick="resetOverrides()" style="font-size:10px;font-family:'Inter', sans-serif;font-weight:300;letter-spacing:.1em;background:transparent;border:1px solid var(--warm);border-radius:3px;padding:3px 10px;cursor:pointer;color:var(--moka);opacity:.7;float:right;margin-top:-2px;" title="Desfaz todas as edições de métrica e tipo">↺ Resetar edições</button></div>
+    <div class="section-divider"><span>Detalhamento por categoria</span><button onclick="resetOverrides()" style="font-size:10px;font-family:'Josefin Sans',sans-serif;font-weight:300;letter-spacing:.1em;background:transparent;border:1px solid var(--warm);border-radius:3px;padding:3px 10px;cursor:pointer;color:var(--moka);opacity:.7;float:right;margin-top:-2px;" title="Desfaz todas as edições de métrica e tipo">↺ Resetar edições</button></div>
     <div class="legend" id="legend-block"></div>
     <div class="table-wrap">
       <table id="metrics-table">
@@ -942,8 +942,8 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
           </tr>
           <tr id="thead-totals" style="display:none">
             <th colspan="2" style="padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);font-size:9px;letter-spacing:.15em;font-weight:300;color:rgba(255,255,255,.5);text-transform:uppercase;">Total geral</th>
-            <th class="right" id="thead-total-metrica" style="font-size:13px;font-family:'Inter', sans-serif;font-weight:400;color:var(--cobre);padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
-            <th class="right" id="thead-total-real" style="font-size:13px;font-family:'Inter', sans-serif;font-weight:400;color:#fff;padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
+            <th class="right" id="thead-total-metrica" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:var(--cobre);padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
+            <th class="right" id="thead-total-real" style="font-size:13px;font-family:'Cormorant SC',serif;font-weight:400;color:#fff;padding-top:2px;padding-bottom:7px;border-top:1px solid rgba(255,255,255,.15);letter-spacing:.04em;"></th>
             <th colspan="2" style="border-top:1px solid rgba(255,255,255,.15);padding-top:2px;padding-bottom:7px;"></th>
           </tr>
         </thead>
@@ -2650,38 +2650,38 @@ function exportPDF(){
 }
 </script>
 <div id="modal-add-row" style="display:none;position:fixed;inset:0;background:rgba(26,15,10,.45);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:white;border-radius:12px;padding:28px 32px;width:360px;box-shadow:0 8px 32px rgba(106,31,48,.18);font-family:'Inter', sans-serif;">
-    <div style="font-family:'Inter', sans-serif;font-size:16px;letter-spacing:.12em;color:var(--vinho);margin-bottom:4px;">Nova Linha</div>
+  <div style="background:white;border-radius:12px;padding:28px 32px;width:360px;box-shadow:0 8px 32px rgba(106,31,48,.18);font-family:'Josefin Sans',sans-serif;">
+    <div style="font-family:'Cormorant SC',serif;font-size:16px;letter-spacing:.12em;color:var(--vinho);margin-bottom:4px;">Nova Linha</div>
     <div id="row-add-cat-label" style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--moka);opacity:.55;margin-bottom:18px;"></div>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <div>
         <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Nome da despesa *</label>
         <input id="row-add-nome" type="text" placeholder="Ex: Consultoria RH" onkeydown="if(event.key==='Enter')rowAddConfirm()"
-          style="width:100%;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Inter', sans-serif;font-size:14px;color:var(--tinta);outline:none;padding:4px 2px;">
+          style="width:100%;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:14px;color:var(--tinta);outline:none;padding:4px 2px;">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
           <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Métrica (R$)</label>
           <input id="row-add-metrica" type="number" min="0" step="0.01" placeholder="—"
-            style="width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Inter', sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;">
+            style="width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;">
         </div>
         <div>
           <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Realizado (R$)</label>
           <input id="row-add-real" type="number" min="0" step="0.01" placeholder="—"
-            style="width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Inter', sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;">
+            style="width:100%;border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;text-align:right;">
         </div>
       </div>
       <div>
         <label style="font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--moka);opacity:.6;display:block;margin-bottom:4px;">Tipo</label>
-        <select id="row-add-tipo" style="border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Inter', sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;width:100%;">
+        <select id="row-add-tipo" style="border:none;border-bottom:1px solid var(--warm);background:transparent;font-family:'Josefin Sans',sans-serif;font-size:13px;color:var(--tinta);outline:none;padding:3px 2px;width:100%;">
           <option value="V">Variável</option>
           <option value="F">Fixa</option>
         </select>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:22px;justify-content:flex-end;">
-      <button onclick="rowAddCancel()" style="background:transparent;border:1px solid var(--warm);border-radius:8px;padding:7px 18px;font-family:'Inter', sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--moka);cursor:pointer;">Cancelar</button>
-      <button onclick="rowAddConfirm()" style="background:var(--vinho);border:none;border-radius:8px;padding:7px 18px;font-family:'Inter', sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marfim);cursor:pointer;">Adicionar</button>
+      <button onclick="rowAddCancel()" style="background:transparent;border:1px solid var(--warm);border-radius:8px;padding:7px 18px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--moka);cursor:pointer;">Cancelar</button>
+      <button onclick="rowAddConfirm()" style="background:var(--vinho);border:none;border-radius:8px;padding:7px 18px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--marfim);cursor:pointer;">Adicionar</button>
     </div>
   </div>
 </div>
