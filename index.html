@@ -3332,6 +3332,17 @@ function nav(btn) {
       clearTimeout(_loadTimer);
       iframe.removeEventListener('load', _onload);
       _skeletonHide(page);
+      // Passa o token Athena para o iframe DIO (domínio diferente não compartilha localStorage)
+      if (page === 'dio') {
+        setTimeout(function() {
+          try {
+            var _tk = localStorage.getItem('athena_token') || localStorage.getItem('dio_token') || '';
+            if (_tk && iframe.contentWindow) {
+              iframe.contentWindow.postMessage({ type: 'athena_token', token: _tk }, '*');
+            }
+          } catch(e) {}
+        }, 300);
+      }
       if (page === 'laboratorios') {
         setTimeout(function() {
           try {
