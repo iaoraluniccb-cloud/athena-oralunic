@@ -4478,10 +4478,11 @@ function toggleSidebar() {
     el.innerHTML = mine.map(function(e) {
       var hora = e.hora_inicio ? e.hora_inicio + (e.hora_fim ? ' – ' + e.hora_fim : '') : 'Dia todo';
       var color = e.cor || 'var(--vinho)';
+      var gcBadge = e._fromGoogle ? '<span style="font-size:9px;background:#e8f0fe;color:#1a73e8;border-radius:3px;padding:1px 5px;margin-left:6px;font-weight:600;vertical-align:middle;">Google</span>' : '';
       return '<div class="agenda-evento-item" data-hora-inicio="' + (e.hora_inicio || '') + '" style="display:flex;align-items:flex-start;gap:12px;padding:9px 12px;border-bottom:1px solid var(--border);border-radius:6px;transition:background 0.3s;">'
         + '<div style="width:3px;height:36px;border-radius:2px;background:' + color + ';flex-shrink:0;margin-top:2px;"></div>'
         + '<div style="flex:1;min-width:0;">'
-        +   '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (e.titulo || 'Evento') + '</div>'
+        +   '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (e.titulo || 'Evento') + gcBadge + '</div>'
         +   '<div style="font-size:11px;color:var(--muted);margin-top:2px;">🕐 ' + hora + (e.local ? ' · 📍' + e.local : '') + '</div>'
         + '</div>'
         + '</div>';
@@ -4502,12 +4503,67 @@ function toggleSidebar() {
 
   var _agendaChannel = null;
 
+  // Google Calendar — Dr. Aurélio (aureliomachado79@gmail.com)
+  var _GC_KEY = 'AIzaSyAqwN64E8CJ1S7jXNoznBbuGZ2BUgoI3G0';
+  var _GC_CAL = 'aureliomachado79@gmail.com';
+
+  function _fetchGoogleCalendar(dateStr, cb) {
+    var dayStart = dateStr + 'T00:00:00-03:00';
+    var dayEnd   = dateStr + 'T23:59:59-03:00';
+    var url = 'https://www.googleapis.com/calendar/v3/calendars/'
+      + encodeURIComponent(_GC_CAL)
+      + '/events?key=' + _GC_KEY
+      + '&timeMin=' + encodeURIComponent(dayStart)
+      + '&timeMax=' + encodeURIComponent(dayEnd)
+      + '&singleEvents=true&orderBy=startTime&maxResults=50';
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d.items) { cb([]); return; }
+        var mapped = d.items.map(function(ev) {
+          var start = ev.start && (ev.start.dateTime || ev.start.date);
+          var end   = ev.end   && (ev.end.dateTime   || ev.end.date);
+          var hi = '', hf = '';
+          if (start && start.includes('T')) {
+            var t = new Date(start);
+            hi = ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2);
+          }
+          if (end && end.includes('T')) {
+            var t2 = new Date(end);
+            hf = ('0' + t2.getHours()).slice(-2) + ':' + ('0' + t2.getMinutes()).slice(-2);
+          }
+          return {
+            id: 'gc_' + ev.id,
+            titulo: ev.summary || 'Evento Google',
+            data: dateStr,
+            hora_inicio: hi,
+            hora_fim: hf,
+            local: ev.location || '',
+            cor: '#1a73e8',
+            assigned_to: ['dr_aurelio'],
+            created_by: 'dr_aurelio',
+            _fromGoogle: true,
+          };
+        });
+        cb(mapped);
+      })
+      .catch(function() { cb([]); });
+  }
+
   function loadAgenda() {
     var userId = _resolveUserId();
     if (!userId) return;
+    var isAurelio = /aurelio/i.test(userId);
 
     _supa.from('eventos').select('*').eq('data', todayStr).then(function(res) {
-      renderAgendaHoje(res.data || [], userId);
+      var supaEvents = res.data || [];
+      if (isAurelio) {
+        _fetchGoogleCalendar(todayStr, function(gcEvents) {
+          renderAgendaHoje(supaEvents.concat(gcEvents), userId);
+        });
+      } else {
+        renderAgendaHoje(supaEvents, userId);
+      }
     }).catch(function() {
       var el = document.getElementById('inicio-agenda-list');
       if (el) el.innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:13px;">Abra a <strong>Agenda</strong> para ver os compromissos de hoje.</div>';
