@@ -3321,9 +3321,9 @@ function nav(btn) {
       if (sk && !sk.classList.contains('hidden')) {
         sk.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;padding:40px;">'
           + '<div style="font-size:32px;">⚠️</div>'
-          + '<div style="font-family:'Inter',sans-serif;font-size:16px;font-weight:700;color:#6A1F30;">Serviço indisponível</div>'
+          + '<div style="font-family:Inter,sans-serif;font-size:16px;font-weight:700;color:#6A1F30;">Serviço indisponível</div>'
           + '<div style="font-size:13px;color:var(--muted);text-align:center;max-width:280px;">O serviço demorou para responder. Aguarde alguns segundos e tente novamente.</div>'
-          + '<button onclick="this.closest(\'.iframe-skeleton\').classList.add(\'hidden\');document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src=document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src;" style="background:#6A1F30;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">↻ Tentar novamente</button>'
+          + '<button onclick="this.closest(\'.iframe-skeleton\').classList.add(\'hidden\');document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src=document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src;" style="background:#6A1F30;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">↻ Tentar novamente</button>'
           + '</div>';
         sk.style.animation = 'none';
       }
@@ -4228,14 +4228,14 @@ function toggleSidebar() {
   pwdModal.innerHTML = ''
     + '<div style="background:#2a0f1a;border:1px solid rgba(253,249,244,0.12);border-radius:20px;padding:36px 32px;width:340px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.5);">'
     + '  <div id="pwd-modal-avatar" style="width:64px;height:64px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fdf9f4;overflow:hidden;"></div>'
-    + '  <div id="pwd-modal-name" style="font-family:'Inter',sans-serif;font-size:1.1rem;font-weight:600;color:#fdf9f4;margin-bottom:4px;"></div>'
+    + '  <div id="pwd-modal-name" style="font-family:Inter,sans-serif;font-size:1.1rem;font-weight:600;color:#fdf9f4;margin-bottom:4px;"></div>'
     + '  <div id="pwd-modal-role" style="font-size:0.72rem;color:rgba(253,249,244,0.4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:22px;"></div>'
     + '  <input id="pwd-modal-input" type="password" placeholder="Digite sua senha" autocomplete="current-password"'
-    + '    style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(253,249,244,0.18);background:rgba(253,249,244,0.06);color:#fdf9f4;font-family:'Inter',sans-serif;font-size:0.9rem;outline:none;text-align:center;letter-spacing:0.12em;">'
+    + '    style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(253,249,244,0.18);background:rgba(253,249,244,0.06);color:#fdf9f4;font-family:Inter,sans-serif;font-size:0.9rem;outline:none;text-align:center;letter-spacing:0.12em;">'
     + '  <div id="pwd-modal-error" style="color:#f87171;font-size:0.72rem;margin-top:8px;min-height:18px;"></div>'
     + '  <div style="display:flex;gap:10px;margin-top:16px;">'
-    + '    <button id="pwd-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(253,249,244,0.15);background:transparent;color:rgba(253,249,244,0.5);font-family:'Inter',sans-serif;font-size:0.8rem;cursor:pointer;">Cancelar</button>'
-    + '    <button id="pwd-modal-btn" style="flex:2;padding:11px;border-radius:10px;border:none;background:#8B2D42;color:#fdf9f4;font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;">Entrar</button>'
+    + '    <button id="pwd-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(253,249,244,0.15);background:transparent;color:rgba(253,249,244,0.5);font-family:Inter,sans-serif;font-size:0.8rem;cursor:pointer;">Cancelar</button>'
+    + '    <button id="pwd-modal-btn" style="flex:2;padding:11px;border-radius:10px;border:none;background:#8B2D42;color:#fdf9f4;font-family:Inter,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;">Entrar</button>'
     + '  </div>'
     + '</div>';
 
@@ -5658,7 +5658,7 @@ function renderMsgs(msgs, me) {
   if (!msgs || msgs.length === 0) {
     el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;opacity:.55;padding:32px;">'
       + '<div style="font-size:36px;">💬</div>'
-      + '<div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--muted);">Nenhuma mensagem ainda</div>'
+      + '<div style="font-family:Inter,sans-serif;font-size:14px;font-weight:600;color:var(--muted);">Nenhuma mensagem ainda</div>'
       + '<div style="font-size:12px;color:var(--muted);text-align:center;">Seja o primeiro a dizer olá! 👋</div>'
       + '</div>';
     return;
@@ -6754,13 +6754,13 @@ window.lcropConfirmar = function() {
         items += '<div class="bday-item bday-item-tomorrow">'
           + '<div class="bday-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-info"><div class="bday-name">' + p.nome + '</div><div class="bday-sub">' + p.sub + '</div><div style="font-size:10px;color:#C4955A;font-weight:700;margin-top:2px;">' + emoji + ' Amanhã!</div></div>'
-          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:'Inter',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:Inter,sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
           + '</div>';
       } else {
         items += '<div class="bday-item">'
           + '<div class="bday-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-info"><div class="bday-name">' + p.nome + '</div><div class="bday-sub">' + p.sub + '</div></div>'
-          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:'Inter',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:Inter,sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
           + '</div>';
       }
     });
@@ -7189,7 +7189,7 @@ window.lcropConfirmar = function() {
   function _kpi(label, value, sub, cor) {
     return '<div style="background:#fff;border:1px solid #E4D8CC;border-radius:10px;padding:16px 18px;position:relative;overflow:hidden;">'
       + '<div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:' + (cor||'#6A1F30') + '"></div>'
-      + '<div style="font-family:'Inter',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:6px;">' + label + '</div>'
+      + '<div style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:6px;">' + label + '</div>'
       + '<div style="font-size:26px;font-weight:700;color:#1A0F0A;line-height:1;">' + value + '</div>'
       + (sub ? '<div style="font-size:11px;color:#7a5a50;margin-top:4px;">' + sub + '</div>' : '')
       + '</div>';
@@ -7318,7 +7318,7 @@ window.lcropConfirmar = function() {
         porSetor[s].val += (parseFloat(x.valorUnit)||0)*(parseFloat(x.qtd)||1);
       });
 
-      var html = '<div style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Compras por Setor</div>';
+      var html = '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Compras por Setor</div>';
       if (!compras.length) {
         html += '<div style="color:var(--muted);font-size:12px;padding:4px 0 10px;">Sem compras em ' + MESES[_biMes] + '.</div>';
       } else {
@@ -7329,7 +7329,7 @@ window.lcropConfirmar = function() {
         html += '<div style="border-top:2px solid #C4955A;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#C4955A;"><span>Total compras</span><span>' + _fmt(totalComprasVal) + '</span></div>';
       }
 
-      html += '<div style="margin-top:14px;font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Saídas por Responsável</div>';
+      html += '<div style="margin-top:14px;font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Saídas por Responsável</div>';
       if (!saidas.length) {
         html += '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Sem saídas em ' + MESES[_biMes] + '.</div>';
       } else {
@@ -7354,7 +7354,7 @@ window.lcropConfirmar = function() {
   function _labKpiMini(label, val, cor) {
     return '<div style="background:' + (cor||'#4a7c5e') + '1a;border:1px solid ' + (cor||'#4a7c5e') + '44;border-radius:8px;padding:8px 10px;text-align:center;">'
       + '<div style="font-size:18px;font-weight:700;color:' + (cor||'#4a7c5e') + ';line-height:1;">' + val + '</div>'
-      + '<div style="font-size:10px;color:#7a5a50;margin-top:3px;font-family:'Inter',sans-serif;text-transform:uppercase;letter-spacing:.06em;">' + label + '</div>'
+      + '<div style="font-size:10px;color:#7a5a50;margin-top:3px;font-family:Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;">' + label + '</div>'
       + '</div>';
   }
   function _labBarTipo(label, n, total, cor) {
@@ -7472,7 +7472,7 @@ window.lcropConfirmar = function() {
         }
 
         // ── Label helpers
-        var SEC = function(t){ return '<div style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:14px 0 8px;">'+t+'</div>'; };
+        var SEC = function(t){ return '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:14px 0 8px;">'+t+'</div>'; };
         var KPIG = function(lbl, val, sub, cor, warn) {
           var bg = warn ? '#fff5f5' : '#FDF9F4';
           var bd = warn ? '#fecaca' : '#E4D8CC';
@@ -7661,7 +7661,7 @@ window.lcropConfirmar = function() {
 
     // Avaliações — dados reais do banco
     html += '<div style="border-top:1px solid #E4D8CC;padding-top:14px;">';
-    html += '<div style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:10px;">Avaliações Pré-Cirúrgicas — ' + MESES[_biMes] + ' / ' + _biAno + ' (dados reais)</div>';
+    html += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:10px;">Avaliações Pré-Cirúrgicas — ' + MESES[_biMes] + ' / ' + _biAno + ' (dados reais)</div>';
 
     if (totalAval === null) {
       html += '<div style="color:var(--muted);font-size:12px;">Erro ao carregar avaliações.</div>';
@@ -7683,8 +7683,8 @@ window.lcropConfirmar = function() {
 
     if (_gestaoEditMode) {
       html += '<div style="margin-top:14px;display:flex;gap:10px;">'
-        + '<button onclick="biGestaoSalvar()" style="padding:10px 20px;background:#6A1F30;color:#fff;border:none;border-radius:8px;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;letter-spacing:.04em;">💾 Salvar</button>'
-        + '<button onclick="biGestaoToggleEdit()" style="padding:10px 16px;background:#F5EDE2;color:#6A1F30;border:1px solid #E4D8CC;border-radius:8px;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>'
+        + '<button onclick="biGestaoSalvar()" style="padding:10px 20px;background:#6A1F30;color:#fff;border:none;border-radius:8px;font-weight:700;font-family:Inter,sans-serif;font-size:13px;cursor:pointer;letter-spacing:.04em;">💾 Salvar</button>'
+        + '<button onclick="biGestaoToggleEdit()" style="padding:10px 16px;background:#F5EDE2;color:#6A1F30;border:1px solid #E4D8CC;border-radius:8px;font-weight:700;font-family:Inter,sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>'
         + '</div>';
     }
 
@@ -7798,7 +7798,7 @@ window.lcropConfirmar = function() {
 
         var COR = ['#3a6a8a','#6A1F30','#4a7c5e','#C4955A','#8B5E3C','#5a3a8a','#7a5a50'];
         var SEC = function(t) {
-          return '<div style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:0 0 10px;">' + t + '</div>';
+          return '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:0 0 10px;">' + t + '</div>';
         };
 
         // ── Helper barra horizontal com label
@@ -7949,7 +7949,7 @@ window.lcropConfirmar = function() {
       var html = _row('Pacientes no Lab', _fmtN(pacientes.size), '#1A0F0A')
         + _row('Eventos atribuídos', _fmtN(atribuidos.size) + ' pessoas', '#5a3a8a');
       if (Object.keys(doutores).length) {
-        html += '<div style="font-family:'Inter',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:10px 0 4px;">Lab por Doutor</div>';
+        html += '<div style="font-family:Inter,sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:10px 0 4px;">Lab por Doutor</div>';
         Object.entries(doutores).sort(function(a,b){ return b[1]-a[1]; }).slice(0,4).forEach(function(e) {
           html += _row(e[0], _fmtN(e[1]) + ' trab.', '#6A1F30');
         });
@@ -8119,20 +8119,20 @@ window.lcropConfirmar = function() {
       + 'body{font-family:\'Inter\',\'Segoe UI\',sans-serif;font-size:12px;color:#1A0F0A;background:#F7F1EB;}'
       + '.page{width:210mm;min-height:297mm;margin:0 auto;background:#fff;padding:20mm 18mm 16mm;}'
       + '.header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #6A1F30;padding-bottom:12px;margin-bottom:18px;}'
-      + '.header-left h1{font-family:'Inter',sans-serif;font-size:26px;font-weight:700;color:#6A1F30;letter-spacing:.04em;line-height:1;}'
+      + '.header-left h1{font-family:Inter,sans-serif;font-size:26px;font-weight:700;color:#6A1F30;letter-spacing:.04em;line-height:1;}'
       + '.header-left .sub{font-size:11px;color:#7a5a50;margin-top:4px;}'
       + '.header-right{text-align:right;font-size:10px;color:#7a5a50;line-height:1.6;}'
-      + '.print-btn{display:inline-flex;align-items:center;gap:6px;background:#6A1F30;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.05em;margin-bottom:18px;}'
+      + '.print-btn{display:inline-flex;align-items:center;gap:6px;background:#6A1F30;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.05em;margin-bottom:18px;}'
       + '.section{margin-bottom:16px;page-break-inside:avoid;}'
-      + '.section-title{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;border-bottom:2px solid #E4D8CC;padding-bottom:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}'
+      + '.section-title{font-family:Inter,sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;border-bottom:2px solid #E4D8CC;padding-bottom:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}'
       + '.section-title::before{content:\'\';display:inline-block;width:3px;height:12px;background:#6A1F30;border-radius:2px;}'
       + '.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:2px;}'
       + '.kpi-card{background:#F5EDE2;border-radius:8px;padding:10px 12px;border-left:3px solid #C4955A;}'
-      + '.kpi-val{font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:#6A1F30;line-height:1;}'
+      + '.kpi-val{font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#6A1F30;line-height:1;}'
       + '.kpi-lbl{font-size:10px;color:#7a5a50;margin-top:3px;line-height:1.3;}'
       + '.lab-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}'
       + '.lab-mini{background:#F0EBE5;border-radius:6px;padding:7px 10px;text-align:center;}'
-      + '.lab-mini-val{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;line-height:1;}'
+      + '.lab-mini-val{font-family:Inter,sans-serif;font-size:18px;font-weight:700;line-height:1;}'
       + '.lab-mini-lbl{font-size:9px;color:#7a5a50;margin-top:2px;}'
       + '.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}'
       + '.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}'
@@ -8263,7 +8263,7 @@ window.lcropConfirmar = function() {
       btn.style.cssText = 'display:flex;align-items:center;gap:0;';
 
       var tabBtn = document.createElement('button');
-      tabBtn.style.cssText = 'font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #E4D8CC;border-right:none;border-bottom:none;border-radius:8px 0 0 0;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .15s;';
+      tabBtn.style.cssText = 'font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #E4D8CC;border-right:none;border-bottom:none;border-radius:8px 0 0 0;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .15s;';
       var isActive = _biCurrentTab === tab.id;
       tabBtn.style.background = isActive ? '#6A1F30' : '#F5EDE2';
       tabBtn.style.color = isActive ? '#fff' : '#7a5a50';
@@ -8274,7 +8274,7 @@ window.lcropConfirmar = function() {
       var delBtn = document.createElement('button');
       delBtn.textContent = '×';
       delBtn.title = 'Excluir aba';
-      delBtn.style.cssText = 'font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:8px 8px;border:1px solid #E4D8CC;border-bottom:none;border-radius:0 8px 0 0;cursor:pointer;background:' + (isActive ? '#8B2D42' : '#F5EDE2') + ';color:' + (isActive ? '#ffaaaa' : '#c0826a') + ';';
+      delBtn.style.cssText = 'font-family:Inter,sans-serif;font-size:14px;font-weight:700;padding:8px 8px;border:1px solid #E4D8CC;border-bottom:none;border-radius:0 8px 0 0;cursor:pointer;background:' + (isActive ? '#8B2D42' : '#F5EDE2') + ';color:' + (isActive ? '#ffaaaa' : '#c0826a') + ';';
       delBtn.onclick = function(e) { e.stopPropagation(); _biDeleteTab(tab.id); };
 
       btn.appendChild(tabBtn);
@@ -8332,7 +8332,7 @@ window.lcropConfirmar = function() {
     if (!tab) return;
     var input = document.createElement('input');
     input.value = tab.nome;
-    input.style.cssText = 'font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:6px 8px;border:1px solid #6A1F30;border-radius:6px;background:#fff;color:#6A1F30;width:120px;';
+    input.style.cssText = 'font-family:Inter,sans-serif;font-size:13px;font-weight:700;padding:6px 8px;border:1px solid #6A1F30;border-radius:6px;background:#fff;color:#6A1F30;width:120px;';
     btnEl.replaceWith(input);
     input.focus();
     input.select();
@@ -8379,8 +8379,8 @@ window.lcropConfirmar = function() {
 
     // Botão "Add widget" no topo
     panel.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">'
-      + '<div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:700;color:#7a5a50;text-transform:uppercase;letter-spacing:.08em;">' + tab.nome + '</div>'
-      + '<button onclick="biWidgetModalOpen(\'' + tabId + '\',null)" style="background:#6A1F30;border:none;border-radius:8px;padding:7px 16px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em;">+ Adicionar Widget</button>'
+      + '<div style="font-family:Inter,sans-serif;font-size:14px;font-weight:700;color:#7a5a50;text-transform:uppercase;letter-spacing:.08em;">' + tab.nome + '</div>'
+      + '<button onclick="biWidgetModalOpen(\'' + tabId + '\',null)" style="background:#6A1F30;border:none;border-radius:8px;padding:7px 16px;font-family:Inter,sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em;">+ Adicionar Widget</button>'
       + '</div>'
       + '<div id="bi-widgets-grid-' + tabId + '" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>';
 
@@ -8392,7 +8392,7 @@ window.lcropConfirmar = function() {
     var grid = document.getElementById('bi-widgets-grid-' + tab.id);
     if (!grid) return;
     if (!tab.widgets || tab.widgets.length === 0) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7a5a50;font-family:'Inter',sans-serif;font-size:14px;">Nenhum widget ainda.<br>Clique em <b>+ Adicionar Widget</b> para começar.</div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7a5a50;font-family:Inter,sans-serif;font-size:14px;">Nenhum widget ainda.<br>Clique em <b>+ Adicionar Widget</b> para começar.</div>';
       return;
     }
 
@@ -8424,9 +8424,9 @@ window.lcropConfirmar = function() {
       + '</div>'
       + '</div>'
       + (w.chartType === 'kpi'
-          ? '<div id="bi-wkpi-' + w.id + '" style="padding:20px 18px;font-size:36px;font-weight:700;color:#6A1F30;text-align:center;font-family:'Inter',sans-serif;">…</div>'
+          ? '<div id="bi-wkpi-' + w.id + '" style="padding:20px 18px;font-size:36px;font-weight:700;color:#6A1F30;text-align:center;font-family:Inter,sans-serif;">…</div>'
           : '<div style="padding:14px 16px;"><canvas id="' + canvasId + '" height="220"></canvas></div>')
-      + '<div id="bi-wstatus-' + w.id + '" style="text-align:right;padding:0 14px 8px;font-size:10px;color:#bba;font-family:'Inter',sans-serif;"></div>';
+      + '<div id="bi-wstatus-' + w.id + '" style="text-align:right;padding:0 14px 8px;font-size:10px;color:#bba;font-family:Inter,sans-serif;"></div>';
     grid.appendChild(card);
 
     _biFetchWidgetData(w, function(labels, values) {
@@ -8453,7 +8453,7 @@ window.lcropConfirmar = function() {
       if (!canvas) return;
       // Sem dados — mostrar mensagem no lugar do canvas
       if (!labels || labels.length === 0 || (labels.length === 1 && labels[0] === 'Sem dados')) {
-        canvas.parentElement.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#bba;font-family:'Inter',sans-serif;font-size:13px;">Sem dados para o período</div>';
+        canvas.parentElement.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#bba;font-family:Inter,sans-serif;font-size:13px;">Sem dados para o período</div>';
         return;
       }
       if (_biChartInstances[canvasId]) { try { _biChartInstances[canvasId].destroy(); } catch(e){} }
@@ -9084,22 +9084,22 @@ window.lcropConfirmar = function() {
       var fmt = function(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}); };
       el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 0;">'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #4a7c5e;">'
-        +   '<div style="font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:#4a7c5e;line-height:1;">' + labs.length + '</div>'
+        +   '<div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#4a7c5e;line-height:1;">' + labs.length + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Labs ' + nomeMes + '</div>'
         +   '<div style="font-size:10px;color:#4a7c5e;margin-top:2px;">' + labConcluidos + ' concluídos · ' + labSolda + ' soldas</div>'
         + '</div>'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #5a3a8a;">'
-        +   '<div style="font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:#5a3a8a;line-height:1;">' + evts.length + '</div>'
+        +   '<div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#5a3a8a;line-height:1;">' + evts.length + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Eventos ' + nomeMes + '</div>'
         +   '<div style="font-size:10px;color:#5a3a8a;margin-top:2px;">agendamentos do mês</div>'
         + '</div>'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #C4955A;">'
-        +   '<div style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:#C4955A;line-height:1;">' + fmt(totalCompras) + '</div>'
+        +   '<div style="font-family:Inter,sans-serif;font-size:18px;font-weight:700;color:#C4955A;line-height:1;">' + fmt(totalCompras) + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Compras estoque</div>'
         +   '<div style="font-size:10px;color:#C4955A;margin-top:2px;">' + compras.length + ' entradas</div>'
         + '</div>'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #3a6a8a;">'
-        +   '<div style="font-family:'Inter',sans-serif;font-size:22px;font-weight:700;color:#3a6a8a;line-height:1;">' + saidas.length + '</div>'
+        +   '<div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#3a6a8a;line-height:1;">' + saidas.length + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Saídas estoque</div>'
         +   '<div style="font-size:10px;color:#3a6a8a;margin-top:2px;">componentes usados</div>'
         + '</div>'
