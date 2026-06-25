@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════
    ORAL UNIC ATHENA — Design System
@@ -1041,7 +1042,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <div class="import-wrap">
       <div class="import-card">
         <h2>Importar Arquivo</h2>
-        <p>Selecione o mês de referência e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
+        <p>Selecione o mês de referência e importe o arquivo. Formatos aceitos: <strong>.csv</strong>, <strong>.xlsx</strong> ou <strong>.xls</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
 
         <div class="month-select">
           <label>Mês</label>
@@ -1059,9 +1060,9 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 
         <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <p>Clique ou arraste o arquivo aqui</p>
-          <small>.csv com colunas: Categoria · Despesa · Valor</small>
+          <small>.csv · .xlsx · .xls · .pdf — colunas: Categoria · Despesa · Valor</small>
         </div>
-        <input type="file" id="file-input" accept=".csv,.xlsx" onchange="handleFile(event)">
+        <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.pdf" onchange="handleFile(event)">
 
         <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
           <button class="btn-primary" onclick="loadRealData()">Carregar Fev / Mar / Abr / Mai 2026</button>
@@ -1972,14 +1973,43 @@ function handleFile(e){
   clearLog(); log('Arquivo: '+file.name);
   const m=parseInt(document.getElementById('import-month').value);
   const y=parseInt(document.getElementById('import-year').value);
-  if(file.name.endsWith('.csv')){
+  const name=file.name.toLowerCase();
+
+  if(name.endsWith('.pdf')){
+    log('📄 PDF recebido. O Athena não extrai dados de PDF automaticamente.');
+    log('👉 Abra o PDF, copie os dados para uma planilha Excel ou CSV e importe novamente.');
+    log('💡 Dica: no Excel use "Dados → De PDF" para importar direto.');
+    return;
+  }
+
+  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+    if(typeof XLSX==='undefined'){ log('❌ Biblioteca de leitura não carregada. Verifique sua conexão e recarregue a página.'); return; }
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_csv(ws,{FS:';'});
+        const rows=parseCSV(data);
+        if(rows.length){ saveMonth(monthKey(m,y),monthLabel(m,y),rows); currentMonth=getAll()[monthKey(m,y)]; renderAll(); log('✓ '+rows.length+' registros importados do Excel'); setTimeout(()=>switchTab('metrics'),500); }
+        else { log('⚠ Nenhum registro encontrado. Verifique se a planilha tem colunas "Despesa" e "Valor".'); }
+      }catch(err){ log('❌ Erro ao ler o arquivo Excel: '+err.message); }
+    };
+    reader.readAsArrayBuffer(file);
+    return;
+  }
+
+  if(name.endsWith('.csv')){
     const reader=new FileReader();
     reader.onload=ev=>{
       const rows=parseCSV(ev.target.result);
       if(rows.length){ saveMonth(monthKey(m,y),monthLabel(m,y),rows); currentMonth=getAll()[monthKey(m,y)]; renderAll(); log('✓ '+rows.length+' registros importados'); setTimeout(()=>switchTab('metrics'),500); }
     };
     reader.readAsText(file,'UTF-8');
-  } else { log('⚠ Para .xlsx salve como CSV (UTF-8) primeiro.'); }
+    return;
+  }
+
+  log('⚠ Formato não suportado. Use .csv, .xlsx, .xls ou .pdf.');
 }
 
 function parseCSV(text){
