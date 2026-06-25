@@ -951,6 +951,9 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 .chat-bubble.me   { background: var(--vinho); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
 .chat-bubble .cb-author { font-size: 10px; font-weight: 700; margin-bottom: 3px; opacity: .7; }
 .chat-bubble .cb-time   { font-size: 9px; opacity: .55; margin-top: 3px; text-align: right; }
+.chat-bubble img.cb-img { max-width: 200px; max-height: 200px; border-radius: 8px; display: block; cursor: pointer; }
+.chat-img-attach-btn { background: none; border: none; font-size: 18px; cursor: pointer; opacity: .6; padding: 0 4px; line-height: 1; }
+.chat-img-attach-btn:hover { opacity: 1; }
 .chat-input-bar {
   display: flex; gap: 6px; padding: 10px 12px;
   border-top: 1px solid var(--border); flex-shrink: 0;
@@ -4390,6 +4393,8 @@ function fazerBackupCompleto() {
     </div>
     <div class="chat-input-bar">
       <button class="chat-emoji-btn" onclick="epToggle()" title="Emojis">😊</button>
+      <button class="chat-img-attach-btn" onclick="document.getElementById('chat-img-input').click()" title="Enviar imagem">📎</button>
+      <input type="file" id="chat-img-input" accept="image/*" style="display:none" onchange="chatSendImage(this)">
       <input id="chat-msg-input" placeholder="Digite uma mensagem…" onkeydown="if(event.key==='Enter')chatSend()">
       <button class="chat-send-btn" onclick="chatSend()">➤</button>
     </div>
@@ -4932,9 +4937,12 @@ function renderMsgs(msgs, me) {
   el.innerHTML = msgs.map(function(m) {
     var isMe = m.autor_id === me;
     var hora = fmtTime(m.created_at);
+    var body = m.tipo === 'image'
+      ? '<img class="cb-img" src="' + (m.texto||'') + '" onclick="chatImgFullscreen(this.src)" alt="imagem">'
+      : '<div>' + (m.texto||'') + '</div>';
     return '<div class="chat-bubble ' + (isMe?'me':'them') + '">'
       + (!isMe ? '<div class="cb-author">' + (m.autor_id||'') + '</div>' : '')
-      + '<div>' + (m.texto||'') + '</div>'
+      + body
       + '<div class="cb-time">' + hora + '</div>'
       + '</div>';
   }).join('');
@@ -4957,6 +4965,35 @@ window.chatSend = async function() {
     tipo: 'text',
     lida_por: [me]
   });
+};
+
+window.chatSendImage = async function(input) {
+  var file = input.files[0]; if (!file || !_activeChat) return;
+  input.value = '';
+  var me = getMe();
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    var b64 = e.target.result;
+    await _supa.from('mensagens').insert({
+      canal_id: _activeChat.canalId,
+      autor_id: me,
+      texto: b64,
+      tipo: 'image',
+      lida_por: [me]
+    });
+  };
+  reader.readAsDataURL(file);
+};
+
+window.chatImgFullscreen = function(src) {
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+  var img = document.createElement('img');
+  img.src = src;
+  img.style.cssText = 'max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6);';
+  ov.appendChild(img);
+  ov.onclick = function() { document.body.removeChild(ov); };
+  document.body.appendChild(ov);
 };
 
 // Marca todas as mensagens não lidas do usuário como lidas no banco
