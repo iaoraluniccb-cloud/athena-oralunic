@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Athena — Construa sua Métrica | Oral Unic</title>
-<meta name="version" content="20260605-v8">
+<meta name="version" content="20260617-v9">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%238B2D42'/><text y='72' x='50' text-anchor='middle' font-size='62' font-family='serif'>📏</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════
    ORAL UNIC ATHENA — Design System
@@ -33,21 +32,21 @@
   --moka:         #3D2A20;
   --tinta:        #1A0F0A;
 
-  /* Status */
-  --ok-bg:        #dcfce7;
-  --ok-text:      #15803d;
-  --over-bg:      #fee2e2;
-  --over-text:    #dc2626;
-  --warn-bg:      #fef9c3;
-  --warn-text:    #b45309;
+  /* Status — paleta Oral Unic */
+  --ok-bg:        #d6f0e0;
+  --ok-text:      #1a6b3a;
+  --over-bg:      #fad4d8;
+  --over-text:    #a01830;
+  --warn-bg:      #fdf8ef;
+  --warn-text:    #a07030;
 
   /* Sem métrica */
-  --nf-high-bg:   #dbeafe;
-  --nf-high-text: #1d4ed8;
-  --nf-low-bg:    #eff6ff;
-  --nf-low-text:  #3b82f6;
-  --nf-eq-bg:     #f3f4f6;
-  --nf-eq-text:   #9ca3af;
+  --nf-high-bg:   #f5f0ea;
+  --nf-high-text: #6A4820;
+  --nf-low-bg:    #fdf9f4;
+  --nf-low-text:  #8a7060;
+  --nf-eq-bg:     #faf7f4;
+  --nf-eq-text:   #b0a090;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -254,11 +253,12 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12.5px;
-  background: white;
+  background: var(--marfim);
   border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 1px 6px rgba(106,31,48,0.08);
 }
+tr.data-row td, tr.sub-row td { background: inherit; }
 thead th {
   background: var(--vinho-deep);
   color: var(--marfim);
@@ -309,11 +309,12 @@ tr.data-row td.label-col {
 }
 
 /* status backgrounds */
-tr.row-ok    td { background: var(--ok-bg);      }
-tr.row-over  td { background: var(--over-bg);     }
-tr.row-warn  td { background: var(--warn-bg);     }
-tr.row-nf-high td { background: var(--nf-high-bg); }
-tr.row-nf-eq   td { background: var(--nf-eq-bg);   }
+tr.row-ok     { background: var(--ok-bg);      border-left: 3px solid var(--ok-text); }
+tr.row-over   { background: var(--over-bg);     border-left: 3px solid var(--over-text); }
+tr.row-warn   { background: var(--warn-bg);     border-left: 3px solid var(--warn-text); }
+tr.row-nf-high{ background: var(--nf-high-bg);  border-left: 3px solid var(--cobre); }
+tr.row-nf-eq  { background: var(--nf-eq-bg);    border-left: 3px solid var(--warm); }
+tr.row-ok td, tr.row-over td, tr.row-warn td, tr.row-nf-high td, tr.row-nf-eq td { background: inherit; }
 
 /* type badges */
 .badge {
@@ -927,7 +928,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
   <!-- ═══ METRICS ═══ -->
   <div id="tab-metrics">
     <div id="summary-cards" class="summary-grid"></div>
-    <div class="section-divider"><span>Detalhamento por categoria</span><button onclick="resetOverrides()" style="font-size:10px;font-family:'Josefin Sans',sans-serif;font-weight:300;letter-spacing:.1em;background:transparent;border:1px solid var(--warm);border-radius:3px;padding:3px 10px;cursor:pointer;color:var(--moka);opacity:.7;float:right;margin-top:-2px;" title="Desfaz todas as edições de métrica e tipo">↺ Resetar edições</button></div>
+    <div class="section-divider"><span>Detalhamento por categoria</span></div>
     <div class="legend" id="legend-block"></div>
     <div class="table-wrap">
       <table id="metrics-table">
@@ -1042,7 +1043,7 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
     <div class="import-wrap">
       <div class="import-card">
         <h2>Importar Arquivo</h2>
-        <p>Selecione o mês de referência e importe o arquivo. Formatos aceitos: <strong>.csv</strong>, <strong>.xlsx</strong> ou <strong>.xls</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
+        <p>Selecione o mês de referência e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv</strong>. As despesas serão mapeadas automaticamente para as categorias da métrica.</p>
 
         <div class="month-select">
           <label>Mês</label>
@@ -1060,9 +1061,9 @@ tr.cmp-row td.label-col { padding-left: 26px; font-size: 12.5px; }
 
         <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
           <p>Clique ou arraste o arquivo aqui</p>
-          <small>.csv · .xlsx · .xls · .pdf — colunas: Categoria · Despesa · Valor</small>
+          <small>.csv com colunas: Categoria · Despesa · Valor</small>
         </div>
-        <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.pdf" onchange="handleFile(event)">
+        <input type="file" id="file-input" accept=".csv,.xlsx" onchange="handleFile(event)">
 
         <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
           <button class="btn-primary" onclick="loadRealData()">Carregar Fev / Mar / Abr / Mai 2026</button>
@@ -1317,13 +1318,7 @@ const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f
 // ── MAP normalizado para lookup sem falhas de acento/símbolo
 const MAP_NORM = Object.fromEntries(Object.entries(MAP).map(([k,v])=>[norm(k),v]));
 
-// ── Real data: Fev / Mar / Abr / Mai 2026
-const REAL_DATA = {
-  "2026-02":{label:"Fevereiro 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:242.95},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:649.42},{d:"Alvará Sanitário",v:208.37},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1750.0},{d:"Auxiliar de Cobrança",v:2149.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:403.0},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:374.13},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:0.0},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:371.9},{d:"Bonificação/Comissionamento - Gerente",v:350.0},{d:"Bonificação/Comissionamento - Protético",v:0.0},{d:"Bonificação/Comissionamento - Recepção",v:850.0},{d:"Bonificação/Comissionamento - Relacionamento",v:1472.71},{d:"Brindes",v:2187.69},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:221.26},{d:"Certificado Digital & Análise de Crédito",v:1561.51},{d:"COFINS",v:11401.33},{d:"Coleta de Lixo",v:304.53},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:3702.2},{d:"Condomínio",v:0.0},{d:"Consultoria",v:7478.55},{d:"Contabilidade",v:2450.73},{d:"Copa e Cozinha",v:722.0},{d:"CRO",v:0.0},{d:"CSLL",v:10945.28},{d:"Despesas Bancárias",v:1234.7},{d:"Devolução de Tratamento",v:1970.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:3581.33},{d:"Eventos Externos",v:3635.36},{d:"Facebook",v:4000.0},{d:"Férias",v:0.0},{d:"FGTS",v:2122.6},{d:"FGTS Rescisório",v:621.47},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:480.0},{d:"Fundo Nacional de Propaganda (FNP)",v:4770.62},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:2000.0},{d:"Implantes e Componentes",v:23204.37},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:0.0},{d:"INSS (GPS / DCTFWEB)",v:8533.04},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:7891.88},{d:"Insumos para Laboratório",v:2942.3},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:18242.13},{d:"IRRF",v:0.0},{d:"ISS",v:11401.47},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:24702.43},{d:"Manutenção Predial",v:3276.0},{d:"Material de Escritório",v:305.58},{d:"Material de Limpeza",v:654.39},{d:"Material Gráfico",v:2367.75},{d:"Medicamentos",v:2666.61},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:4600.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:1400.0},{d:"Outras Despesas",v:5610.17},{d:"Outras Mídias Offline",v:1400.0},{d:"Outras Mídias Online",v:1604.87},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2470.29},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10739.0},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2488.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:1820.0},{d:"Remuneração Avaliador Com Comissão",v:17464.25},{d:"Remuneração Captador(a) de Leads",v:1000.0},{d:"Remuneração Dentistas",v:46876.0},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:2932.0},{d:"Remuneração Protético",v:17850.0},{d:"Remuneração Recepcionista",v:1338.0},{d:"Remuneração Relacionamento",v:3151.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:2766.0},{d:"Rescisão Trabalhista",v:4831.72},{d:"Royalty",v:28623.69},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:1579.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
-  "2026-03":{label:"Março 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:240.12},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:0.0},{d:"Alvará Sanitário",v:0.0},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1695.0},{d:"Auxiliar de Cobrança",v:2463.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:306.8},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:265.94},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:0.0},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:26.5},{d:"Bonificação/Comissionamento - Gerente",v:954.55},{d:"Bonificação/Comissionamento - Protético",v:250.0},{d:"Bonificação/Comissionamento - Recepção",v:815.0},{d:"Bonificação/Comissionamento - Relacionamento",v:1417.6},{d:"Brindes",v:2596.78},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:263.06},{d:"Certificado Digital & Análise de Crédito",v:1505.02},{d:"COFINS",v:10482.1},{d:"Coleta de Lixo",v:310.82},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:5603.13},{d:"Condomínio",v:0.0},{d:"Consultoria",v:5437.96},{d:"Contabilidade",v:1650.73},{d:"Copa e Cozinha",v:901.69},{d:"CRO",v:0.0},{d:"CSLL",v:10062.81},{d:"Despesas Bancárias",v:1139.45},{d:"Devolução de Tratamento",v:3500.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:5259.02},{d:"Eventos Externos",v:5207.46},{d:"Facebook",v:4000.0},{d:"Férias",v:0.0},{d:"FGTS",v:2051.35},{d:"FGTS Rescisório",v:0.0},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:290.0},{d:"Fundo Nacional de Propaganda (FNP)",v:4764.13},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:500.0},{d:"Implantes e Componentes",v:21913.88},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:0.0},{d:"INSS (GPS / DCTFWEB)",v:7342.36},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:9960.02},{d:"Insumos para Laboratório",v:3476.95},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:16771.36},{d:"IRRF",v:0.0},{d:"ISS",v:10482.24},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:23733.18},{d:"Manutenção Predial",v:5058.0},{d:"Material de Escritório",v:341.26},{d:"Material de Limpeza",v:710.8},{d:"Material Gráfico",v:1553.75},{d:"Medicamentos",v:1852.23},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:5100.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:3666.66},{d:"Outras Despesas",v:6827.84},{d:"Outras Mídias Offline",v:1900.0},{d:"Outras Mídias Online",v:104.97},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2271.12},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10495.19},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2742.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:2000.0},{d:"Remuneração Avaliador Com Comissão",v:14063.27},{d:"Remuneração Captador(a) de Leads",v:3062.84},{d:"Remuneração Dentistas",v:36112.19},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:3400.0},{d:"Remuneração Protético",v:17000.0},{d:"Remuneração Recepcionista",v:1554.0},{d:"Remuneração Relacionamento",v:3656.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:3217.0},{d:"Rescisão Trabalhista",v:0.0},{d:"Royalty",v:28584.79},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:1800.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
-  "2026-04":{label:"Abril 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:286.54},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:0.0},{d:"Alvará Sanitário",v:0.0},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1460.0},{d:"Auxiliar de Cobrança",v:2406.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:200.0},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:590.4},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:0.0},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:58.0},{d:"Bonificação/Comissionamento - Gerente",v:1508.55},{d:"Bonificação/Comissionamento - Protético",v:0.0},{d:"Bonificação/Comissionamento - Recepção",v:968.0},{d:"Bonificação/Comissionamento - Relacionamento",v:2913.52},{d:"Brindes",v:2689.84},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:271.26},{d:"Certificado Digital & Análise de Crédito",v:1619.59},{d:"COFINS",v:10402.13},{d:"Coleta de Lixo",v:304.53},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:2591.98},{d:"Condomínio",v:0.0},{d:"Consultoria",v:7966.13},{d:"Contabilidade",v:1650.73},{d:"Copa e Cozinha",v:576.69},{d:"CRO",v:0.0},{d:"CSLL",v:9991.8},{d:"Despesas Bancárias",v:1266.05},{d:"Devolução de Tratamento",v:3350.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:534.73},{d:"Eventos Externos",v:2825.36},{d:"Facebook",v:4000.0},{d:"Férias",v:0.0},{d:"FGTS",v:2882.19},{d:"FGTS Rescisório",v:0.0},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:343.9},{d:"Fundo Nacional de Propaganda (FNP)",v:5046.02},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:500.0},{d:"Implantes e Componentes",v:24636.71},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:3922.93},{d:"INSS (GPS / DCTFWEB)",v:7724.81},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:9142.89},{d:"Insumos para Laboratório",v:5101.7},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:45083.17},{d:"IRRF",v:0.0},{d:"ISS",v:10402.18},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:33694.43},{d:"Manutenção Predial",v:740.0},{d:"Material de Escritório",v:326.78},{d:"Material de Limpeza",v:1144.82},{d:"Material Gráfico",v:1690.0},{d:"Medicamentos",v:1134.88},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:6900.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:5083.33},{d:"Outras Despesas",v:5257.97},{d:"Outras Mídias Offline",v:1813.0},{d:"Outras Mídias Online",v:104.97},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2253.79},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10074.0},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2679.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:2000.0},{d:"Remuneração Avaliador Com Comissão",v:18297.51},{d:"Remuneração Captador(a) de Leads",v:2379.62},{d:"Remuneração Dentistas",v:51127.1},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:2692.0},{d:"Remuneração Protético",v:20400.0},{d:"Remuneração Recepcionista",v:3586.0},{d:"Remuneração Relacionamento",v:3655.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:3160.0},{d:"Rescisão Trabalhista",v:0.0},{d:"Royalty",v:30276.14},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:1957.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
-  "2026-05":{label:"Maio 2026",rows:[{d:"13º Salário",v:0.0},{d:"Água",v:243.58},{d:"Aluguel",v:14424.0},{d:"Alvará Prefeitura",v:0.0},{d:"Alvará Sanitário",v:0.0},{d:"Assistência Jurídica",v:547.88},{d:"Assistência Técnica",v:1953.34},{d:"Auxiliar de Cobrança",v:2385.0},{d:"Bonificação/Comissionamento - ASB/TSB",v:281.0},{d:"Bonificação/Comissionamento - ASG",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar Administrativo",v:0.0},{d:"Bonificação/Comissionamento - Auxiliar de Cobrança",v:407.73},{d:"Bonificação/Comissionamento - Auxiliar de Prótese",v:30.4},{d:"Bonificação/Comissionamento - Captador(a) de Leads",v:0.0},{d:"Bonificação/Comissionamento - Dentista",v:92.0},{d:"Bonificação/Comissionamento - Gerente",v:645.0},{d:"Bonificação/Comissionamento - Protético",v:0.0},{d:"Bonificação/Comissionamento - Recepção",v:1551.25},{d:"Bonificação/Comissionamento - Relacionamento",v:2326.47},{d:"Brindes",v:645.99},{d:"Cartão Corporativo Flexível",v:0.0},{d:"Celular",v:283.15},{d:"Certificado Digital & Análise de Crédito",v:1966.75},{d:"COFINS",v:9484.35},{d:"Coleta de Lixo",v:304.53},{d:"comentários google",v:0.0},{d:"Compra de Móveis ou Equipamentos",v:4820.45},{d:"Condomínio",v:0.0},{d:"Consultoria",v:8950.58},{d:"Contabilidade",v:1722.14},{d:"Copa e Cozinha",v:540.0},{d:"CRO",v:0.0},{d:"CSLL",v:9104.97},{d:"Despesas Bancárias",v:1434.65},{d:"Devolução de Tratamento",v:9950.0},{d:"Empréstimo/Financiamento",v:0.0},{d:"Energia Elétrica",v:2870.92},{d:"Eventos Externos",v:2359.05},{d:"Facebook",v:4500.0},{d:"Férias",v:0.0},{d:"FGTS",v:2988.21},{d:"FGTS Rescisório",v:0.0},{d:"Freelancer",v:0.0},{d:"Fretes e Entregas Rápidas (Motoboy)",v:440.0},{d:"Fundo Nacional de Propaganda (FNP)",v:4497.12},{d:"Fundo Nacional de Propaganda (FNP)",v:0.0},{d:"Google",v:500.0},{d:"Implantes e Componentes",v:24424.45},{d:"indicação por campanha",v:0.0},{d:"indicação por colaborador",v:0.0},{d:"Infraestrutura da Clínica",v:104.93},{d:"INSS (GPS / DCTFWEB)",v:8793.38},{d:"INSS Retido",v:0.0},{d:"Instagram",v:0.0},{d:"Instituições Menor Aprendiz",v:0.0},{d:"Insumos de Dental",v:10138.66},{d:"Insumos para Laboratório",v:4597.64},{d:"Internet/Telefone",v:334.67},{d:"IOF",v:0.0},{d:"IPTU",v:0.0},{d:"IRPJ",v:24774.39},{d:"IRRF",v:0.0},{d:"ISS",v:9484.4},{d:"ISS Retido",v:0.0},{d:"Jornal",v:0.0},{d:"Juros Passivos",v:0.0},{d:"Juros s/ processos judiciais",v:0.0},{d:"Laboratório Externo",v:29980.43},{d:"Manutenção Predial",v:3633.99},{d:"Material de Escritório",v:394.41},{d:"Material de Limpeza",v:417.19},{d:"Material Gráfico",v:1691.0},{d:"Medicamentos",v:812.49},{d:"Medicina do Trabalho",v:253.92},{d:"Médico Anestesista",v:7300.0},{d:"Menor Aprendiz",v:0.0},{d:"Mensalidade de Agência de Publicidade",v:1098.3},{d:"Multa s/  processo judiciais",v:0.0},{d:"Outdoor",v:5083.33},{d:"Outras Despesas",v:10062.04},{d:"Outras Mídias Offline",v:900.0},{d:"Outras Mídias Online",v:0.0},{d:"Pagamento processo judicial",v:0.0},{d:"PCC/CSRF (PIS, COFINS, CSLL)",v:0.0},{d:"PIS",v:2054.94},{d:"Plano de Saúde",v:0.0},{d:"Pró-Labore",v:0.0},{d:"Rádio",v:10074.0},{d:"Radiologia / Tomografia",v:0.0},{d:"Remuneração ASB - Auxiliar em Saúde Bucal",v:2695.0},{d:"Remuneração ASG - Auxiliar de Serviços Gerais",v:2000.0},{d:"Remuneração Auxiliar Administrativo",v:0.0},{d:"Remuneração Auxiliar de Prótese",v:2000.0},{d:"Remuneração Avaliador Com Comissão",v:19857.94},{d:"Remuneração Captador(a) de Leads",v:2056.92},{d:"Remuneração Dentistas",v:48614.21},{d:"Remuneração Estagiário(a)",v:0.0},{d:"Remuneração Gerente",v:2692.0},{d:"Remuneração Protético",v:19100.0},{d:"Remuneração Recepcionista",v:3610.0},{d:"Remuneração Relacionamento",v:3656.0},{d:"Remuneração Sócio Operador",v:0.0},{d:"Remuneração TSB - Técnica em Saúde Bucal",v:3472.0},{d:"Rescisão Trabalhista",v:0.0},{d:"Royalty",v:26982.72},{d:"Royalty",v:0.0},{d:"Segurança e Vigilância",v:0.0},{d:"Simples Nacional (DAS / DASN)",v:0.0},{d:"Taxa de Bombeiros",v:0.0},{d:"Televisão",v:0.0},{d:"Uniformes",v:18.33},{d:"Vale Alimentação",v:0.0},{d:"Vale Refeição",v:2009.0},{d:"Vale Transporte",v:0.0},{d:"YouTube",v:0.0}]},
-};
+// Dados residem no Supabase (athena_months) — sem hardcode local.
 
 // ═══════════════════════════════════════
 // SUPABASE API
@@ -1418,21 +1413,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── Supabase sync functions ──
 async function loadFromSB(){
   try {
-    // Limpa qualquer cache antigo de meses (REAL_DATA é sempre recarregado do código)
     localStorage.removeItem('ou_athena_v2');
-    // REAL_DATA é sempre fonte de verdade — carrega direto no localStorage sem passar pelo Supabase
-    const _s = {};
-    for(const [k,o] of Object.entries(REAL_DATA)){ _s[k] = {key:k, label:o.label, rows:o.rows}; }
-    localStorage.setItem('ou_athena_v2', JSON.stringify(_s));
 
-    // Carregar do Supabase apenas meses extras (criados pelo usuário, fora do REAL_DATA)
+    // Carregar todos os meses do Supabase
     const mRes = await sbFetch('GET', 'athena_months', null, 'select=key,label,rows&order=key.asc');
-    for(const rec of mRes){
-      if(!REAL_DATA[rec.key]){ // só adiciona se não for mês do REAL_DATA
-        const a = getAll(); a[rec.key] = {key: rec.key, label: rec.label, rows: rec.rows};
-        localStorage.setItem('ou_athena_v2', JSON.stringify(a));
-      }
-    }
+    const _s = {};
+    for(const rec of mRes){ _s[rec.key] = {key: rec.key, label: rec.label, rows: rec.rows}; }
+    localStorage.setItem('ou_athena_v2', JSON.stringify(_s));
 
     // Carregar overrides do Supabase
     const oRes = await sbFetch('GET', 'athena_overrides', null, 'select=desp,field,val&limit=500');
@@ -1447,12 +1434,8 @@ async function loadFromSB(){
     if(keys.length) currentMonth = getAll()[keys[0]];
     renderAll();
   } catch(e) {
-    console.warn('SB load error, using local data:', e);
-    const _s = {};
-    for(const [k,o] of Object.entries(REAL_DATA)){ _s[k] = {key:k, label:o.label, rows:o.rows}; }
-    localStorage.setItem('ou_athena_v2', JSON.stringify(_s));
-    const keys = Object.keys(getAll()).sort().reverse();
-    if(keys.length) currentMonth = getAll()[keys[0]];
+    console.warn('SB load error:', e);
+    currentMonth = null;
     renderAll();
   }
 }
@@ -1474,7 +1457,16 @@ async function pbDeleteOverrideField(desp, field){
 
 async function pbSaveMonth(key, label, rows){
   try {
-    await sbFetch('POST', 'athena_months', {key, label, rows, updated_at: new Date().toISOString()});
+    // Tenta PATCH primeiro; se não existe (0 rows), faz POST
+    const upd = await fetch(SB_URL+'/rest/v1/athena_months?key=eq.'+encodeURIComponent(key), {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+SB_ANON,'Prefer':'return=representation' },
+      body: JSON.stringify({label, rows, updated_at: new Date().toISOString()})
+    });
+    const updJ = await upd.json();
+    if(Array.isArray(updJ) && updJ.length === 0){
+      await sbFetch('POST', 'athena_months', {key, label, rows, updated_at: new Date().toISOString()});
+    }
   } catch(e){ console.warn('sbSaveMonth error:', e); }
 }
 
@@ -1653,7 +1645,10 @@ function renderSwitcher(){
   const all = getAll();
   const keys = Object.keys(all).sort();
   document.getElementById('month-switcher').innerHTML = keys.map(k=>`
-    <button class="month-pill ${currentMonth&&currentMonth.key===k?'active':''}" onclick="loadMonth('${k}')">${all[k].label.split(' ')[0].substring(0,3)} ${all[k].label.split(' ')[1]?.slice(2)||''}</button>
+    <span style="position:relative;display:inline-flex;align-items:center;" class="pill-wrap">
+      <button class="month-pill ${currentMonth&&currentMonth.key===k?'active':''}" onclick="loadMonth('${k}')" style="padding-right:22px">${all[k].label.split(' ')[0].substring(0,3)} ${all[k].label.split(' ')[1]?.slice(2)||''}</button>
+      <button onclick="removeMonth('${k}')" title="Apagar mês" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:10px;color:rgba(255,255,255,.5);padding:0;line-height:1;font-weight:700;" onmouseover="this.style.color='#ff6b6b'" onmouseout="this.style.color='rgba(255,255,255,.5)'">×</button>
+    </span>
   `).join('');
 }
 
@@ -1700,7 +1695,7 @@ function renderMainTable(rows){
     const cTotal=cr.reduce((s,r)=>s+(r.real||0),0);
     const cMet=cr.reduce((s,r)=>s+(r.metrica||0),0);
     const catEsc=cat.replace(/'/g,"\\'");
-    html+=`<tr class="cat-row"><td colspan="2">${cat}</td><td class="right">${cMet>0?fmt(cMet):'—'}</td><td class="right">${cTotal>0?fmt(cTotal):'—'}</td><td></td><td></td><td></td></tr>`;
+    html+=`<tr class="cat-row"><td colspan="2">${cat}</td><td class="right">${cMet>0?fmt(cMet):'—'}</td><td class="right">${cTotal>0?fmt(cTotal):'—'}</td><td></td><td></td></tr>`;
     for(const r of cr) html += dataRowHtml(r, true);
     html+=`<tr><td colspan="7" style="padding:2px 8px 8px"><button class="add-row-btn" onclick="rowAddModal('${catEsc}')">+ Adicionar linha</button></td></tr>`;
   }
@@ -1973,43 +1968,14 @@ function handleFile(e){
   clearLog(); log('Arquivo: '+file.name);
   const m=parseInt(document.getElementById('import-month').value);
   const y=parseInt(document.getElementById('import-year').value);
-  const name=file.name.toLowerCase();
-
-  if(name.endsWith('.pdf')){
-    log('📄 PDF recebido. O Athena não extrai dados de PDF automaticamente.');
-    log('👉 Abra o PDF, copie os dados para uma planilha Excel ou CSV e importe novamente.');
-    log('💡 Dica: no Excel use "Dados → De PDF" para importar direto.');
-    return;
-  }
-
-  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
-    if(typeof XLSX==='undefined'){ log('❌ Biblioteca de leitura não carregada. Verifique sua conexão e recarregue a página.'); return; }
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      try{
-        const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-        const ws=wb.Sheets[wb.SheetNames[0]];
-        const data=XLSX.utils.sheet_to_csv(ws,{FS:';'});
-        const rows=parseCSV(data);
-        if(rows.length){ saveMonth(monthKey(m,y),monthLabel(m,y),rows); currentMonth=getAll()[monthKey(m,y)]; renderAll(); log('✓ '+rows.length+' registros importados do Excel'); setTimeout(()=>switchTab('metrics'),500); }
-        else { log('⚠ Nenhum registro encontrado. Verifique se a planilha tem colunas "Despesa" e "Valor".'); }
-      }catch(err){ log('❌ Erro ao ler o arquivo Excel: '+err.message); }
-    };
-    reader.readAsArrayBuffer(file);
-    return;
-  }
-
-  if(name.endsWith('.csv')){
+  if(file.name.endsWith('.csv')){
     const reader=new FileReader();
     reader.onload=ev=>{
       const rows=parseCSV(ev.target.result);
       if(rows.length){ saveMonth(monthKey(m,y),monthLabel(m,y),rows); currentMonth=getAll()[monthKey(m,y)]; renderAll(); log('✓ '+rows.length+' registros importados'); setTimeout(()=>switchTab('metrics'),500); }
     };
     reader.readAsText(file,'UTF-8');
-    return;
-  }
-
-  log('⚠ Formato não suportado. Use .csv, .xlsx, .xls ou .pdf.');
+  } else { log('⚠ Para .xlsx salve como CSV (UTF-8) primeiro.'); }
 }
 
 function parseCSV(text){
@@ -2439,31 +2405,19 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';const 
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-window.addEventListener('DOMContentLoaded', async ()=>{
-  // Sincroniza REAL_DATA no localStorage (sempre sobrescreve — garante dados atualizados)
-  { const _s=getAll();
-    for(const [k,o] of Object.entries(REAL_DATA)){ _s[k]={key:k,label:o.label,rows:o.rows}; }
-    localStorage.setItem('ou_athena_v2',JSON.stringify(_s)); }
-  // Se já há sessão salva (usuário no localStorage), recarrega do Supabase
-  const _savedUser = localStorage.getItem('ou_athena_user');
-  if(_savedUser){
+window.addEventListener('DOMContentLoaded', ()=>{
+  // Verifica sessão salva
+  const saved = localStorage.getItem('ou_athena_user');
+  if(saved){
     try {
-      pbUser = JSON.parse(_savedUser);
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('main-app').style.display = 'block';
+      pbUser = JSON.parse(saved);
+      document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('user-pill').style.display = 'flex';
       document.getElementById('user-name-label').textContent = pbUser.name || pbUser.email;
-      setSyncDot('ok');
-      await loadFromSB();
+      loadFromSB().catch(()=>{ currentMonth = null; renderAll(); });
     } catch(e) {
       localStorage.removeItem('ou_athena_user');
-      document.getElementById('login-email')?.focus();
     }
-  } else {
-    // Sem sessão — abre o app direto sem login
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    await loadFromSB();
   }
 });
 

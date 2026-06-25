@@ -6,7 +6,8 @@
 <title>Athena — Sistema Corporativo · Oral Unic</title>
 <meta name="version" content="20260617-v2">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%238B2D42'/><text x='50' y='72' font-family='Georgia,serif' font-size='72' font-weight='bold' fill='%23FDF9F4' text-anchor='middle'>A</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;500&family=Cormorant:ital,wght@1,300&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;500&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
@@ -47,7 +48,7 @@ html, body {
 }
 
 body {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Nunito', sans-serif;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -59,7 +60,7 @@ body {
 ══════════════════════════════════════════════ */
 .sidebar {
   width: var(--sidebar-w);
-  background: var(--vinho-deep);
+  background: var(--creme);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -83,28 +84,29 @@ body {
 .sidebar.collapsed .sidebar-footer { justify-content: center; padding: 16px 0; }
 
 .sidebar-logo {
-  padding: 24px 20px 18px;
-  border-bottom: 1px solid rgba(253,249,244,0.1);
+  padding: 20px 20px 18px;
+  background: var(--vinho-deep);
+  border-bottom: 1px solid rgba(61,10,20,0.20);
   display: flex;
   align-items: center;
   gap: 13px;
   flex-shrink: 0;
 }
-.logo-icon { width: 44px; height: 44px; flex-shrink: 0; }
+.logo-icon { display: none; }
 .logo-text h2 {
   font-family: 'Cormorant SC', serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 400;
   letter-spacing: 0.18em;
   color: var(--marfim);
   line-height: 1;
 }
 .logo-text span {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 9px;
   font-weight: 400;
   letter-spacing: 0.14em;
-  color: var(--blush);
+  color: rgba(253,249,244,0.55);
   text-transform: uppercase;
   display: block;
   margin-top: 3px;
@@ -112,10 +114,10 @@ body {
 
 .sidebar-section-label {
   padding: 10px 16px 10px 20px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: rgba(253,249,244,0.45);
+  color: var(--vinho-deep);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   flex-shrink: 0;
@@ -129,13 +131,13 @@ body {
   transition: background .15s, color .15s;
 }
 .sidebar-section-label:hover {
-  background: rgba(253,249,244,0.07);
-  color: rgba(253,249,244,0.85);
+  background: rgba(61,10,20,0.07);
+  color: var(--vinho);
 }
 .sidebar-section-label .section-arrow {
   font-size: 10px;
   transition: transform .25s ease;
-  color: var(--blush, #d4a57e);
+  color: var(--vinho);
   opacity: 0.8;
 }
 .sidebar-section-label.collapsed-section .section-arrow {
@@ -158,8 +160,8 @@ body {
   align-items: center;
   gap: 11px;
   padding: 9px 20px;
-  color: rgba(253,249,244,0.75);
-  font-family: 'Barlow', sans-serif;
+  color: var(--vinho-deep);
+  font-family: 'Nunito', sans-serif;
   font-size: 13.5px;
   font-weight: 400;
   cursor: pointer;
@@ -172,16 +174,16 @@ body {
   border-right: 2px solid transparent;
 }
 .nav-item:hover {
-  color: var(--marfim);
-  background: rgba(253,249,244,0.08);
+  color: var(--vinho);
+  background: rgba(61,10,20,0.07);
 }
 .nav-item.active {
-  color: var(--marfim);
-  background: rgba(139,45,66,0.28);
-  border-right-color: var(--vinho-light);
-  font-weight: 500;
+  color: var(--vinho-deep);
+  background: rgba(61,10,20,0.10);
+  border-right-color: var(--vinho);
+  font-weight: 600;
 }
-.nav-item .icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+.nav-item .icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; display:flex; align-items:center; justify-content:center; }
 /* ── Favoritos ── */
 #group-favoritos { display: block; }
 .fav-star {
@@ -210,30 +212,54 @@ body {
 .fav-empty {
   padding: 8px 20px;
   font-size: 11.5px;
-  color: rgba(253,249,244,0.3);
+  color: rgba(61,10,20,0.4);
   font-style: italic;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
-.nav-item.nav-destaque {
-  color: var(--vinho);
-  background: rgba(253,249,244,0.92);
-  font-weight: 600;
+/* Itens principais — creme */
+.nav-item.nav-destaque,
+#nav-bi {
+  color: var(--vinho-deep);
+  background: var(--creme) !important;
+  font-weight: 500;
   border-right-color: transparent;
 }
-.nav-item.nav-destaque:hover {
-  background: rgba(253,249,244,1);
-  color: var(--vinho);
-}
+.nav-item.nav-destaque:hover { background: var(--blush) !important; color: var(--vinho); }
 .nav-item.nav-destaque.active {
-  color: var(--vinho);
-  background: rgba(253,249,244,0.95);
+  color: var(--vinho-deep);
+  background: var(--blush) !important;
   border-right-color: var(--vinho);
   font-weight: 700;
 }
+/* Subitens dentro de grupos — vinho */
+.nav-group .nav-item.nav-destaque,
+.nav-group .nav-item.nav-destaque.active {
+  color: var(--marfim) !important;
+  background: var(--vinho-deep) !important;
+  font-weight: 500;
+  border-right-color: transparent !important;
+}
+.nav-group .nav-item.nav-destaque:hover {
+  background: var(--vinho) !important;
+  color: var(--marfim) !important;
+}
+.nav-group .nav-item.nav-destaque.active {
+  background: var(--vinho) !important;
+  border-right-color: rgba(253,249,244,0.5) !important;
+  font-weight: 700;
+}
+/* Ícones Lucide nos subitens — marfim */
+.nav-group .nav-item.nav-destaque .icon i,
+.nav-group .nav-item.nav-destaque svg { stroke: var(--marfim) !important; }
+/* Ícones Lucide nos itens principais — vinho */
+.nav-item.nav-destaque .icon i,
+.nav-item.nav-destaque svg,
+#nav-bi .icon i { stroke: var(--vinho-deep) !important; }
+
 .nav-badge {
   margin-left: auto;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 11px;
   font-weight: 700;
   min-width: 22px;
@@ -243,15 +269,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(253,249,244,0.15);
-  color: var(--marfim);
+  background: rgba(61,10,20,0.12);
+  color: var(--vinho-deep);
 }
-.nav-badge.badge-red { background: var(--danger); }
+.nav-badge.badge-red { background: var(--danger); color: var(--marfim); }
+.nav-group .nav-badge { background: rgba(253,249,244,0.2); color: var(--marfim); }
 
 .sidebar-footer {
   margin-top: auto;
   padding: 16px 20px;
-  border-top: 1px solid rgba(253,249,244,0.08);
+  border-top: 1px solid rgba(61,10,20,0.12);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -262,13 +289,13 @@ body {
   border-radius: 50%;
   background: var(--vinho);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 13px; font-weight: 700;
   color: var(--marfim);
   flex-shrink: 0;
 }
-.avatar-info .name  { color: var(--marfim); font-size: 12px; font-weight: 500; }
-.avatar-info .role  { color: rgba(253,249,244,0.45); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.avatar-info .name  { color: var(--vinho-deep); font-size: 12px; font-weight: 500; }
+.avatar-info .role  { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 
 /* Collapse toggle */
 .sidebar-toggle {
@@ -326,7 +353,7 @@ body {
   color: var(--muted);
 }
 .topbar-breadcrumb .section-name {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .1em;
@@ -352,7 +379,7 @@ body {
   border: 1px solid var(--border);
   padding: 6px 12px;
   border-radius: 6px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   letter-spacing: .06em;
   text-transform: uppercase;
 }
@@ -548,7 +575,7 @@ body {
   flex-shrink: 0;
 }
 .card-title {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 13px; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase;
   color: var(--tinta);
@@ -590,7 +617,7 @@ body {
 .agenda-patient { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .agenda-proc { font-size: 11px; color: var(--muted); margin-top: 1px; }
 .agenda-chip {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 10px; font-weight: 700;
   letter-spacing: .05em; text-transform: uppercase;
   padding: 3px 9px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
@@ -607,14 +634,14 @@ body {
 .bday-av {
   width: 38px; height: 38px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 13px; font-weight: 700; color: var(--marfim); flex-shrink: 0;
   overflow: hidden;
 }
 .bday-av img { width: 38px; height: 38px; object-fit: cover; border-radius: 50%; display: block; }
 .bday-info { flex: 1; }
 .bday-name { font-size: 13px; font-weight: 600; }
-.bday-sub  { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.bday-sub  { font-family: 'Nunito', sans-serif; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 
 /* ── Banner de aniversário hoje ── */
 @keyframes bdayPulse {
@@ -636,7 +663,7 @@ body {
 .bday-banner-info { flex: 1; }
 .bday-banner-label { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-bottom: 4px; }
 .bday-banner-name { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.2; letter-spacing: -.3px; }
-.bday-banner-sub { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 3px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: .06em; }
+.bday-banner-sub { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 3px; font-family: 'Nunito', sans-serif; text-transform: uppercase; letter-spacing: .06em; }
 .bday-banner-av { width: 52px; height: 52px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.5); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: #fff; }
 .bday-banner-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 
@@ -648,7 +675,7 @@ body {
   display: none;
   background: none; border: 1px solid #E4D8CC; border-radius: 6px;
   color: #8B2D42; font-size: 11px; padding: 2px 8px; cursor: pointer;
-  font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+  font-family: 'Nunito', sans-serif; font-weight: 600;
   letter-spacing: .04em; transition: background .15s;
   white-space: nowrap;
 }
@@ -665,17 +692,17 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   box-shadow: 0 20px 60px rgba(0,0,0,.25);
 }
 .home-edit-modal h3 {
-  font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700;
+  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase; color: #6A1F30; margin: 0 0 18px;
 }
 .hem-group { margin-bottom: 14px; }
 .hem-group label {
-  display: block; font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
+  display: block; font-family: 'Nunito', sans-serif; font-size: 11px;
   font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #7a5a50; margin-bottom: 5px;
 }
 .hem-group input, .hem-group textarea, .hem-group select {
   width: 100%; padding: 9px 12px; border: 1px solid #E4D8CC; border-radius: 8px;
-  font-family: 'Barlow', sans-serif; font-size: 13px; color: #1A0F0A;
+  font-family: 'Nunito', sans-serif; font-size: 13px; color: #1A0F0A;
   background: #FDFAF7; outline: none; box-sizing: border-box;
   transition: border-color .15s;
 }
@@ -696,13 +723,13 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 }
 .hem-add-btn {
   background: none; border: 1px dashed #C4955A; border-radius: 8px; color: #C4955A;
-  font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
   letter-spacing: .05em; padding: 7px 14px; cursor: pointer; width: 100%; margin-top: 4px;
 }
 .hem-add-btn:hover { background: #C4955A12; }
 .hem-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
 .hem-footer button {
-  padding: 10px 24px; border-radius: 9px; font-family: 'Barlow', sans-serif;
+  padding: 10px 24px; border-radius: 9px; font-family: 'Nunito', sans-serif;
   font-size: 13px; font-weight: 600; cursor: pointer;
 }
 .hem-btn-cancel { background: none; border: 1px solid #E4D8CC; color: #7a5a50; }
@@ -742,7 +769,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   background: radial-gradient(circle, rgba(253,249,244,.08), transparent);
 }
 .colab-badge {
-  font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 600;
+  font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 600;
   letter-spacing: .1em; text-transform: uppercase; color: var(--blush);
   background: rgba(253,249,244,.1); border: 1px solid rgba(253,249,244,.2);
   padding: 3px 12px; border-radius: 20px; z-index: 1;
@@ -753,16 +780,16 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,.3); z-index: 1;
 }
 .colab-name { font-family: 'Cormorant SC', serif; font-size: 16px; font-weight: 500; letter-spacing: .1em; z-index: 1; }
-.colab-role { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: rgba(253,249,244,.65); z-index: 1; margin-top: -6px; }
+.colab-role { font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: rgba(253,249,244,.65); z-index: 1; margin-top: -6px; }
 .colab-divider { width: 100%; height: 1px; background: rgba(253,249,244,.15); z-index: 1; }
 .colab-stats { display: flex; gap: 7px; width: 100%; z-index: 1; }
 .colab-stat { flex: 1; background: rgba(253,249,244,.08); border: 1px solid rgba(253,249,244,.12); border-radius: 6px; padding: 7px 4px; text-align: center; }
 .colab-stat-val { font-size: 17px; font-weight: 700; color: var(--blush); }
-.colab-stat-lbl { font-family: 'Barlow Condensed', sans-serif; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: rgba(253,249,244,.5); margin-top: 2px; }
+.colab-stat-lbl { font-family: 'Nunito', sans-serif; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: rgba(253,249,244,.5); margin-top: 2px; }
 .colab-msg { font-size: 12px; font-style: italic; color: rgba(253,249,244,.55); z-index: 1; line-height: 1.5; }
 .frase-body { padding: 16px 18px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
 .frase-texto { font-family: 'Cormorant SC', serif; font-size: 15px; color: var(--tinta); line-height: 1.5; letter-spacing: .03em; }
-.frase-autor { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.frase-autor { font-family: 'Nunito', sans-serif; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .frase-autor::before { content: '— '; }
 
 /* ══════════════════════════════════════════════
@@ -797,7 +824,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   line-height: 1.6;
 }
 .placeholder-badge {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: .14em;
@@ -835,7 +862,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 }
 .ou-card:hover { box-shadow:0 4px 18px rgba(139,45,66,.13); }
 .ou-card-title {
-  font-family:'Barlow',sans-serif; font-weight:700; font-size:.9rem;
+  font-family:'Nunito', sans-serif; font-weight:700; font-size:.9rem;
   color:var(--tinta); letter-spacing:.02em; margin-bottom:2px;
 }
 .ou-card-field {
@@ -851,7 +878,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;
 }
 .ou-card-btn {
-  font-family:'Barlow',sans-serif; font-size:.72rem; font-weight:600;
+  font-family:'Nunito', sans-serif; font-size:.72rem; font-weight:600;
   letter-spacing:.04em; border:none; border-radius:7px; padding:5px 12px;
   cursor:pointer; transition:background .15s;
 }
@@ -865,7 +892,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   display:flex; align-items:center; gap:8px;
   background:var(--vinho); color:var(--marfim);
   border:none; border-radius:10px; padding:9px 20px;
-  font-family:'Barlow',sans-serif; font-size:.8rem; font-weight:600;
+  font-family:'Nunito', sans-serif; font-size:.8rem; font-weight:600;
   letter-spacing:.06em; cursor:pointer; transition:background .15s;
 }
 .ou-add-btn:hover { background:var(--vinho-deep); }
@@ -889,13 +916,13 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 }
 .ou-modal input {
   border:1.5px solid var(--border); border-radius:8px; padding:9px 12px;
-  font-family:'Barlow',sans-serif; font-size:.88rem; color:var(--tinta);
+  font-family:'Nunito', sans-serif; font-size:.88rem; color:var(--tinta);
   background:var(--bg); outline:none; transition:border-color .15s;
 }
 .ou-modal input:focus { border-color:var(--vinho); }
 .ou-modal-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:4px; }
 .ou-modal-btns button {
-  font-family:'Barlow',sans-serif; font-size:.8rem; font-weight:600;
+  font-family:'Nunito', sans-serif; font-size:.8rem; font-weight:600;
   letter-spacing:.04em; border:none; border-radius:8px;
   padding:8px 20px; cursor:pointer;
 }
@@ -1039,7 +1066,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   color: var(--marfim);
 }
 .login-subtitle {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.16em;
@@ -1138,7 +1165,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   color: #fff;
 }
 .profile-name {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--marfim);
@@ -1146,7 +1173,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
   line-height: 1.3;
 }
 .profile-role {
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Nunito', sans-serif;
   font-size: 10.5px;
   font-weight: 400;
   color: rgba(253,249,244,0.5);
@@ -1200,7 +1227,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 
   <div id="login-frase" style="margin-top:28px;max-width:480px;text-align:center;padding:0 20px;">
     <span style="font-family:'Cormorant SC',serif;font-size:15px;color:rgba(253,249,244,0.75);line-height:1.6;font-style:italic;" id="login-frase-texto">Disciplina hoje e liberdade amanha.</span>
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.14em;color:rgba(253,249,244,0.4);margin-top:6px;text-transform:uppercase;">Oral Unic · Athena</div>
+    <div style="font-family:'Nunito', sans-serif;font-size:10px;letter-spacing:.14em;color:rgba(253,249,244,0.4);margin-top:6px;text-transform:uppercase;">Oral Unic · Athena</div>
   </div>
 
   <script>
@@ -1299,14 +1326,14 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 
   <div class="sidebar-section-label">Principal</div>
   <button class="nav-item nav-destaque active" data-page="inicio" data-section="Principal" data-label="Início">
-    <span class="icon"><img src="logo-oral-unic-icon.png" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;border-radius:4px;"></span><span class="nav-label">Início</span>
+    <span class="icon"><i data-lucide="home"></i></span><span class="nav-label">Início</span>
   </button>
   <button class="nav-item nav-destaque" data-page="vello" data-section="Principal" data-label="Vello">
-    <span class="icon">⭐</span><span class="nav-label">Vello</span>
+    <span class="icon"><i data-lucide="layout-grid"></i></span><span class="nav-label">Vello</span>
   </button>
 
   <button class="nav-item nav-destaque" data-page="agenda" data-section="Principal" data-label="Agenda">
-    <span class="icon">📅</span><span class="nav-label">Agenda</span>
+    <span class="icon"><i data-lucide="calendar"></i></span><span class="nav-label">Agenda</span>
   </button>
 
   <!-- ── FAVORITOS ── -->
@@ -1317,135 +1344,134 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
     <div class="fav-empty" id="fav-empty-msg">Segure ★ em qualquer aba para fixar aqui</div>
   </div>
 
-  <button class="nav-item" data-page="bi" data-section="Principal" data-label="BI" id="nav-bi">
-    <span class="icon">📊</span><span class="nav-label">BI</span>
+  <button class="nav-item nav-destaque" data-page="bi" data-section="Principal" data-label="BI" id="nav-bi">
+    <span class="icon"><i data-lucide="bar-chart-2"></i></span><span class="nav-label">BI</span>
   </button>
 
-  <div class="sidebar-section-label" onclick="toggleSection('clinica')"><span>🦷 Clínica</span><span class="section-arrow" id="arrow-clinica">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('clinica')"><span>Clínica</span><span class="section-arrow" id="arrow-clinica">▼</span></div>
   <div class="nav-group" id="group-clinica">
   <button class="nav-item nav-destaque" data-page="prontuarios" data-section="Clínica" data-label="Prontuários">
-    <span class="icon">📋</span><span class="nav-label">Prontuários</span>
+    <span class="icon"><i data-lucide="clipboard-list"></i></span><span class="nav-label">Prontuários</span>
   </button>
   <button class="nav-item nav-destaque" data-page="avaliador" data-section="Clínica" data-label="Avaliador Pré-Cirúrgico">
-    <span class="icon">🔬</span><span class="nav-label">Avaliador Pré-Cirúrgico</span>
+    <span class="icon"><i data-lucide="stethoscope"></i></span><span class="nav-label">Avaliador Pré-Cirúrgico</span>
   </button>
   <button class="nav-item nav-destaque" data-page="laboratorios" data-section="Clínica" data-label="Laboratórios">
-    <span class="icon">🦷</span><span class="nav-label">Laboratórios</span>
+    <span class="icon"><i data-lucide="flask-conical"></i></span><span class="nav-label">Laboratórios</span>
   </button>
   <button class="nav-item nav-destaque" data-page="cirurgias" data-section="Clínica" data-label="Cirurgias">
-    <span class="icon">🏥</span><span class="nav-label">Cirurgias</span>
+    <span class="icon"><i data-lucide="scissors"></i></span><span class="nav-label">Cirurgias</span>
   </button>
   <button class="nav-item nav-destaque" data-page="estoque" data-section="Clínica" data-label="Estoque">
-    <span class="icon">📦</span><span class="nav-label">Estoque</span>
+    <span class="icon"><i data-lucide="package"></i></span><span class="nav-label">Estoque</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('recepcao')"><span>🗓️ Recepção</span><span class="section-arrow" id="arrow-recepcao">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('recepcao')"><span>Recepção</span><span class="section-arrow" id="arrow-recepcao">▼</span></div>
   <div class="nav-group" id="group-recepcao">
   <button class="nav-item nav-destaque" data-page="conferencia" data-section="Recepção" data-label="Conferência de Agenda">
-    <span class="icon">✅</span><span class="nav-label">Conferência de Agenda</span>
+    <span class="icon"><i data-lucide="check-square"></i></span><span class="nav-label">Conferência de Agenda</span>
   </button>
   <button class="nav-item nav-destaque" data-page="agendamentos-protocolo" data-section="Recepção" data-label="Agendamentos Protocolo">
-    <span class="icon">📆</span><span class="nav-label">Agendamentos Protocolo</span>
+    <span class="icon"><i data-lucide="calendar-check"></i></span><span class="nav-label">Agendamentos Protocolo</span>
   </button>
   <button class="nav-item nav-destaque" data-page="totem" data-section="Recepção" data-label="Totem">
-    <span class="icon">🖥️</span><span class="nav-label">Totem</span>
+    <span class="icon"><i data-lucide="monitor"></i></span><span class="nav-label">Totem</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('avaliacao')"><span>🔍 Avaliação</span><span class="section-arrow" id="arrow-avaliacao">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('avaliacao')"><span>Avaliação</span><span class="section-arrow" id="arrow-avaliacao">▼</span></div>
   <div class="nav-group" id="group-avaliacao">
   <button class="nav-item nav-destaque" data-page="perfil-paciente" data-section="Avaliação" data-label="Perfil de Paciente">
-    <span class="icon">📣</span><span class="nav-label">Perfil de Paciente</span>
+    <span class="icon"><i data-lucide="user"></i></span><span class="nav-label">Perfil de Paciente</span>
   </button>
   <button class="nav-item nav-destaque" data-page="antes-depois" data-section="Avaliação" data-label="Antes e Depois">
-    <span class="icon">📷</span><span class="nav-label">Antes e Depois</span>
+    <span class="icon"><i data-lucide="image"></i></span><span class="nav-label">Antes e Depois</span>
   </button>
   <button class="nav-item nav-destaque" data-page="planejamentos" data-section="Avaliação" data-label="Planejamentos">
-    <span class="icon">📐</span><span class="nav-label">Planejamentos</span>
+    <span class="icon"><i data-lucide="ruler"></i></span><span class="nav-label">Planejamentos</span>
   </button>
   <button class="nav-item nav-destaque" data-page="dio" data-section="Avaliação" data-label="DIO">
-    <span class="icon">🩻</span><span class="nav-label">DIO</span>
+    <span class="icon"><i data-lucide="scan"></i></span><span class="nav-label">DIO</span>
   </button>
   <button class="nav-item nav-destaque" data-page="precificacao" data-section="Avaliação" data-label="Precificação">
-    <span class="icon">💰</span><span class="nav-label">Precificação</span>
+    <span class="icon"><i data-lucide="dollar-sign"></i></span><span class="nav-label">Precificação</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('comercial')"><span>💼 Comercial</span><span class="section-arrow" id="arrow-comercial">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('comercial')"><span>Comercial</span><span class="section-arrow" id="arrow-comercial">▼</span></div>
   <div class="nav-group" id="group-comercial">
   <button class="nav-item nav-destaque" data-page="resgates" data-section="Comercial" data-label="Resgates">
-    <span class="icon">🎁</span><span class="nav-label">Resgates</span>
+    <span class="icon"><i data-lucide="gift"></i></span><span class="nav-label">Resgates</span>
   </button>
   <button class="nav-item nav-destaque" data-page="cobranca" data-section="Comercial" data-label="Cobrança">
-    <span class="icon">💸</span><span class="nav-label">Cobrança</span>
+    <span class="icon"><i data-lucide="credit-card"></i></span><span class="nav-label">Cobrança</span>
   </button>
   <button class="nav-item nav-destaque" data-page="gerador-proposta" data-section="Comercial" data-label="Gerador de Proposta">
-    <span class="icon">📝</span><span class="nav-label">Gerador de Proposta</span>
+    <span class="icon"><i data-lucide="file-text"></i></span><span class="nav-label">Gerador de Proposta</span>
   </button>
   <button class="nav-item nav-destaque" data-page="calc-relacionamento" data-section="Comercial" data-label="Calculadora Relacionamento">
-    <span class="icon">🤝</span><span class="nav-label">Calc. Relacionamento</span>
+    <span class="icon"><i data-lucide="handshake"></i></span><span class="nav-label">Calc. Relacionamento</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('gestao')"><span>📊 Gestão</span><span class="section-arrow" id="arrow-gestao">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('gestao')"><span>Gestão</span><span class="section-arrow" id="arrow-gestao">▼</span></div>
   <div class="nav-group" id="group-gestao">
   <button class="nav-item nav-destaque" data-page="financeiro-completo" data-section="Gestão" data-label="Financeiro">
-    <span class="icon">📊</span><span class="nav-label">Financeiro</span>
+    <span class="icon"><i data-lucide="trending-up"></i></span><span class="nav-label">Financeiro</span>
   </button>
   <button class="nav-item nav-destaque" data-page="calculadora" data-section="Gestão" data-label="Calculadora de Precificação">
-    <span class="icon">🧮</span><span class="nav-label">Calculadora de Precificação</span>
+    <span class="icon"><i data-lucide="calculator"></i></span><span class="nav-label">Calculadora de Precificação</span>
   </button>
   <button class="nav-item nav-destaque" data-page="direcao" data-section="Gestão" data-label="Direção">
-    <span class="icon">🎯</span><span class="nav-label">Direção</span>
+    <span class="icon"><i data-lucide="target"></i></span><span class="nav-label">Direção</span>
   </button>
   <button class="nav-item nav-destaque" data-page="rh" data-section="Gestão" data-label="RH">
-    <span class="icon">👥</span><span class="nav-label">RH</span>
+    <span class="icon"><i data-lucide="users"></i></span><span class="nav-label">RH</span>
   </button>
   <button class="nav-item nav-destaque" data-page="senhas" data-section="Gestão" data-label="Senhas">
-    <span class="icon">🔑</span><span class="nav-label">Senhas</span>
+    <span class="icon"><i data-lucide="key"></i></span><span class="nav-label">Senhas</span>
   </button>
   <button class="nav-item nav-destaque" data-page="servicos" data-section="Gestão" data-label="Serviços">
-    <span class="icon">🛠️</span><span class="nav-label">Serviços</span>
+    <span class="icon"><i data-lucide="wrench"></i></span><span class="nav-label">Serviços</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('marketing')"><span>📣 Marketing</span><span class="section-arrow" id="arrow-marketing">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('marketing')"><span>Marketing</span><span class="section-arrow" id="arrow-marketing">▼</span></div>
   <div class="nav-group" id="group-marketing">
   <button class="nav-item nav-destaque" data-page="banco-conteudo" data-section="Marketing" data-label="Banco de Conteúdo">
-    <span class="icon">🗂️</span><span class="nav-label">Banco de Conteúdo</span>
+    <span class="icon"><i data-lucide="folder"></i></span><span class="nav-label">Banco de Conteúdo</span>
   </button>
   <button class="nav-item nav-destaque" data-page="gerador-post" data-section="Marketing" data-label="Gerador de Post">
-    <span class="icon">✨</span><span class="nav-label">Gerador de Post</span>
+    <span class="icon"><i data-lucide="sparkles"></i></span><span class="nav-label">Gerador de Post</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('documentos')"><span>📁 Documentos</span><span class="section-arrow" id="arrow-documentos">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('documentos')"><span>Documentos</span><span class="section-arrow" id="arrow-documentos">▼</span></div>
   <div class="nav-group" id="group-documentos">
   <button class="nav-item nav-destaque" data-page="protocolos" data-section="Documentos" data-label="Protocolos Clínicos">
-    <span class="icon">📋</span><span class="nav-label">Protocolos Clínicos</span>
+    <span class="icon"><i data-lucide="clipboard"></i></span><span class="nav-label">Protocolos Clínicos</span>
   </button>
   <button class="nav-item nav-destaque" data-page="docs-operacao" data-section="Documentos" data-label="Documentos Operação">
-    <span class="icon">📁</span><span class="nav-label">Documentos Operação</span>
+    <span class="icon"><i data-lucide="folder-open"></i></span><span class="nav-label">Documentos Operação</span>
   </button>
   <button class="nav-item nav-destaque" data-page="atas" data-section="Documentos" data-label="Atas de Reuniões">
-    <span class="icon">📝</span><span class="nav-label">Atas de Reuniões</span>
+    <span class="icon"><i data-lucide="file-text"></i></span><span class="nav-label">Atas de Reuniões</span>
   </button>
   </div>
 
-  <div class="sidebar-section-label" onclick="toggleSection('estudo')"><span>📚 Estudo</span><span class="section-arrow" id="arrow-estudo">▼</span></div>
+  <div class="sidebar-section-label" onclick="toggleSection('estudo')"><span>Estudo</span><span class="section-arrow" id="arrow-estudo">▼</span></div>
   <div class="nav-group" id="group-estudo">
   <button class="nav-item nav-destaque" data-page="biblioteca" data-section="Estudo" data-label="Biblioteca">
-    <span class="icon">📚</span><span class="nav-label">Biblioteca</span>
+    <span class="icon"><i data-lucide="book-open"></i></span><span class="nav-label">Biblioteca</span>
   </button>
   <button class="nav-item nav-destaque" data-page="odontohub" data-section="Estudo" data-label="OdontoHub">
-    <span class="icon">🦷</span><span class="nav-label">OdontoHub</span>
+    <span class="icon"><i data-lucide="activity"></i></span><span class="nav-label">OdontoHub</span>
   </button>
   </div>
 
-  <!-- Configurações — só Thais e Mone (injetado via aplicarPermissoes) -->
-  <button class="nav-item" id="nav-configuracoes" data-page="configuracoes" data-section="Sistema" data-label="Configurações" style="display:none;margin:4px 10px 8px;border-radius:10px;background:rgba(240,201,110,0.1);border:1px solid rgba(240,201,110,0.25);color:#f0c96e;">
-    <span class="icon">⚙️</span><span class="nav-label">Configurações</span>
+  <button class="nav-item" id="nav-configuracoes" data-page="configuracoes" data-section="Sistema" data-label="Configurações" style="display:none;margin:4px 10px 8px;border-radius:10px;background:var(--creme);border:1px solid rgba(61,10,20,0.2);color:var(--vinho-deep);">
+    <span class="icon"><i data-lucide="settings"></i></span><span class="nav-label">Configurações</span>
   </button>
 
   <div class="sidebar-footer" style="position:relative;">
@@ -1454,17 +1480,16 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
       <div class="name" id="sidebar-user-name">—</div>
       <div class="role" id="sidebar-user-role">—</div>
     </div>
-    <span id="sidebar-logout-arrow" style="color:rgba(253,249,244,0.35);font-size:13px;cursor:pointer;margin-left:auto;" onclick="toggleLogoutMenu()" title="Opções">⌄</span>
-    <!-- Popup de logout -->
-    <div id="sidebar-logout-menu" style="display:none;position:absolute;bottom:62px;left:12px;right:12px;background:#2a0f1a;border:1px solid rgba(253,249,244,0.12);border-radius:10px;padding:8px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-      <button onclick="fazerLogoutAthena()" style="width:100%;padding:10px 14px;background:transparent;border:none;color:rgba(253,249,244,0.7);font-family:'Barlow',sans-serif;font-size:12px;text-align:left;cursor:pointer;border-radius:7px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(192,57,43,0.18)'" onmouseout="this.style.background='transparent'">
+    <span id="sidebar-logout-arrow" style="color:rgba(61,10,20,0.45);font-size:13px;cursor:pointer;margin-left:auto;" onclick="toggleLogoutMenu()" title="Opções">⌄</span>
+    <div id="sidebar-logout-menu" style="display:none;position:absolute;bottom:62px;left:12px;right:12px;background:var(--blush);border:1px solid rgba(61,10,20,0.15);border-radius:10px;padding:8px;z-index:999;box-shadow:0 8px 24px rgba(61,10,20,0.2);">
+      <button onclick="fazerLogoutAthena()" style="width:100%;padding:10px 14px;background:transparent;border:none;color:var(--vinho-deep);font-family:'Nunito', sans-serif;font-size:12px;text-align:left;cursor:pointer;border-radius:7px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='rgba(61,10,20,0.10)'" onmouseout="this.style.background='transparent'">
         <span style="font-size:14px;">🚪</span> Trocar usuário
       </button>
     </div>
   </div>
 
   <div style="padding:10px 16px 16px;">
-    <button onclick="fazerBackupCompleto()" style="width:100%;padding:9px 12px;background:rgba(240,201,110,0.15);border:1px solid rgba(240,201,110,0.35);border-radius:10px;color:#f0c96e;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.2s;font-family:'Barlow',sans-serif;" onmouseover="this.style.background='rgba(240,201,110,0.28)'" onmouseout="this.style.background='rgba(240,201,110,0.15)'">
+    <button onclick="fazerBackupCompleto()" style="width:100%;padding:9px 12px;background:rgba(61,10,20,0.08);border:1px solid rgba(61,10,20,0.18);border-radius:10px;color:var(--vinho-deep);font-size:0.75rem;font-weight:700;letter-spacing:0.08em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.2s;font-family:'Nunito', sans-serif;" onmouseover="this.style.background='rgba(61,10,20,0.15)'" onmouseout="this.style.background='rgba(61,10,20,0.08)'">
       💾 Backup Completo
     </button>
   </div>
@@ -1503,8 +1528,8 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
         <div style="margin-bottom:16px;background:#fff;border:1px solid #E4D8CC;border-radius:10px;padding:18px 24px;display:flex;align-items:center;gap:20px;">
           <span style="font-size:2.2rem;opacity:.25;color:#8B2D42;line-height:1;flex-shrink:0;">❝</span>
           <div style="flex:1;">
-            <div id="frase-do-dia-texto" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:400;font-style:italic;color:#8B2D42;line-height:1.5;letter-spacing:.01em;">Disciplina hoje e liberdade amanha.</div>
-            <div id="frase-do-dia-data" style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#B85C72;text-transform:uppercase;letter-spacing:.12em;margin-top:6px;">Oral Unic · Athena</div>
+            <div id="frase-do-dia-texto" style="font-family:'Nunito', sans-serif,Georgia,serif;font-size:18px;font-weight:400;font-style:italic;color:#8B2D42;line-height:1.5;letter-spacing:.01em;">Disciplina hoje e liberdade amanha.</div>
+            <div id="frase-do-dia-data" style="font-family:'Nunito', sans-serif;font-size:10px;color:#B85C72;text-transform:uppercase;letter-spacing:.12em;margin-top:6px;">Oral Unic · Athena</div>
           </div>
           <button class="home-edit-btn" onclick="homeEdit('frase')" style="flex-shrink:0;">✏ Editar</button>
         </div>
@@ -1673,18 +1698,18 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
             <div>
               <div style="font-family:'Cormorant SC',serif;font-size:22px;font-weight:600;color:#6A1F30;letter-spacing:.04em;">Business Intelligence</div>
-              <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#7a5a50;text-transform:uppercase;letter-spacing:.12em;margin-top:2px;" id="bi-subtitle">Oral Unic · Carlos Barbosa</div>
+              <div style="font-family:'Nunito', sans-serif;font-size:11px;color:#7a5a50;text-transform:uppercase;letter-spacing:.12em;margin-top:2px;" id="bi-subtitle">Oral Unic · Carlos Barbosa</div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <div style="display:flex;align-items:center;gap:4px;">
                 <button id="bi-ano-prev" onclick="biAnoChange(-1)" style="background:#F5EDE2;border:1px solid #E4D8CC;border-radius:6px;padding:3px 8px;font-size:13px;cursor:pointer;color:#6A1F30;font-weight:700;line-height:1;">‹</button>
-                <span id="bi-ano-label" style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:#6A1F30;min-width:38px;text-align:center;"></span>
+                <span id="bi-ano-label" style="font-family:'Nunito', sans-serif;font-size:13px;font-weight:700;color:#6A1F30;min-width:38px;text-align:center;"></span>
                 <button id="bi-ano-next" onclick="biAnoChange(1)" style="background:#F5EDE2;border:1px solid #E4D8CC;border-radius:6px;padding:3px 8px;font-size:13px;cursor:pointer;color:#6A1F30;font-weight:700;line-height:1;">›</button>
               </div>
               <div id="bi-mes-chips" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-              <button onclick="biCarregar(true)" id="bi-refresh-btn" style="background:#F5EDE2;border:1px solid #E4D8CC;border-radius:8px;padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#6A1F30;cursor:pointer;letter-spacing:.04em;">↻</button>
-              <button onclick="biExportarExcel()" style="background:#1D6F42;border:none;border-radius:8px;padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">Excel</button>
-              <button onclick="biExportarPdf()" style="background:#6A1F30;border:none;border-radius:8px;padding:5px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">PDF</button>
+              <button onclick="biCarregar(true)" id="bi-refresh-btn" style="background:#F5EDE2;border:1px solid #E4D8CC;border-radius:8px;padding:5px 12px;font-family:'Nunito', sans-serif;font-size:12px;font-weight:700;color:#6A1F30;cursor:pointer;letter-spacing:.04em;">↻</button>
+              <button onclick="biExportarExcel()" style="background:#1D6F42;border:none;border-radius:8px;padding:5px 12px;font-family:'Nunito', sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">Excel</button>
+              <button onclick="biExportarPdf()" style="background:#6A1F30;border:none;border-radius:8px;padding:5px 12px;font-family:'Nunito', sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;">PDF</button>
             </div>
           </div>
 
@@ -1693,7 +1718,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
             <div id="bi-tabs-bar" style="display:flex;align-items:flex-end;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;">
               <!-- aba Visão Geral fixa -->
               <button id="bi-tab-overview" onclick="biSwitchTab('__overview__')"
-                style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;padding:8px 18px;border:1px solid #E4D8CC;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;letter-spacing:.04em;white-space:nowrap;background:#6A1F30;color:#fff;">
+                style="font-family:'Nunito', sans-serif;font-size:13px;font-weight:700;padding:8px 18px;border:1px solid #E4D8CC;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;letter-spacing:.04em;white-space:nowrap;background:#6A1F30;color:#fff;">
                 Visão Geral
               </button>
             </div>
@@ -1735,7 +1760,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
                 <div class="card-title"><span class="dot" style="background:#6A1F30"></span>Métricas de Gestão</div>
                 <div style="display:flex;align-items:center;gap:10px;">
                   <span id="bi-gestao-mes" style="font-size:11px;color:#7a5a50;"></span>
-                  <button id="bi-gestao-edit-btn" onclick="biGestaoToggleEdit()" style="background:#F5EDE2;border:1px solid #E4D8CC;border-radius:6px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#6A1F30;cursor:pointer;letter-spacing:.04em;">✏ Editar</button>
+                  <button id="bi-gestao-edit-btn" onclick="biGestaoToggleEdit()" style="background:#F5EDE2;border:1px solid #E4D8CC;border-radius:6px;padding:4px 10px;font-family:'Nunito', sans-serif;font-size:11px;font-weight:700;color:#6A1F30;cursor:pointer;letter-spacing:.04em;">✏ Editar</button>
                 </div>
               </div>
               <div style="padding:10px 16px 16px;" id="bi-gestao-body"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">Carregando…</div></div>
@@ -1763,11 +1788,11 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
           <div style="font-family:'Cormorant SC',serif;font-size:18px;font-weight:600;color:#6A1F30;margin-bottom:18px;" id="bi-wm-title">Adicionar Widget</div>
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div>
-              <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;display:block;margin-bottom:6px;">Título do widget</label>
+              <label style="font-family:'Nunito', sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;display:block;margin-bottom:6px;">Título do widget</label>
               <input id="bi-wm-label" type="text" placeholder="Ex: Labs por Dentista" style="width:100%;padding:9px 12px;border:1px solid #E4D8CC;border-radius:8px;font-size:14px;background:#fff;color:#1A0F0A;">
             </div>
             <div>
-              <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;display:block;margin-bottom:6px;">Fonte de dados</label>
+              <label style="font-family:'Nunito', sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;display:block;margin-bottom:6px;">Fonte de dados</label>
               <select id="bi-wm-source" style="width:100%;padding:9px 12px;border:1px solid #E4D8CC;border-radius:8px;font-size:14px;background:#fff;color:#1A0F0A;">
                 <optgroup label="🦷 Laboratório Interno">
                   <option value="kpi_labs">KPI — Total de Labs (mês)</option>
@@ -1857,26 +1882,26 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
               </select>
             </div>
             <div>
-              <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;display:block;margin-bottom:8px;">Tipo de gráfico</label>
+              <label style="font-family:'Nunito', sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;display:block;margin-bottom:8px;">Tipo de gráfico</label>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="bi-wm-chart-opts">
                 <button onclick="biWmSelectChart('bar')" data-ctype="bar" style="padding:10px 6px;border:2px solid #E4D8CC;border-radius:10px;background:#fff;cursor:pointer;font-size:20px;display:flex;flex-direction:column;align-items:center;gap:4px;">
-                  <span>📊</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#7a5a50;">Barras</span>
+                  <span>📊</span><span style="font-family:'Nunito', sans-serif;font-size:10px;color:#7a5a50;">Barras</span>
                 </button>
                 <button onclick="biWmSelectChart('pie')" data-ctype="pie" style="padding:10px 6px;border:2px solid #E4D8CC;border-radius:10px;background:#fff;cursor:pointer;font-size:20px;display:flex;flex-direction:column;align-items:center;gap:4px;">
-                  <span>🥧</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#7a5a50;">Pizza</span>
+                  <span>🥧</span><span style="font-family:'Nunito', sans-serif;font-size:10px;color:#7a5a50;">Pizza</span>
                 </button>
                 <button onclick="biWmSelectChart('doughnut')" data-ctype="doughnut" style="padding:10px 6px;border:2px solid #E4D8CC;border-radius:10px;background:#fff;cursor:pointer;font-size:20px;display:flex;flex-direction:column;align-items:center;gap:4px;">
-                  <span>🍩</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#7a5a50;">Rosca</span>
+                  <span>🍩</span><span style="font-family:'Nunito', sans-serif;font-size:10px;color:#7a5a50;">Rosca</span>
                 </button>
                 <button onclick="biWmSelectChart('kpi')" data-ctype="kpi" style="padding:10px 6px;border:2px solid #E4D8CC;border-radius:10px;background:#fff;cursor:pointer;font-size:20px;display:flex;flex-direction:column;align-items:center;gap:4px;">
-                  <span>🔢</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#7a5a50;">Número</span>
+                  <span>🔢</span><span style="font-family:'Nunito', sans-serif;font-size:10px;color:#7a5a50;">Número</span>
                 </button>
               </div>
             </div>
           </div>
           <div style="display:flex;gap:10px;margin-top:22px;justify-content:flex-end;">
-            <button onclick="biWidgetModalClose()" style="padding:8px 18px;border:1px solid #E4D8CC;border-radius:8px;background:#F5EDE2;color:#6A1F30;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
-            <button onclick="biWidgetSalvar()" style="padding:8px 20px;border:none;border-radius:8px;background:#6A1F30;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Salvar Widget</button>
+            <button onclick="biWidgetModalClose()" style="padding:8px 18px;border:1px solid #E4D8CC;border-radius:8px;background:#F5EDE2;color:#6A1F30;font-family:'Nunito', sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+            <button onclick="biWidgetSalvar()" style="padding:8px 20px;border:none;border-radius:8px;background:#6A1F30;color:#fff;font-family:'Nunito', sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Salvar Widget</button>
           </div>
         </div>
       </div>
@@ -2108,7 +2133,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
     .bib-header-left h1 { font-family:'Cormorant SC',serif; font-size:26px; font-weight:400; color:var(--vinho); letter-spacing:.15em; }
     .bib-header-left p { font-size:12px; color:var(--muted); margin-top:2px; letter-spacing:.04em; }
     .bib-tabs { display:flex; gap:4px; padding:16px 28px 0; border-bottom:1px solid var(--border); }
-    .bib-tab { padding:8px 18px; border-radius:8px 8px 0 0; border:none; background:transparent; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; letter-spacing:.05em; text-transform:uppercase; transition:all .2s; position:relative; bottom:-1px; border-bottom:2px solid transparent; font-family:'Barlow',sans-serif; }
+    .bib-tab { padding:8px 18px; border-radius:8px 8px 0 0; border:none; background:transparent; color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; letter-spacing:.05em; text-transform:uppercase; transition:all .2s; position:relative; bottom:-1px; border-bottom:2px solid transparent; font-family:'Nunito', sans-serif; }
     .bib-tab.active { color:var(--vinho); border-bottom-color:var(--vinho); background:rgba(139,45,66,.04); }
     .bib-tab:hover:not(.active) { background:var(--blush); color:var(--vinho); }
     .bib-body { padding:24px 28px; overflow-y:auto; max-height:calc(100vh - 200px); }
@@ -2117,9 +2142,9 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 
     /* Filtros */
     .bib-filters { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
-    .bib-search { flex:1; min-width:200px; padding:9px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:'Barlow',sans-serif; background:var(--card-bg); color:var(--text); outline:none; }
+    .bib-search { flex:1; min-width:200px; padding:9px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:'Nunito', sans-serif; background:var(--card-bg); color:var(--text); outline:none; }
     .bib-search:focus { border-color:var(--vinho); }
-    .bib-filter-btn { padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--muted); font-size:11px; font-weight:600; cursor:pointer; letter-spacing:.04em; text-transform:uppercase; font-family:'Barlow',sans-serif; transition:all .2s; }
+    .bib-filter-btn { padding:8px 14px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--muted); font-size:11px; font-weight:600; cursor:pointer; letter-spacing:.04em; text-transform:uppercase; font-family:'Nunito', sans-serif; transition:all .2s; }
     .bib-filter-btn.on { background:var(--vinho); color:#fff; border-color:var(--vinho); }
 
     /* Grid de livros */
@@ -2170,7 +2195,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
     .bib-emp-title { font-size:13px; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px; }
     .bib-emp-dates { font-size:11px; color:var(--muted); margin-bottom:8px; }
     .bib-emp-actions { display:flex; gap:8px; flex-wrap:wrap; }
-    .bib-btn { padding:7px 14px; border-radius:8px; border:none; font-size:11px; font-weight:700; cursor:pointer; font-family:'Barlow',sans-serif; letter-spacing:.04em; text-transform:uppercase; transition:all .2s; }
+    .bib-btn { padding:7px 14px; border-radius:8px; border:none; font-size:11px; font-weight:700; cursor:pointer; font-family:'Nunito', sans-serif; letter-spacing:.04em; text-transform:uppercase; transition:all .2s; }
     .bib-btn-primary { background:var(--vinho); color:#fff; }
     .bib-btn-primary:hover { background:var(--vinho-deep); }
     .bib-btn-secondary { background:var(--blush); color:var(--vinho); }
@@ -2896,16 +2921,16 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
           <span style="font-size:1.5rem;">⚙️</span>
           <div>
-            <div style="font-family:'Barlow',sans-serif;font-size:1.4rem;font-weight:700;color:#f0f0f0;letter-spacing:0.02em;">Configurações de Acesso</div>
+            <div style="font-family:'Nunito', sans-serif;font-size:1.4rem;font-weight:700;color:#f0f0f0;letter-spacing:0.02em;">Configurações de Acesso</div>
             <div style="font-size:0.78rem;color:rgba(253,249,244,0.45);margin-top:2px;">Gerencie o que cada usuário pode ver no sistema</div>
           </div>
-          <button onclick="salvarPermissoesCustom()" style="margin-left:auto;padding:9px 22px;background:#f0c96e;border:none;border-radius:10px;font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:700;color:#1a0f0a;cursor:pointer;letter-spacing:0.04em;">💾 Salvar</button>
-          <button onclick="resetarPermissoes()" style="padding:9px 16px;background:transparent;border:1px solid rgba(240,201,110,0.3);border-radius:10px;font-family:'Barlow',sans-serif;font-size:0.78rem;font-weight:600;color:#f0c96e;cursor:pointer;">↺ Resetar padrão</button>
+          <button onclick="salvarPermissoesCustom()" style="margin-left:auto;padding:9px 22px;background:#f0c96e;border:none;border-radius:10px;font-family:'Nunito', sans-serif;font-size:0.82rem;font-weight:700;color:#1a0f0a;cursor:pointer;letter-spacing:0.04em;">💾 Salvar</button>
+          <button onclick="resetarPermissoes()" style="padding:9px 16px;background:transparent;border:1px solid rgba(240,201,110,0.3);border-radius:10px;font-family:'Nunito', sans-serif;font-size:0.78rem;font-weight:600;color:#f0c96e;cursor:pointer;">↺ Resetar padrão</button>
         </div>
         <div style="font-size:0.72rem;color:rgba(253,249,244,0.35);margin-bottom:20px;padding-left:2px;">✅ = acesso liberado &nbsp;|&nbsp; 🔒 = bloqueado (cadeado no menu)</div>
 
         <div style="overflow-x:auto;border-radius:14px;border:1px solid rgba(253,249,244,0.1);">
-          <table id="perm-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Barlow',sans-serif;font-size:0.72rem;">
+          <table id="perm-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Nunito', sans-serif;font-size:0.72rem;">
             <thead id="perm-thead"></thead>
             <tbody id="perm-tbody"></tbody>
           </table>
@@ -2919,7 +2944,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
             <div style="font-size:0.7rem;color:rgba(253,249,244,0.4);margin-left:4px;">Quais abas cada usuário vê dentro de Laboratórios</div>
           </div>
           <div style="overflow-x:auto;border-radius:14px;border:1px solid rgba(253,249,244,0.1);">
-            <table id="lab-perm-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Barlow',sans-serif;font-size:0.72rem;">
+            <table id="lab-perm-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Nunito', sans-serif;font-size:0.72rem;">
               <thead id="lab-perm-thead"></thead>
               <tbody id="lab-perm-tbody"></tbody>
             </table>
@@ -2934,7 +2959,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
             <div style="font-size:0.7rem;color:rgba(253,249,244,0.4);margin-left:4px;">Quais categorias cada usuário vê dentro de Estoque</div>
           </div>
           <div style="overflow-x:auto;border-radius:14px;border:1px solid rgba(253,249,244,0.1);">
-            <table id="estoque-perm-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Barlow',sans-serif;font-size:0.72rem;">
+            <table id="estoque-perm-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Nunito', sans-serif;font-size:0.72rem;">
               <thead id="estoque-perm-thead"></thead>
               <tbody id="estoque-perm-tbody"></tbody>
             </table>
@@ -2949,7 +2974,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
             <div style="font-size:0.7rem;color:rgba(253,249,244,0.4);margin-left:4px;">Quais setores físicos cada usuário vê em Saída e Pedidos Central</div>
           </div>
           <div style="overflow-x:auto;border-radius:14px;border:1px solid rgba(253,249,244,0.1);">
-            <table id="estoque-setor-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Barlow',sans-serif;font-size:0.72rem;">
+            <table id="estoque-setor-table" style="border-collapse:collapse;width:100%;min-width:900px;font-family:'Nunito', sans-serif;font-size:0.72rem;">
               <thead id="estoque-setor-thead"></thead>
               <tbody id="estoque-setor-tbody"></tbody>
             </table>
@@ -3344,9 +3369,9 @@ function nav(btn) {
       if (sk && !sk.classList.contains('hidden')) {
         sk.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;padding:40px;">'
           + '<div style="font-size:32px;">⚠️</div>'
-          + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:16px;font-weight:700;color:#6A1F30;">Serviço indisponível</div>'
+          + '<div style="font-family:\'Nunito\',sans-serif;font-size:16px;font-weight:700;color:#6A1F30;">Serviço indisponível</div>'
           + '<div style="font-size:13px;color:var(--muted);text-align:center;max-width:280px;">O serviço demorou para responder. Aguarde alguns segundos e tente novamente.</div>'
-          + '<button onclick="this.closest(\'.iframe-skeleton\').classList.add(\'hidden\');document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src=document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src;" style="background:#6A1F30;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">↻ Tentar novamente</button>'
+          + '<button onclick="this.closest(\'.iframe-skeleton\').classList.add(\'hidden\');document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src=document.getElementById(\'' + (iframeMap[page]||'iframe-'+page) + '\').src;" style="background:#6A1F30;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-family:\'Nunito\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">↻ Tentar novamente</button>'
           + '</div>';
         sk.style.animation = 'none';
       }
@@ -3586,15 +3611,26 @@ function toggleSidebar() {
   function fbLoad(cb) {
     fetch(FB_BASE + FB_DOC + '?key=' + FB_KEY)
       .then(function(r){ return r.json(); })
-      .then(function(d){
+      .then(async function(d){
         if (d.fields && d.fields.cats) {
           var cats = fromFv(d.fields.cats);
-          cats.forEach(function(cat){
-            (cat.docs||[]).forEach(function(doc){
+          for (var i = 0; i < cats.length; i++) {
+            var docs = cats[i].docs || [];
+            for (var j = 0; j < docs.length; j++) {
+              var doc = docs[j];
               var cached = localStorage.getItem('ou_prot_pdf_' + doc.id);
-              if (cached) doc.dataUrl = cached;
-            });
-          });
+              if (cached) {
+                doc.dataUrl = cached;
+              } else {
+                // Tenta buscar do Supabase automaticamente
+                var fromCloud = await fetchPdfFromSupabase(doc.id);
+                if (fromCloud) {
+                  doc.dataUrl = fromCloud;
+                  try { localStorage.setItem('ou_prot_pdf_'+doc.id, fromCloud); } catch(e) {}
+                }
+              }
+            }
+          }
           cb(cats);
         } else { cb(null); }
       })
@@ -3614,8 +3650,38 @@ function toggleSidebar() {
     }).catch(function(){});
   }
 
-  function savePdf(docId, dataUrl) { try { localStorage.setItem('ou_prot_pdf_'+docId, dataUrl); } catch(e) {} }
-  function deletePdf(docId) { try { localStorage.removeItem('ou_prot_pdf_'+docId); } catch(e) {} }
+  // PDFs salvos no Supabase usando tabela 'eventos' com tipo especial '__prot_pdf__'
+  // id = 'prot_pdf__' + docId, descricao = dataUrl base64
+  function savePdf(docId, dataUrl) {
+    try { localStorage.setItem('ou_prot_pdf_'+docId, dataUrl); } catch(e) {}
+    try {
+      if (window._supa) {
+        window._supa.from('eventos').upsert({
+          id: 'prot_pdf__' + docId,
+          titulo: '__prot_pdf__',
+          tipo: '__prot_pdf__',
+          data: '2000-01-01',
+          descricao: dataUrl,
+          created_by: 'sistema',
+          recorrente: false
+        }, { onConflict: 'id' }).then(function(){});
+      }
+    } catch(e) {}
+  }
+  function deletePdf(docId) {
+    try { localStorage.removeItem('ou_prot_pdf_'+docId); } catch(e) {}
+    try {
+      if (window._supa) window._supa.from('eventos').delete().eq('id', 'prot_pdf__' + docId).then(function(){});
+    } catch(e) {}
+  }
+  async function fetchPdfFromSupabase(docId) {
+    try {
+      if (!window._supa) return null;
+      var res = await window._supa.from('eventos').select('descricao').eq('id', 'prot_pdf__' + docId).single();
+      if (res.data && res.data.descricao) return res.data.descricao;
+    } catch(e) {}
+    return null;
+  }
 
   function loadLegacy() {
     try { return JSON.parse(localStorage.getItem(PROT_KEY)) || PROT_DEFAULT; } catch(e) { return PROT_DEFAULT; }
@@ -3961,7 +4027,6 @@ function toggleSidebar() {
     { id: 'brendha',     name: 'Brendha',         role: 'Relacionamento',   color: '#4A7C5E' },
     { id: 'alexandre',   name: 'Alexandre',       role: 'Financeiro',       color: '#5C6B3A' },
     { id: 'bruna',       name: 'Bruna',           role: 'Recepção',         color: '#8B5E3C' },
-    { id: 'suelen',      name: 'Suelen',          role: 'ASB',              color: '#8B3A4A' },
     { id: 'mariele',     name: 'Mariele',         role: 'Recepção',         color: '#3A6A8A' },
     { id: 'junior',      name: 'Junior',          role: 'Protético',        color: '#4A5A7A' },
     { id: 'francieli',   name: 'Francieli',       role: 'Aux. Prótese',     color: '#7A4A6A' },
@@ -4252,14 +4317,14 @@ function toggleSidebar() {
   pwdModal.innerHTML = ''
     + '<div style="background:#2a0f1a;border:1px solid rgba(253,249,244,0.12);border-radius:20px;padding:36px 32px;width:340px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.5);">'
     + '  <div id="pwd-modal-avatar" style="width:64px;height:64px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fdf9f4;overflow:hidden;"></div>'
-    + '  <div id="pwd-modal-name" style="font-family:\'Barlow\',sans-serif;font-size:1.1rem;font-weight:600;color:#fdf9f4;margin-bottom:4px;"></div>'
+    + '  <div id="pwd-modal-name" style="font-family:\'Nunito\',sans-serif;font-size:1.1rem;font-weight:600;color:#fdf9f4;margin-bottom:4px;"></div>'
     + '  <div id="pwd-modal-role" style="font-size:0.72rem;color:rgba(253,249,244,0.4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:22px;"></div>'
     + '  <input id="pwd-modal-input" type="password" placeholder="Digite sua senha" autocomplete="current-password"'
-    + '    style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(253,249,244,0.18);background:rgba(253,249,244,0.06);color:#fdf9f4;font-family:\'Barlow\',sans-serif;font-size:0.9rem;outline:none;text-align:center;letter-spacing:0.12em;">'
+    + '    style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid rgba(253,249,244,0.18);background:rgba(253,249,244,0.06);color:#fdf9f4;font-family:\'Nunito\',sans-serif;font-size:0.9rem;outline:none;text-align:center;letter-spacing:0.12em;">'
     + '  <div id="pwd-modal-error" style="color:#f87171;font-size:0.72rem;margin-top:8px;min-height:18px;"></div>'
     + '  <div style="display:flex;gap:10px;margin-top:16px;">'
-    + '    <button id="pwd-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(253,249,244,0.15);background:transparent;color:rgba(253,249,244,0.5);font-family:\'Barlow\',sans-serif;font-size:0.8rem;cursor:pointer;">Cancelar</button>'
-    + '    <button id="pwd-modal-btn" style="flex:2;padding:11px;border-radius:10px;border:none;background:#8B2D42;color:#fdf9f4;font-family:\'Barlow\',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;">Entrar</button>'
+    + '    <button id="pwd-modal-cancel" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(253,249,244,0.15);background:transparent;color:rgba(253,249,244,0.5);font-family:\'Nunito\',sans-serif;font-size:0.8rem;cursor:pointer;">Cancelar</button>'
+    + '    <button id="pwd-modal-btn" style="flex:2;padding:11px;border-radius:10px;border:none;background:#8B2D42;color:#fdf9f4;font-family:\'Nunito\',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;">Entrar</button>'
     + '  </div>'
     + '</div>';
 
@@ -4635,10 +4700,11 @@ function toggleSidebar() {
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
   initSidebarSections();
   setFraseDoDia();
-  _favInit();           // 1º injeta estrelas nos nav-items e registra listener do sidebar
-  if (typeof window._tryAutoLogin === 'function') window._tryAutoLogin(); // 2º faz auto-login (usa as estrelas já injetadas)
+  _favInit();
+  if (typeof window._tryAutoLogin === 'function') window._tryAutoLogin();
 });
 
 // Frases para perfis de gestão/liderança (ADM, Diretores, Gerente, Financeiro, Consultora)
@@ -4810,10 +4876,6 @@ var PERMISSOES = {
                   'agendamentos-protocolo',
                   'perfil-paciente','antes-depois','dio',
                   'protocolos','docs-operacao','atas','biblioteca','odontohub'],
-  'suelen':      ['inicio','vello','agenda','prontuarios',
-                  'avaliador','laboratorios','cirurgias','estoque',
-                  'perfil-paciente','antes-depois','dio',
-                  'protocolos','docs-operacao','atas','biblioteca','odontohub'],
   'junior':      ['inicio','vello','agenda','prontuarios',
                   'laboratorios','estoque',
                   'protocolos','docs-operacao','atas','biblioteca','odontohub'],
@@ -4849,7 +4911,6 @@ var LAB_ABAS = {
   'bruna':       ['externo','pesquisa'],
   'mariele':     ['externo','pesquisa'],
   'mariele':     ['externo','pesquisa'],
-  'suelen':      ['kanban','externo','pesquisa'],
   'dra-stefany': ['externo','pesquisa'],
 };
 // Aplica customizações salvas (sobrescreve padrão)
@@ -4865,7 +4926,6 @@ var ESTOQUE_ABAS = {
   'bruna':       ['saida','busca','pedidos'],
   'mariele':     ['saida','busca','pedidos'],
   'mariele':     ['saida','busca','pedidos'],
-  'suelen':      ['saida','busca','pedidos'],
   'francieli':   ['saida','busca','pedidos','pedidos-lab'],
   'junior':      ['saida','busca','pedidos','pedidos-lab'],
   'dra-stefany': ['saida','busca','pedidos'],
@@ -4887,7 +4947,6 @@ var ESTOQUE_SETORES = {
   'brendha':     null,
   'bruna':       null,
   'mariele':     null,
-  'suelen':      ['Esterilização e Expurgo','Componentes Esterilização'],
   'francieli':   ['Laboratório','Lab Componentes','Lab Dentes'],
   'junior':      ['Laboratório','Lab Componentes','Lab Dentes'],
   'dra-stefany': ['Consultório 3','Componentes Cons 3'],
@@ -5168,7 +5227,6 @@ var CHAT_USERS = [
   { id:'mariele',      name:'Mariele',       role:'Recepção',         color:'#3A6A8A' },
   { id:'bruna',        name:'Bruna',         role:'Recepção',         color:'#8B5E3C' },
   { id:'alexandre',    name:'Alexandre',     role:'Financeiro',       color:'#5C6B3A' },
-  { id:'suelen',       name:'Suelen',        role:'ASB',              color:'#8B3A4A' },
   { id:'junior',       name:'Junior',        role:'Protético',        color:'#4A5A7A' },
   { id:'francieli',    name:'Francieli',     role:'Aux. Prótese',     color:'#7A4A6A' },
   { id:'dr-bruno',     name:'Dr. Bruno',     role:'Anestesista',      color:'#3A5A3A' },
@@ -5682,7 +5740,7 @@ function renderMsgs(msgs, me) {
   if (!msgs || msgs.length === 0) {
     el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;opacity:.55;padding:32px;">'
       + '<div style="font-size:36px;">💬</div>'
-      + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:600;color:var(--muted);">Nenhuma mensagem ainda</div>'
+      + '<div style="font-family:\'Nunito\',sans-serif;font-size:14px;font-weight:600;color:var(--muted);">Nenhuma mensagem ainda</div>'
       + '<div style="font-size:12px;color:var(--muted);text-align:center;">Seja o primeiro a dizer olá! 👋</div>'
       + '</div>';
     return;
@@ -5928,7 +5986,6 @@ var TODOS_USERS = [
   { id:'alexandre',    nome:'Alexandre' },
   { id:'bruna',        nome:'Bruna' },
   { id:'mariele',      nome:'Mariele' },
-  { id:'suelen',       nome:'Suelen' },
   { id:'junior',       nome:'Junior' },
   { id:'francieli',    nome:'Francieli' },
   { id:'dr-bruno',     nome:'Dr. Bruno' },
@@ -6348,7 +6405,7 @@ window.nav = function(btn) {
 <!-- CROP MODAL — login screen photos -->
 <div id="login-crop-overlay" style="display:none;position:fixed;inset:0;background:rgba(10,4,8,0.82);z-index:99999;align-items:center;justify-content:center;">
   <div style="background:#1a0f1a;border:1px solid rgba(253,249,244,0.12);border-radius:20px;padding:28px;width:320px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
-    <div style="font-family:'Barlow',sans-serif;font-size:1rem;font-weight:600;color:#fdf9f4;letter-spacing:0.06em;">Centralizar Foto</div>
+    <div style="font-family:'Nunito', sans-serif;font-size:1rem;font-weight:600;color:#fdf9f4;letter-spacing:0.06em;">Centralizar Foto</div>
     <div style="font-size:0.7rem;color:rgba(253,249,244,0.4);">Arraste a foto para posicionar · Scroll para zoom</div>
     <div id="lcrop-wrap" style="width:240px;height:240px;border-radius:50%;overflow:hidden;border:3px solid #8B2D42;cursor:grab;flex-shrink:0;user-select:none;touch-action:none;">
       <canvas id="lcrop-canvas" width="240" height="240" style="display:block;"></canvas>
@@ -6358,8 +6415,8 @@ window.nav = function(btn) {
       <input type="range" id="lcrop-zoom" min="0.1" max="3" step="0.01" value="1" style="flex:1;accent-color:#8B2D42;height:4px;" oninput="lcropDraw()">
     </div>
     <div style="display:flex;gap:10px;width:100%;">
-      <button onclick="lcropCancelar()" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(253,249,244,0.15);background:transparent;color:rgba(253,249,244,0.5);font-family:'Barlow',sans-serif;font-size:0.82rem;cursor:pointer;">Cancelar</button>
-      <button onclick="lcropConfirmar()" style="flex:2;padding:11px;border-radius:10px;border:none;background:#8B2D42;color:#fdf9f4;font-family:'Barlow',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;">✓ Salvar Foto</button>
+      <button onclick="lcropCancelar()" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(253,249,244,0.15);background:transparent;color:rgba(253,249,244,0.5);font-family:'Nunito', sans-serif;font-size:0.82rem;cursor:pointer;">Cancelar</button>
+      <button onclick="lcropConfirmar()" style="flex:2;padding:11px;border-radius:10px;border:none;background:#8B2D42;color:#fdf9f4;font-family:'Nunito', sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;">✓ Salvar Foto</button>
     </div>
   </div>
 </div>
@@ -6624,7 +6681,6 @@ window.lcropConfirmar = function() {
     {userid:'mariele',     nome:'Mariele Padilha Basso',  sub:'Recepcionista',              initials:'MP', cor:'#8B5E3C', nasc:'12/08', inicio:'27/04/2026'},
     {userid:'alexandre',   nome:'Alexandre Rossi',        sub:'Auxiliar Administrativo',    initials:'AR', cor:'#6A1F30', nasc:'03/07', inicio:'24/08/2024'},
     {userid:'thais',       nome:'Thais Gehres',           sub:'TSB Coordenação',            initials:'TG', cor:'#8B5E3C', nasc:'28/02', inicio:'20/02/2024'},
-    {userid:'suelen',      nome:'Suelen Herbert',         sub:'ASB',                        initials:'SH', cor:'#6A1F30', nasc:'07/09', inicio:'14/04/2025'},
     {userid:'junior',      nome:'Junior De Mattos',       sub:'TPD — Laboratório',          initials:'JM', cor:'#8B5E3C', nasc:'25/11', inicio:'03/07/2024'},
     {userid:'dr-scharles', nome:'Dr. Scharles Ferri',     sub:'Dentista · Cirurgião',       initials:'SF', cor:'#6A1F30', nasc:'05/06', inicio:'30/01/2024'},
     {userid:'dra-stefany', nome:'Dra. Stefany Nery',      sub:'Dentista',                   initials:'SN', cor:'#8B5E3C', nasc:'09/10', inicio:'01/04/2025'},
@@ -6720,13 +6776,13 @@ window.lcropConfirmar = function() {
         items += '<div class="bday-item bday-item-tomorrow">'
           + '<div class="bday-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-info"><div class="bday-name">' + p.nome + '</div><div class="bday-sub">' + p.sub + '</div><div style="font-size:10px;color:#C4955A;font-weight:700;margin-top:2px;">' + emoji + ' Amanhã!</div></div>'
-          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:\'Nunito\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
           + '</div>';
       } else {
         items += '<div class="bday-item">'
           + '<div class="bday-av" style="background:' + avBg + '">' + avContent + '</div>'
           + '<div class="bday-info"><div class="bday-name">' + p.nome + '</div><div class="bday-sub">' + p.sub + '</div></div>'
-          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:\'Barlow Condensed\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
+          + '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><span style="font-size:20px">' + emoji + '</span><span style="font-size:10px;font-family:\'Nunito\',sans-serif;color:var(--muted);letter-spacing:.03em">' + p.date + '</span></div>'
           + '</div>';
       }
     });
@@ -7106,7 +7162,7 @@ window.lcropConfirmar = function() {
       var btn = document.createElement('button');
       btn.textContent = m;
       btn.setAttribute('data-m', i);
-      btn.style.cssText = 'font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid #E4D8CC;cursor:pointer;letter-spacing:.04em;transition:all .15s;';
+      btn.style.cssText = 'font-family:\'Nunito\',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid #E4D8CC;cursor:pointer;letter-spacing:.04em;transition:all .15s;';
       if (i === _biMes) {
         btn.style.background = '#6A1F30'; btn.style.color = '#fdf9f4'; btn.style.borderColor = '#6A1F30';
       } else {
@@ -7155,7 +7211,7 @@ window.lcropConfirmar = function() {
   function _kpi(label, value, sub, cor) {
     return '<div style="background:#fff;border:1px solid #E4D8CC;border-radius:10px;padding:16px 18px;position:relative;overflow:hidden;">'
       + '<div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:' + (cor||'#6A1F30') + '"></div>'
-      + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:6px;">' + label + '</div>'
+      + '<div style="font-family:\'Nunito\',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:6px;">' + label + '</div>'
       + '<div style="font-size:26px;font-weight:700;color:#1A0F0A;line-height:1;">' + value + '</div>'
       + (sub ? '<div style="font-size:11px;color:#7a5a50;margin-top:4px;">' + sub + '</div>' : '')
       + '</div>';
@@ -7284,7 +7340,7 @@ window.lcropConfirmar = function() {
         porSetor[s].val += (parseFloat(x.valorUnit)||0)*(parseFloat(x.qtd)||1);
       });
 
-      var html = '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Compras por Setor</div>';
+      var html = '<div style="font-family:\'Nunito\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Compras por Setor</div>';
       if (!compras.length) {
         html += '<div style="color:var(--muted);font-size:12px;padding:4px 0 10px;">Sem compras em ' + MESES[_biMes] + '.</div>';
       } else {
@@ -7295,7 +7351,7 @@ window.lcropConfirmar = function() {
         html += '<div style="border-top:2px solid #C4955A;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#C4955A;"><span>Total compras</span><span>' + _fmt(totalComprasVal) + '</span></div>';
       }
 
-      html += '<div style="margin-top:14px;font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Saídas por Responsável</div>';
+      html += '<div style="margin-top:14px;font-family:\'Nunito\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:8px;">Saídas por Responsável</div>';
       if (!saidas.length) {
         html += '<div style="color:var(--muted);font-size:12px;padding:4px 0;">Sem saídas em ' + MESES[_biMes] + '.</div>';
       } else {
@@ -7320,7 +7376,7 @@ window.lcropConfirmar = function() {
   function _labKpiMini(label, val, cor) {
     return '<div style="background:' + (cor||'#4a7c5e') + '1a;border:1px solid ' + (cor||'#4a7c5e') + '44;border-radius:8px;padding:8px 10px;text-align:center;">'
       + '<div style="font-size:18px;font-weight:700;color:' + (cor||'#4a7c5e') + ';line-height:1;">' + val + '</div>'
-      + '<div style="font-size:10px;color:#7a5a50;margin-top:3px;font-family:\'Barlow Condensed\',sans-serif;text-transform:uppercase;letter-spacing:.06em;">' + label + '</div>'
+      + '<div style="font-size:10px;color:#7a5a50;margin-top:3px;font-family:\'Nunito\',sans-serif;text-transform:uppercase;letter-spacing:.06em;">' + label + '</div>'
       + '</div>';
   }
   function _labBarTipo(label, n, total, cor) {
@@ -7438,7 +7494,7 @@ window.lcropConfirmar = function() {
         }
 
         // ── Label helpers
-        var SEC = function(t){ return '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:14px 0 8px;">'+t+'</div>'; };
+        var SEC = function(t){ return '<div style="font-family:\'Nunito\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:14px 0 8px;">'+t+'</div>'; };
         var KPIG = function(lbl, val, sub, cor, warn) {
           var bg = warn ? '#fff5f5' : '#FDF9F4';
           var bd = warn ? '#fecaca' : '#E4D8CC';
@@ -7627,7 +7683,7 @@ window.lcropConfirmar = function() {
 
     // Avaliações — dados reais do banco
     html += '<div style="border-top:1px solid #E4D8CC;padding-top:14px;">';
-    html += '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:10px;">Avaliações Pré-Cirúrgicas — ' + MESES[_biMes] + ' / ' + _biAno + ' (dados reais)</div>';
+    html += '<div style="font-family:\'Nunito\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin-bottom:10px;">Avaliações Pré-Cirúrgicas — ' + MESES[_biMes] + ' / ' + _biAno + ' (dados reais)</div>';
 
     if (totalAval === null) {
       html += '<div style="color:var(--muted);font-size:12px;">Erro ao carregar avaliações.</div>';
@@ -7649,8 +7705,8 @@ window.lcropConfirmar = function() {
 
     if (_gestaoEditMode) {
       html += '<div style="margin-top:14px;display:flex;gap:10px;">'
-        + '<button onclick="biGestaoSalvar()" style="padding:10px 20px;background:#6A1F30;color:#fff;border:none;border-radius:8px;font-weight:700;font-family:\'Barlow Condensed\',sans-serif;font-size:13px;cursor:pointer;letter-spacing:.04em;">💾 Salvar</button>'
-        + '<button onclick="biGestaoToggleEdit()" style="padding:10px 16px;background:#F5EDE2;color:#6A1F30;border:1px solid #E4D8CC;border-radius:8px;font-weight:700;font-family:\'Barlow Condensed\',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>'
+        + '<button onclick="biGestaoSalvar()" style="padding:10px 20px;background:#6A1F30;color:#fff;border:none;border-radius:8px;font-weight:700;font-family:\'Nunito\',sans-serif;font-size:13px;cursor:pointer;letter-spacing:.04em;">💾 Salvar</button>'
+        + '<button onclick="biGestaoToggleEdit()" style="padding:10px 16px;background:#F5EDE2;color:#6A1F30;border:1px solid #E4D8CC;border-radius:8px;font-weight:700;font-family:\'Nunito\',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>'
         + '</div>';
     }
 
@@ -7764,7 +7820,7 @@ window.lcropConfirmar = function() {
 
         var COR = ['#3a6a8a','#6A1F30','#4a7c5e','#C4955A','#8B5E3C','#5a3a8a','#7a5a50'];
         var SEC = function(t) {
-          return '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:0 0 10px;">' + t + '</div>';
+          return '<div style="font-family:\'Nunito\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:0 0 10px;">' + t + '</div>';
         };
 
         // ── Helper barra horizontal com label
@@ -7915,7 +7971,7 @@ window.lcropConfirmar = function() {
       var html = _row('Pacientes no Lab', _fmtN(pacientes.size), '#1A0F0A')
         + _row('Eventos atribuídos', _fmtN(atribuidos.size) + ' pessoas', '#5a3a8a');
       if (Object.keys(doutores).length) {
-        html += '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:10px 0 4px;">Lab por Doutor</div>';
+        html += '<div style="font-family:\'Nunito\',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7a5a50;margin:10px 0 4px;">Lab por Doutor</div>';
         Object.entries(doutores).sort(function(a,b){ return b[1]-a[1]; }).slice(0,4).forEach(function(e) {
           html += _row(e[0], _fmtN(e[1]) + ' trab.', '#6A1F30');
         });
@@ -8079,26 +8135,26 @@ window.lcropConfirmar = function() {
     var now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
     win.document.write('<!doctype html><html><head><meta charset="utf-8">'
       + '<title>BI Oral Unic — ' + mesLabel + '</title>'
-      + '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">'
+      + '<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">'
       + '<style>'
       + '*{box-sizing:border-box;margin:0;padding:0;}'
-      + 'body{font-family:\'Barlow\',\'Segoe UI\',sans-serif;font-size:12px;color:#1A0F0A;background:#F7F1EB;}'
+      + 'body{font-family:\'Nunito\',\'Segoe UI\',sans-serif;font-size:12px;color:#1A0F0A;background:#F7F1EB;}'
       + '.page{width:210mm;min-height:297mm;margin:0 auto;background:#fff;padding:20mm 18mm 16mm;}'
       + '.header{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #6A1F30;padding-bottom:12px;margin-bottom:18px;}'
-      + '.header-left h1{font-family:\'Barlow Condensed\',sans-serif;font-size:26px;font-weight:700;color:#6A1F30;letter-spacing:.04em;line-height:1;}'
+      + '.header-left h1{font-family:\'Nunito\',sans-serif;font-size:26px;font-weight:700;color:#6A1F30;letter-spacing:.04em;line-height:1;}'
       + '.header-left .sub{font-size:11px;color:#7a5a50;margin-top:4px;}'
       + '.header-right{text-align:right;font-size:10px;color:#7a5a50;line-height:1.6;}'
-      + '.print-btn{display:inline-flex;align-items:center;gap:6px;background:#6A1F30;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.05em;margin-bottom:18px;}'
+      + '.print-btn{display:inline-flex;align-items:center;gap:6px;background:#6A1F30;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-family:\'Nunito\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.05em;margin-bottom:18px;}'
       + '.section{margin-bottom:16px;page-break-inside:avoid;}'
-      + '.section-title{font-family:\'Barlow Condensed\',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;border-bottom:2px solid #E4D8CC;padding-bottom:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}'
+      + '.section-title{font-family:\'Nunito\',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7a5a50;border-bottom:2px solid #E4D8CC;padding-bottom:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}'
       + '.section-title::before{content:\'\';display:inline-block;width:3px;height:12px;background:#6A1F30;border-radius:2px;}'
       + '.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:2px;}'
       + '.kpi-card{background:#F5EDE2;border-radius:8px;padding:10px 12px;border-left:3px solid #C4955A;}'
-      + '.kpi-val{font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:700;color:#6A1F30;line-height:1;}'
+      + '.kpi-val{font-family:\'Nunito\',sans-serif;font-size:22px;font-weight:700;color:#6A1F30;line-height:1;}'
       + '.kpi-lbl{font-size:10px;color:#7a5a50;margin-top:3px;line-height:1.3;}'
       + '.lab-mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}'
       + '.lab-mini{background:#F0EBE5;border-radius:6px;padding:7px 10px;text-align:center;}'
-      + '.lab-mini-val{font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:700;line-height:1;}'
+      + '.lab-mini-val{font-family:\'Nunito\',sans-serif;font-size:18px;font-weight:700;line-height:1;}'
       + '.lab-mini-lbl{font-size:9px;color:#7a5a50;margin-top:2px;}'
       + '.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}'
       + '.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}'
@@ -8229,7 +8285,7 @@ window.lcropConfirmar = function() {
       btn.style.cssText = 'display:flex;align-items:center;gap:0;';
 
       var tabBtn = document.createElement('button');
-      tabBtn.style.cssText = 'font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #E4D8CC;border-right:none;border-bottom:none;border-radius:8px 0 0 0;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .15s;';
+      tabBtn.style.cssText = 'font-family:\'Nunito\',sans-serif;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #E4D8CC;border-right:none;border-bottom:none;border-radius:8px 0 0 0;cursor:pointer;letter-spacing:.04em;white-space:nowrap;transition:all .15s;';
       var isActive = _biCurrentTab === tab.id;
       tabBtn.style.background = isActive ? '#6A1F30' : '#F5EDE2';
       tabBtn.style.color = isActive ? '#fff' : '#7a5a50';
@@ -8240,7 +8296,7 @@ window.lcropConfirmar = function() {
       var delBtn = document.createElement('button');
       delBtn.textContent = '×';
       delBtn.title = 'Excluir aba';
-      delBtn.style.cssText = 'font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;padding:8px 8px;border:1px solid #E4D8CC;border-bottom:none;border-radius:0 8px 0 0;cursor:pointer;background:' + (isActive ? '#8B2D42' : '#F5EDE2') + ';color:' + (isActive ? '#ffaaaa' : '#c0826a') + ';';
+      delBtn.style.cssText = 'font-family:\'Nunito\',sans-serif;font-size:14px;font-weight:700;padding:8px 8px;border:1px solid #E4D8CC;border-bottom:none;border-radius:0 8px 0 0;cursor:pointer;background:' + (isActive ? '#8B2D42' : '#F5EDE2') + ';color:' + (isActive ? '#ffaaaa' : '#c0826a') + ';';
       delBtn.onclick = function(e) { e.stopPropagation(); _biDeleteTab(tab.id); };
 
       btn.appendChild(tabBtn);
@@ -8298,7 +8354,7 @@ window.lcropConfirmar = function() {
     if (!tab) return;
     var input = document.createElement('input');
     input.value = tab.nome;
-    input.style.cssText = 'font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:700;padding:6px 8px;border:1px solid #6A1F30;border-radius:6px;background:#fff;color:#6A1F30;width:120px;';
+    input.style.cssText = 'font-family:\'Nunito\',sans-serif;font-size:13px;font-weight:700;padding:6px 8px;border:1px solid #6A1F30;border-radius:6px;background:#fff;color:#6A1F30;width:120px;';
     btnEl.replaceWith(input);
     input.focus();
     input.select();
@@ -8345,8 +8401,8 @@ window.lcropConfirmar = function() {
 
     // Botão "Add widget" no topo
     panel.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">'
-      + '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:14px;font-weight:700;color:#7a5a50;text-transform:uppercase;letter-spacing:.08em;">' + tab.nome + '</div>'
-      + '<button onclick="biWidgetModalOpen(\'' + tabId + '\',null)" style="background:#6A1F30;border:none;border-radius:8px;padding:7px 16px;font-family:\'Barlow Condensed\',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em;">+ Adicionar Widget</button>'
+      + '<div style="font-family:\'Nunito\',sans-serif;font-size:14px;font-weight:700;color:#7a5a50;text-transform:uppercase;letter-spacing:.08em;">' + tab.nome + '</div>'
+      + '<button onclick="biWidgetModalOpen(\'' + tabId + '\',null)" style="background:#6A1F30;border:none;border-radius:8px;padding:7px 16px;font-family:\'Nunito\',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:.04em;">+ Adicionar Widget</button>'
       + '</div>'
       + '<div id="bi-widgets-grid-' + tabId + '" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>';
 
@@ -8358,7 +8414,7 @@ window.lcropConfirmar = function() {
     var grid = document.getElementById('bi-widgets-grid-' + tab.id);
     if (!grid) return;
     if (!tab.widgets || tab.widgets.length === 0) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7a5a50;font-family:\'Barlow Condensed\',sans-serif;font-size:14px;">Nenhum widget ainda.<br>Clique em <b>+ Adicionar Widget</b> para começar.</div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7a5a50;font-family:\'Nunito\',sans-serif;font-size:14px;">Nenhum widget ainda.<br>Clique em <b>+ Adicionar Widget</b> para começar.</div>';
       return;
     }
 
@@ -8390,9 +8446,9 @@ window.lcropConfirmar = function() {
       + '</div>'
       + '</div>'
       + (w.chartType === 'kpi'
-          ? '<div id="bi-wkpi-' + w.id + '" style="padding:20px 18px;font-size:36px;font-weight:700;color:#6A1F30;text-align:center;font-family:\'Barlow Condensed\',sans-serif;">…</div>'
+          ? '<div id="bi-wkpi-' + w.id + '" style="padding:20px 18px;font-size:36px;font-weight:700;color:#6A1F30;text-align:center;font-family:\'Nunito\',sans-serif;">…</div>'
           : '<div style="padding:14px 16px;"><canvas id="' + canvasId + '" height="220"></canvas></div>')
-      + '<div id="bi-wstatus-' + w.id + '" style="text-align:right;padding:0 14px 8px;font-size:10px;color:#bba;font-family:\'Barlow Condensed\',sans-serif;"></div>';
+      + '<div id="bi-wstatus-' + w.id + '" style="text-align:right;padding:0 14px 8px;font-size:10px;color:#bba;font-family:\'Nunito\',sans-serif;"></div>';
     grid.appendChild(card);
 
     _biFetchWidgetData(w, function(labels, values) {
@@ -8419,7 +8475,7 @@ window.lcropConfirmar = function() {
       if (!canvas) return;
       // Sem dados — mostrar mensagem no lugar do canvas
       if (!labels || labels.length === 0 || (labels.length === 1 && labels[0] === 'Sem dados')) {
-        canvas.parentElement.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#bba;font-family:\'Barlow Condensed\',sans-serif;font-size:13px;">Sem dados para o período</div>';
+        canvas.parentElement.innerHTML = '<div style="text-align:center;padding:40px 10px;color:#bba;font-family:\'Nunito\',sans-serif;font-size:13px;">Sem dados para o período</div>';
         return;
       }
       if (_biChartInstances[canvasId]) { try { _biChartInstances[canvasId].destroy(); } catch(e){} }
@@ -8442,12 +8498,12 @@ window.lcropConfirmar = function() {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: w.chartType !== 'bar', position: 'bottom', labels: { font: { family: 'Barlow Condensed', size: 11 }, padding: 10 } },
-            tooltip: { titleFont: { family: 'Barlow Condensed' }, bodyFont: { family: 'Barlow Condensed' } }
+            legend: { display: w.chartType !== 'bar', position: 'bottom', labels: { font: { family: 'Nunito', sans-serif, size: 11 }, padding: 10 } },
+            tooltip: { titleFont: { family: 'Nunito', sans-serif }, bodyFont: { family: 'Nunito', sans-serif } }
           },
           scales: w.chartType === 'bar' ? {
-            x: { grid: { display: false }, ticks: { font: { family: 'Barlow Condensed', size: 11 } } },
-            y: { grid: { color: '#F5EDE2' }, ticks: { font: { family: 'Barlow Condensed', size: 11 } } }
+            x: { grid: { display: false }, ticks: { font: { family: 'Nunito', sans-serif, size: 11 } } },
+            y: { grid: { color: '#F5EDE2' }, ticks: { font: { family: 'Nunito', sans-serif, size: 11 } } }
           } : {}
         }
       });
@@ -9050,22 +9106,22 @@ window.lcropConfirmar = function() {
       var fmt = function(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:0,maximumFractionDigits:0}); };
       el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:8px 0;">'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #4a7c5e;">'
-        +   '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:700;color:#4a7c5e;line-height:1;">' + labs.length + '</div>'
+        +   '<div style="font-family:\'Nunito\',sans-serif;font-size:22px;font-weight:700;color:#4a7c5e;line-height:1;">' + labs.length + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Labs ' + nomeMes + '</div>'
         +   '<div style="font-size:10px;color:#4a7c5e;margin-top:2px;">' + labConcluidos + ' concluídos · ' + labSolda + ' soldas</div>'
         + '</div>'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #5a3a8a;">'
-        +   '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:700;color:#5a3a8a;line-height:1;">' + evts.length + '</div>'
+        +   '<div style="font-family:\'Nunito\',sans-serif;font-size:22px;font-weight:700;color:#5a3a8a;line-height:1;">' + evts.length + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Eventos ' + nomeMes + '</div>'
         +   '<div style="font-size:10px;color:#5a3a8a;margin-top:2px;">agendamentos do mês</div>'
         + '</div>'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #C4955A;">'
-        +   '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:700;color:#C4955A;line-height:1;">' + fmt(totalCompras) + '</div>'
+        +   '<div style="font-family:\'Nunito\',sans-serif;font-size:18px;font-weight:700;color:#C4955A;line-height:1;">' + fmt(totalCompras) + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Compras estoque</div>'
         +   '<div style="font-size:10px;color:#C4955A;margin-top:2px;">' + compras.length + ' entradas</div>'
         + '</div>'
         + '<div style="background:#F5EDE2;border-radius:10px;padding:12px;border-left:3px solid #3a6a8a;">'
-        +   '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:22px;font-weight:700;color:#3a6a8a;line-height:1;">' + saidas.length + '</div>'
+        +   '<div style="font-family:\'Nunito\',sans-serif;font-size:22px;font-weight:700;color:#3a6a8a;line-height:1;">' + saidas.length + '</div>'
         +   '<div style="font-size:10px;color:#7a5a50;margin-top:3px;">Saídas estoque</div>'
         +   '<div style="font-size:10px;color:#3a6a8a;margin-top:2px;">componentes usados</div>'
         + '</div>'
@@ -9287,8 +9343,8 @@ function renderPrecificacao() {
     var isBg = sec.titulo === 'DESCONTOS MÁXIMOS';
     html += `<div style="background:#fff;border-radius:14px;border:1.5px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(139,45,66,.05);">
       <div style="background:var(--vinho);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.12em;color:var(--marfim);text-transform:uppercase;">${_esc(sec.titulo)}</span>
-        ${canEdit ? `<button onclick="_precNovoItemSecao('${_esc(sec.titulo)}')" style="background:rgba(253,249,244,.15);border:1px solid rgba(253,249,244,.3);border-radius:6px;color:var(--marfim);font-size:.7rem;font-weight:600;padding:3px 10px;cursor:pointer;font-family:'Barlow',sans-serif;">＋ Linha</button>` : ''}
+        <span style="font-family:'Nunito', sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.12em;color:var(--marfim);text-transform:uppercase;">${_esc(sec.titulo)}</span>
+        ${canEdit ? `<button onclick="_precNovoItemSecao('${_esc(sec.titulo)}')" style="background:rgba(253,249,244,.15);border:1px solid rgba(253,249,244,.3);border-radius:6px;color:var(--marfim);font-size:.7rem;font-weight:600;padding:3px 10px;cursor:pointer;font-family:'Nunito', sans-serif;">＋ Linha</button>` : ''}
       </div>
       <table style="width:100%;border-collapse:collapse;">`;
     sec.items.forEach(function(row, idx) {
@@ -9485,7 +9541,7 @@ function renderSenhas() {
           <div style="position:relative;">
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;">🔍</span>
             <input id="senhas-busca" type="text" placeholder="Pesquisar..." oninput="_renderSenhasGrid(this.value)"
-              style="padding:7px 12px 7px 32px;border:1.5px solid #E4D8CC;border-radius:8px;font-size:13px;background:#fff;color:var(--text);width:200px;font-family:'Barlow',sans-serif;">
+              style="padding:7px 12px 7px 32px;border:1.5px solid #E4D8CC;border-radius:8px;font-size:13px;background:#fff;color:var(--text);width:200px;font-family:'Nunito', sans-serif;">
           </div>
           ${edit ? `<button class="ou-add-btn" onclick="_ouSenhasNovoCard()">＋ Adicionar</button>` : ''}
         </div>

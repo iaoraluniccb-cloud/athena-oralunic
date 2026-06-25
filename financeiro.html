@@ -7,9 +7,7 @@
 <title>Athena — Controle Financeiro</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  /* Oculta header interno e tela de login — já está dentro do Athena */
-  .header { display: none !important; }
-  #cob-login-wall { display: none !important; }
+  /* Standalone — header e login ativos */
   :root {
     /* Athena brand palette */
     --vinho:    #8B2D42;
@@ -129,6 +127,8 @@
   /* BOLETO CARD */
   .boleto-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:18px; transition:border-color .2s,box-shadow .2s; }
   .boleto-card:hover { border-color:var(--cobre); box-shadow:0 2px 10px rgba(196,149,90,.12); }
+  .boleto-card.urgente { border-color:#e05252; box-shadow:0 0 0 2px rgba(224,82,82,.18); background:rgba(224,82,82,.04); }
+  .boleto-alerta { display:inline-flex; align-items:center; gap:5px; background:#ffeaea; color:#b91c1c; border:1px solid #fca5a5; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:700; }
   .boleto-check-wrap { flex-shrink:0; }
   .boleto-check { width:22px; height:22px; accent-color:var(--green); cursor:pointer; }
   .boleto-info { flex:1 }
@@ -547,8 +547,7 @@
     <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
     <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
     <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
-    <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
-    <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
+    <button class="tab" onclick="switchTab('aprovacoes')">Aprovações <span class="tab-badge" id="badge-aprovacoes">0</span></button>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
     <div id="fin-user-badge" style="display:none;align-items:center;gap:6px;background:rgba(139,45,66,0.06);border:1px solid rgba(139,45,66,0.15);border-radius:20px;padding:4px 12px 4px 8px">
@@ -593,7 +592,6 @@
 
       <!-- TOP BAR -->
       <div class="cob-topbar">
-        <div class="section-title" style="font-family:var(--font-display);letter-spacing:.12em">Cobrança <span id="cob-user-badge"></span></div>
         <div style="display:flex;gap:10px;align-items:center">
           <label style="font-size:11px;color:var(--text2);letter-spacing:.04em;text-transform:uppercase">Filtrar por mês</label>
           <input type="month" id="cob-filter-month" style="padding:7px 12px;font-size:13px;width:160px" onchange="renderCob()">
@@ -878,13 +876,34 @@
     <div class="subtab-content" id="subtab-reneg-boletos">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
         <div class="section-title">Envio de Boletos <span>Marque ao enviar — o card é removido automaticamente</span></div>
-        <span style="font-size:12px;color:var(--text2)">Gerado automaticamente ao incluir nova renegociação</span>
+        <button onclick="openModalBoletosManual()" style="display:flex;align-items:center;gap:6px;background:var(--vinho-p);color:var(--marfim);border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;letter-spacing:.06em;font-family:var(--font-body);cursor:pointer;transition:background .2s" onmouseover="this.style.background='#4a1020'" onmouseout="this.style.background='var(--vinho-p)'">＋ Criar Card</button>
       </div>
       <div id="boletos-list" style="display:flex;flex-direction:column;gap:10px"></div>
       <div id="boletos-empty" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:48px 40px;text-align:center;color:var(--text2)">
         <div style="font-size:32px;margin-bottom:10px">📨</div>
         <div style="font-size:14px;font-weight:600;margin-bottom:4px">Nenhum boleto pendente de envio</div>
         <div style="font-size:12px">Os pacientes incluídos em renegociação aparecerão aqui automaticamente</div>
+      </div>
+    </div>
+
+    <!-- MODAL: NOVO BOLETO MANUAL -->
+    <div class="modal-overlay" id="modal-boleto-manual" onclick="if(event.target===this)closeModal('modal-boleto-manual')">
+      <div class="modal-box" style="max-width:420px">
+        <div class="modal-header"><div class="modal-title">Novo Boleto Manual</div><button class="modal-close" onclick="closeModal('modal-boleto-manual')">✕</button></div>
+        <div class="modal-body">
+          <div class="form-group full"><label>Nome do Paciente</label><input type="text" id="bm-nome" placeholder="Nome completo" class="nome-input"></div>
+          <div class="form-grid">
+            <div class="form-group"><label>Nº Ficha</label><input type="text" id="bm-ficha" placeholder="Ex: 00421"></div>
+            <div class="form-group"><label>Valor (R$)</label><input type="number" id="bm-valor" placeholder="0,00" step="0.01" min="0"></div>
+          </div>
+          <div class="form-group full"><label>Parcelas</label><input type="text" id="bm-parcelas" placeholder="Ex: 1/3, 2/3, 3/3 ou Entrada"></div>
+          <div class="form-group full"><label>Data de Envio <span style="color:var(--text2);font-weight:400;font-size:10px">quando pretende enviar ao paciente</span></label><input type="date" id="bm-data-envio"></div>
+          <div class="form-group full"><label>Observação <span style="color:var(--text2);font-weight:400;font-size:10px">opcional</span></label><input type="text" id="bm-obs" placeholder="Ex: boleto gerado pelo banco"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeModal('modal-boleto-manual')">Cancelar</button>
+          <button class="btn-primary" onclick="saveBoletosManual()">Criar Card</button>
+        </div>
       </div>
     </div>
 
@@ -942,24 +961,27 @@
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-            <div class="form-group">
-              <label>Nº de Parcelas</label>
-              <input type="number" id="sim-parcelas" value="6" min="1" max="60" style="font-size:13px" oninput="calcSimulador()">
+          <!-- Grupos de parcelas -->
+          <div style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <label style="font-size:12px;font-weight:600;color:var(--text)">Grupos de Parcelas</label>
+              <button onclick="simAddGrupo()" style="background:var(--vinho);color:var(--marfim);border:none;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-body)">＋ Grupo</button>
             </div>
-            <div class="form-group">
-              <label style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-                <span>Juros (%)</span>
-                <span style="display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:10px;font-weight:600">
-                  <button id="sim-juros-toggle-mes" onclick="simToggleJuros('mes')"
-                    style="padding:2px 8px;border:none;cursor:pointer;background:var(--vinho);color:var(--marfim);font-family:var(--font-body);font-size:10px;font-weight:600;transition:background .15s">ao mês</button>
-                  <button id="sim-juros-toggle-ano" onclick="simToggleJuros('ano')"
-                    style="padding:2px 8px;border:none;cursor:pointer;background:var(--surface2);color:var(--text2);font-family:var(--font-body);font-size:10px;font-weight:600;transition:background .15s">ao ano</button>
-                </span>
-              </label>
-              <input type="number" id="sim-juros" value="0" min="0" step="0.1" style="font-size:13px" oninput="calcSimulador()">
-              <div id="sim-juros-equiv" style="font-size:10px;color:var(--text2);margin-top:3px;min-height:14px"></div>
-            </div>
+            <div id="sim-grupos-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px">
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+              <span>Juros (%)</span>
+              <span style="display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:10px;font-weight:600">
+                <button id="sim-juros-toggle-mes" onclick="simToggleJuros('mes')"
+                  style="padding:2px 8px;border:none;cursor:pointer;background:var(--vinho);color:var(--marfim);font-family:var(--font-body);font-size:10px;font-weight:600;transition:background .15s">ao mês</button>
+                <button id="sim-juros-toggle-ano" onclick="simToggleJuros('ano')"
+                  style="padding:2px 8px;border:none;cursor:pointer;background:var(--surface2);color:var(--text2);font-family:var(--font-body);font-size:10px;font-weight:600;transition:background .15s">ao ano</button>
+              </span>
+            </label>
+            <input type="number" id="sim-juros" value="0" min="0" step="0.1" style="font-size:13px" oninput="calcSimulador()">
+            <div id="sim-juros-equiv" style="font-size:10px;color:var(--text2);margin-top:3px;min-height:14px"></div>
           </div>
 
           <div class="form-group" style="margin-bottom:18px">
@@ -996,24 +1018,11 @@
         <div>
           <!-- Comparativo de cenários -->
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:16px">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);margin-bottom:14px">Comparativo de Cenários</div>
-            <div id="sim-cenarios" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-              <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:10px;color:var(--text2);margin-bottom:6px">3x sem juros</div>
-                <div style="font-size:16px;font-weight:700;color:var(--text)" id="cen-3x">—</div>
-              </div>
-              <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:10px;color:var(--text2);margin-bottom:6px">6x sem juros</div>
-                <div style="font-size:16px;font-weight:700;color:var(--text)" id="cen-6x">—</div>
-              </div>
-              <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-                <div style="font-size:10px;color:var(--text2);margin-bottom:6px">10x sem juros</div>
-                <div style="font-size:16px;font-weight:700;color:var(--text)" id="cen-10x">—</div>
-              </div>
-              <div style="text-align:center;padding:12px;background:rgba(139,45,66,.06);border-radius:8px;border:2px solid var(--vinho)">
-                <div style="font-size:10px;color:var(--vinho);font-weight:600;margin-bottom:6px">Simulação atual</div>
-                <div style="font-size:16px;font-weight:700;color:var(--vinho)" id="cen-atual">—</div>
-              </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text2)">Comparativo de Cenários</div>
+            </div>
+            <div id="sim-cenarios" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px">
+              <!-- gerado por simRenderCenarios() -->
             </div>
           </div>
 
@@ -1221,7 +1230,7 @@
   </div>
 
   <!-- ===== CONCILIAÇÕES ===== -->
-  <div class="tab-content" id="tab-conciliacao">
+  <div class="tab-content" id="tab-conciliacao" style="display:none!important">
     <div class="section-header">
       <div class="section-title">Conciliações <span>Comparativo Sistema × Banco</span></div>
     </div>
@@ -1289,44 +1298,8 @@
 
 
   <!-- ===== APROVAÇÕES ===== -->
-  <div class="tab-content" id="tab-aprovacoes">
-    <div class="section-header">
-      <div class="section-title">Aprovações <span>Registros para modificação em sistema</span></div>
-    </div>
-
-    <!-- Linha: usuário + finalizar -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <span style="font-size:11px;color:var(--text2);font-weight:600">Usuário ativo:</span>
-      <span id="aprov-usuario-tag" style="font-size:11px;background:var(--vinho);color:var(--marfim);border-radius:10px;padding:2px 10px;font-weight:600"></span>
-      <div style="flex:1"></div>
-      <button id="aprov-btn-finalizar" onclick="aprovFinalizar()" style="padding:6px 16px;background:var(--vinho);color:var(--marfim);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:none">🔒 Finalizar Período</button>
-    </div>
-
-    <!-- Banner de acesso restrito para aprovação -->
-    <div id="aprov-lock-banner" class="aprov-lock-banner" style="display:none">
-      🔒 Somente a <strong>Dra. Mone</strong> pode aprovar itens. Você pode adicionar e visualizar registros.
-    </div>
-
-    <!-- Navegação de meses -->
-    <div id="aprov-nav-meses" style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;min-height:36px"></div>
-
-    <!-- Recados e solicitações -->
-    <div id="aprov-recados-wrap" style="margin-bottom:18px"></div>
-
-    <!-- Sub-abas: Entradas / Trocas -->
-    <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:2px solid var(--border);padding-bottom:0">
-      <button id="aprov-subtab-entradas" onclick="aprovTrocarSubAba('entradas')"
-        style="padding:7px 20px;border:none;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);background:var(--vinho);color:var(--marfim);margin-bottom:-2px">
-        💵 Entradas
-      </button>
-      <button id="aprov-subtab-trocas" onclick="aprovTrocarSubAba('trocas')"
-        style="padding:7px 20px;border:none;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-bottom:none;margin-bottom:-2px">
-        🔄 Trocas
-      </button>
-    </div>
-
-    <!-- Board de colunas -->
-    <div class="aprov-board" id="aprov-board"></div>
+  <div class="tab-content" id="tab-aprovacoes" style="padding:0;height:calc(100vh - 120px)">
+    <iframe id="ifr-aprovacoes-inline" src="about:blank" style="width:100%;height:100%;border:none;display:block"></iframe>
   </div>
 
 </div><!-- /main -->
@@ -1589,7 +1562,14 @@
       <div class="form-grid">
         <div class="form-group full"><label>Nome do Paciente</label><input type="text" id="neg-nome" placeholder="Nome completo" class="nome-input"></div>
         <div class="form-group"><label>Nº Ficha</label><input type="text" id="neg-ficha" placeholder="Ex: 00421"></div>
-        <div class="form-group"><label>Valor Total Negativado (Serasa)</label><input type="number" id="neg-valor-total" placeholder="0,00" step="0.01" min="0" oninput="previewNegParcelas()"></div>
+        <div class="form-group"><label>Valor Total Negativado (Serasa)</label><input type="number" id="neg-valor-total" placeholder="0,00" step="0.01" min="0" oninput="previewNegParcelas();calcNegSaldo()"></div>
+        <div class="form-group"><label>Valor Total do Tratamento (R$) <span style="color:var(--text2);font-weight:400;font-size:10px">opcional</span></label><input type="number" id="neg-valor-tratamento" placeholder="0,00" step="0.01" min="0" oninput="calcNegSaldo()"></div>
+        <div class="form-group full" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text)">
+            <input type="checkbox" id="neg-gerar-desativacao" style="accent-color:var(--vinho);width:15px;height:15px" onchange="calcNegSaldo()">
+            Gerar card em Desativação de Negativados ao salvar
+          </label>
+        </div>
         <div class="form-group"><label>Quantidade de Parcelas</label><input type="number" id="neg-qtd-parcelas" placeholder="Ex: 3" min="1" max="60" oninput="previewNegParcelas()"></div>
         <div class="form-group"><label>Vencimento da 1ª Parcela</label><input type="date" id="neg-data-primeira" oninput="previewNegParcelas()"></div>
         <div class="form-group full" id="neg-preview-wrap" style="display:none">
@@ -1819,6 +1799,10 @@ function switchTab(name){
   const idx = map.indexOf(name);
   if(idx>=0) document.querySelectorAll('.tab')[idx].classList.add('active');
   if(name==='negativacao') renderNeg();
+  if(name==='aprovacoes'){
+    const ifr = document.getElementById('ifr-aprovacoes-inline');
+    if(ifr && ifr.src === 'about:blank') ifr.src = 'financeiro-aprovacoes.html?v=13';
+  }
 }
 
 // ==================== SUB-TABS RENEGOCIAÇÃO ====================
@@ -1828,7 +1812,7 @@ function switchRenegSubtab(name){
   document.getElementById('subtab-'+name).classList.add('active');
   const map=['reneg-kanban','reneg-boletos','reneg-simulador'];
   document.querySelectorAll('#subtabs-reneg .subtab')[map.indexOf(name)].classList.add('active');
-  if(name==='reneg-boletos') renderBoletos();
+  if(name==='reneg-boletos'){ renderBoletos(); _checkBoletosUrgentes(); }
   if(name==='reneg-simulador'){
     // Preenche data padrão: 1º do próximo mês
     const venc = document.getElementById('sim-vencimento');
@@ -1836,6 +1820,10 @@ function switchRenegSubtab(name){
       const d = new Date(); d.setMonth(d.getMonth()+1); d.setDate(1);
       venc.value = d.toISOString().slice(0,10);
     }
+    // Inicializa com 1 grupo se lista vazia
+    const list = document.getElementById('sim-grupos-list');
+    if(list && list.children.length === 0) simAddGrupo(6, '');
+    simRenderCenarios();
     calcSimulador();
   }
 }
@@ -1844,6 +1832,144 @@ function switchRenegSubtab(name){
 
 // Modo atual: 'mes' ou 'ano'
 let _simJurosModo = 'mes';
+let _simGrupoIdx = 0;
+
+function simCalcRestante(){
+  // Valor base (dívida - desconto - entrada)
+  const divida   = parseFloat(document.getElementById('sim-divida')?.value)||0;
+  const desconto = parseFloat(document.getElementById('sim-desconto')?.value)||0;
+  const entrada  = parseFloat(document.getElementById('sim-entrada')?.value)||0;
+  const base = Math.max(0, divida*(1-desconto/100) - entrada);
+  // Subtrai o que já está alocado nos grupos existentes
+  const list = document.getElementById('sim-grupos-list');
+  let alocado = 0;
+  if(list){
+    list.querySelectorAll('[id^="sim-grupo-"]').forEach(row=>{
+      const ridx = row.id.replace('sim-grupo-','');
+      const q = parseInt(document.getElementById('sg-qtd-'+ridx)?.value)||0;
+      const v = parseFloat(document.getElementById('sg-val-'+ridx)?.value)||0;
+      alocado += q*v;
+    });
+  }
+  return Math.max(0, Math.round((base - alocado)*100)/100);
+}
+
+function simAddGrupo(qtd, valor){
+  const idx = ++_simGrupoIdx;
+  const list = document.getElementById('sim-grupos-list');
+  if(!list) return;
+  // Se não passaram qtd/valor, calcular restante automaticamente
+  const restante = (valor === undefined) ? simCalcRestante() : (valor||0);
+  const row = document.createElement('div');
+  row.id = 'sim-grupo-'+idx;
+  row.style.cssText='display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end';
+  row.innerHTML=`
+    <div class="form-group" style="margin-bottom:0">
+      <label style="font-size:10px;color:var(--text2)">Qtd de Parcelas</label>
+      <input type="number" id="sg-qtd-${idx}" value="${qtd||''}" min="1" max="120" placeholder="Ex: 5" style="font-size:13px" oninput="simAutoVal(${idx});calcSimulador()">
+    </div>
+    <div class="form-group" style="margin-bottom:0">
+      <label style="font-size:10px;color:var(--text2)">Valor por Parcela (R$)</label>
+      <input type="number" id="sg-val-${idx}" value="${restante && qtd ? (Math.round(restante/qtd*100)/100) : (valor||'')}" min="0" step="0.01" placeholder="Ex: 200,00" style="font-size:13px" oninput="calcSimulador()" data-restante="${restante}">
+    </div>
+    <button onclick="simRemoveGrupo(${idx})" style="background:none;border:1px solid var(--border);color:var(--red);border-radius:6px;width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);flex-shrink:0;margin-bottom:0" title="Remover grupo">✕</button>`;
+  list.appendChild(row);
+  // Se grupo novo (sem qtd pré-definida), salva o restante no campo e aguarda qtd
+  if(!qtd && restante > 0){
+    const valInput = document.getElementById('sg-val-'+idx);
+    if(valInput){ valInput.dataset.restante = restante; valInput.value = ''; valInput.placeholder = 'Auto: '+fmt(restante)+' ÷ qtd'; }
+  }
+}
+
+function simAutoVal(idx){
+  // Ao digitar qtd, divide o restante automaticamente
+  const qtd = parseInt(document.getElementById('sg-qtd-'+idx)?.value)||0;
+  const valInput = document.getElementById('sg-val-'+idx);
+  if(!valInput || qtd <= 0) return;
+  // Calcula restante excluindo o próprio grupo do cálculo
+  const divida   = parseFloat(document.getElementById('sim-divida')?.value)||0;
+  const desconto = parseFloat(document.getElementById('sim-desconto')?.value)||0;
+  const entrada  = parseFloat(document.getElementById('sim-entrada')?.value)||0;
+  const base = Math.max(0, divida*(1-desconto/100) - entrada);
+  const list = document.getElementById('sim-grupos-list');
+  let outrosAlocado = 0;
+  if(list){
+    list.querySelectorAll('[id^="sim-grupo-"]').forEach(row=>{
+      const ridx = row.id.replace('sim-grupo-','');
+      if(ridx === String(idx)) return; // pula o próprio grupo
+      const q = parseInt(document.getElementById('sg-qtd-'+ridx)?.value)||0;
+      const v = parseFloat(document.getElementById('sg-val-'+ridx)?.value)||0;
+      outrosAlocado += q*v;
+    });
+  }
+  const restante = Math.max(0, Math.round((base - outrosAlocado)*100)/100);
+  if(restante > 0 && base > 0){
+    valInput.value = Math.round(restante/qtd*100)/100;
+  }
+}
+
+function simRemoveGrupo(idx){
+  const el = document.getElementById('sim-grupo-'+idx);
+  if(el) el.remove();
+  calcSimulador();
+}
+
+function simGetGrupos(){
+  const list = document.getElementById('sim-grupos-list');
+  if(!list) return [];
+  const grupos = [];
+  list.querySelectorAll('[id^="sim-grupo-"]').forEach(row=>{
+    const idx = row.id.replace('sim-grupo-','');
+    const qtd = parseInt(document.getElementById('sg-qtd-'+idx)?.value)||0;
+    const val = parseFloat(document.getElementById('sg-val-'+idx)?.value)||0;
+    if(qtd>0 && val>0) grupos.push({qtd, val});
+  });
+  return grupos;
+}
+
+// Cenários fixos: {n, label, juros (taxa mensal decimal, 0 = sem juros)}
+const _SIM_CENARIOS_FIXOS = [
+  {n:3,  label:'3x',  juros:0,    desc:'sem juros'},
+  {n:5,  label:'5x',  juros:0,    desc:'sem juros'},
+  {n:6,  label:'6x',  juros:0.01, desc:'1% ao mês'},
+  {n:10, label:'10x', juros:0.01, desc:'1% ao mês'},
+  {n:15, label:'15x', juros:0.01, desc:'1% ao mês'},
+];
+
+function _simCalcParcela(base, n, juros){
+  if(base <= 0 || n <= 0) return 0;
+  if(juros <= 0) return base/n;
+  // Price: PMT = PV * i / (1 - (1+i)^-n)
+  return base * juros / (1 - Math.pow(1+juros, -n));
+}
+
+function simRenderCenarios(){
+  const container = document.getElementById('sim-cenarios');
+  if(!container) return;
+  const divida  = parseFloat(document.getElementById('sim-divida')?.value)||0;
+  const desconto= parseFloat(document.getElementById('sim-desconto')?.value)||0;
+  const entrada = parseFloat(document.getElementById('sim-entrada')?.value)||0;
+  const base    = Math.max(0, divida*(1-desconto/100) - entrada);
+  container.innerHTML='';
+  _SIM_CENARIOS_FIXOS.forEach(c=>{
+    const parcela = base>0 ? _simCalcParcela(base, c.n, c.juros) : 0;
+    const totalC  = parcela * c.n;
+    const val = base>0 ? fmt(parcela)+'/mês' : '—';
+    const totalStr = base>0 && c.juros>0 ? `<div style="font-size:9px;color:var(--text2);margin-top:2px">Total: ${fmt(totalC)}</div>` : '';
+    const div = document.createElement('div');
+    div.style.cssText='text-align:center;padding:10px 8px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)';
+    div.innerHTML=`
+      <div style="font-size:10px;color:var(--text2);margin-bottom:5px">${c.label} · ${c.desc}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)">${val}</div>
+      ${totalStr}`;
+    container.appendChild(div);
+  });
+  // Card "Simulação atual"
+  const curr = document.createElement('div');
+  curr.style.cssText='text-align:center;padding:10px 8px;background:rgba(139,45,66,.06);border-radius:8px;border:2px solid var(--vinho)';
+  curr.innerHTML=`<div style="font-size:10px;color:var(--vinho);font-weight:600;margin-bottom:5px">Simulação atual</div><div style="font-size:13px;font-weight:700;color:var(--vinho)" id="cen-atual">—</div>`;
+  container.appendChild(curr);
+}
 
 function simToggleJuros(modo){
   _simJurosModo = modo;
@@ -1888,102 +2014,92 @@ function simAtualizarEquiv(){
 
 function calcSimulador(){
   simAtualizarEquiv();
-  const divida    = parseFloat(document.getElementById('sim-divida').value)||0;
-  const desconto  = parseFloat(document.getElementById('sim-desconto').value)||0;
-  const entrada   = parseFloat(document.getElementById('sim-entrada').value)||0;
-  const nParcelas = parseInt(document.getElementById('sim-parcelas').value)||1;
-  const juros     = simGetTaxaMensal(); // já em decimal, sempre mensal
-  const vencStr   = document.getElementById('sim-vencimento').value;
+  const divida   = parseFloat(document.getElementById('sim-divida').value)||0;
+  const desconto = parseFloat(document.getElementById('sim-desconto').value)||0;
+  const entrada  = parseFloat(document.getElementById('sim-entrada').value)||0;
+  const juros    = simGetTaxaMensal();
+  const vencStr  = document.getElementById('sim-vencimento').value;
+  const grupos   = simGetGrupos();
 
-  if(divida <= 0){
-    document.getElementById('sim-tbody').innerHTML=
-      '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text2);font-size:13px">Informe o valor da dívida para simular</td></tr>';
+  const resetKPIs = () => {
     ['sim-kpi-parcela','sim-kpi-total','sim-kpi-delta','sim-kpi-aproveitamento',
-     'cen-3x','cen-6x','cen-10x','cen-atual','sim-table-info'].forEach(id=>{
+     'cen-atual','sim-table-info'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.textContent='—';
     });
-    return;
-  }
+    document.getElementById('sim-tbody').innerHTML=
+      '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text2);font-size:13px">Preencha os dados ao lado para simular</td></tr>';
+  };
 
-  // Valor base após desconto
+  if(divida <= 0 || grupos.length === 0){ resetKPIs(); return; }
+
   const valorBase = divida * (1 - desconto/100);
-  // Valor a parcelar = base - entrada
-  const aParcelar = Math.max(0, valorBase - entrada);
+  const vencBase  = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
 
-  // Calcula parcela com juros compostos (Price) — juros já é taxa mensal decimal
-  let valorParcela;
-  if(juros > 0){
-    valorParcela = aParcelar * (juros * Math.pow(1+juros, nParcelas)) / (Math.pow(1+juros, nParcelas) - 1);
-  } else {
-    valorParcela = nParcelas > 0 ? aParcelar / nParcelas : 0;
-  }
-  // Arredonda para centavos
-  valorParcela = Math.round(valorParcela * 100) / 100;
-  const totalParcelas = valorParcela * nParcelas;
-  const totalGeral    = entrada + totalParcelas;
-  const delta         = totalGeral - divida;
+  // Gera lista de parcelas a partir dos grupos
+  const parcelasList = [];
+  grupos.forEach(g=>{
+    for(let i=0;i<g.qtd;i++) parcelasList.push(g.val);
+  });
+  const nParcelas   = parcelasList.length;
+  const totalParc   = parcelasList.reduce((a,b)=>a+b,0);
+  const totalGeral  = entrada + totalParc;
+  const delta       = totalGeral - divida;
   const aproveitamento = divida > 0 ? (totalGeral/divida*100) : 0;
 
-  // KPIs
-  document.getElementById('sim-kpi-parcela').textContent = fmt(valorParcela);
-  document.getElementById('sim-kpi-total').textContent   = fmt(totalGeral);
+  // KPI: "Valor da Parcela" mostra resumo dos grupos
+  const kpiParc = document.getElementById('sim-kpi-parcela');
+  if(grupos.length === 1){
+    kpiParc.textContent = fmt(grupos[0].val);
+  } else {
+    kpiParc.textContent = grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ');
+    kpiParc.style.fontSize='12px';
+  }
+  document.getElementById('sim-kpi-total').textContent = fmt(totalGeral);
   const deltaEl = document.getElementById('sim-kpi-delta');
   if(delta < 0){
     deltaEl.style.color='var(--red)';
     deltaEl.textContent = '−'+fmt(Math.abs(delta))+' ('+Math.abs(desconto).toFixed(1)+'% desc.)';
   } else if(delta > 0){
     deltaEl.style.color='var(--green)';
-    deltaEl.textContent = '+'+fmt(delta)+' (juros)';
+    deltaEl.textContent = '+'+fmt(delta)+' (acréscimo)';
   } else {
     deltaEl.style.color='var(--text2)';
-    deltaEl.textContent = 'Sem acréscimo';
+    deltaEl.textContent = 'Sem diferença';
   }
   const aprEl = document.getElementById('sim-kpi-aproveitamento');
   aprEl.textContent = aproveitamento.toFixed(1)+'% do original';
   aprEl.style.color = aproveitamento >= 100 ? 'var(--green)' : aproveitamento >= 80 ? 'var(--cobre)' : 'var(--red)';
 
-  // Comparativo de cenários (sem juros, após desconto)
-  const base = valorBase - entrada;
-  ['3','6','10'].forEach(n=>{
-    const el=document.getElementById('cen-'+n+'x');
-    if(el) el.textContent = base>0 ? fmt(base/parseInt(n))+'/mês' : '—';
-  });
-  document.getElementById('cen-atual').textContent = fmt(valorParcela)+'/mês';
+  // Comparativo de cenários
+  simRenderCenarios();
+  const cenAtualLabel = grupos.length===1 ? fmt(grupos[0].val)+'/mês' : grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join('+');
+  const cenAtualEl = document.getElementById('cen-atual');
+  if(cenAtualEl) cenAtualEl.textContent = cenAtualLabel;
   document.getElementById('sim-table-info').textContent =
-    `${nParcelas}x de ${fmt(valorParcela)} · Total: ${fmt(totalGeral)}`;
+    `${nParcelas} parcela${nParcelas!==1?'s':''} · Total: ${fmt(totalGeral)}`;
 
-  // Tabela de parcelas
+  // Tabela
   const tbody = document.getElementById('sim-tbody');
   tbody.innerHTML='';
-  let saldo = aParcelar;
-  let vencBase = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
-
-  for(let i=1; i<=nParcelas; i++){
-    const jurosParc = juros > 0 ? saldo * juros : 0; // juros já é decimal
-    const amort     = juros > 0 ? valorParcela - jurosParc : valorParcela;
-    saldo = Math.max(0, Math.round((saldo - amort)*100)/100);
-
+  let saldo = totalParc;
+  for(let i=0; i<parcelasList.length; i++){
+    const val = parcelasList[i];
+    saldo = Math.max(0, Math.round((saldo - val)*100)/100);
     const vencData = new Date(vencBase);
-    vencData.setMonth(vencBase.getMonth() + (i-1));
+    vencData.setMonth(vencBase.getMonth() + i);
     const vencFmt = fmtDate(vencData.toISOString().slice(0,10));
-
-    const isLast = i===nParcelas;
-    const rowValor = isLast && juros===0
-      ? Math.round((aParcelar - valorParcela*(nParcelas-1))*100)/100
-      : valorParcela;
-
+    const isLast = i===parcelasList.length-1;
     const tr = document.createElement('tr');
-    tr.style.borderBottom = '1px solid var(--border)';
+    tr.style.borderBottom='1px solid var(--border)';
     if(isLast) tr.style.fontWeight='600';
     tr.innerHTML=`
-      <td style="padding:9px 14px;color:var(--text2)">${i}</td>
+      <td style="padding:9px 14px;color:var(--text2)">${i+1}</td>
       <td style="padding:9px 14px">${vencFmt}</td>
-      <td style="padding:9px 14px;text-align:right;color:var(--vinho);font-weight:600">${fmt(rowValor)}</td>
+      <td style="padding:9px 14px;text-align:right;color:var(--vinho);font-weight:600">${fmt(val)}</td>
       <td style="padding:9px 14px;text-align:right;color:${saldo<=0?'var(--green)':'var(--text2)'};font-size:12px">${saldo<=0?'✓ Quitado':fmt(saldo)}</td>`;
     tbody.appendChild(tr);
   }
 
-  // Linha de resumo
   const tfoot = document.createElement('tr');
   tfoot.style.cssText='background:var(--surface2);border-top:2px solid var(--border);font-weight:700';
   tfoot.innerHTML=`
@@ -1998,51 +2114,40 @@ function calcSimulador(){
 }
 
 function usarSimulacao(){
-  const divida    = parseFloat(document.getElementById('sim-divida').value)||0;
+  const divida   = parseFloat(document.getElementById('sim-divida').value)||0;
   if(divida<=0){ alert('Informe o valor da dívida antes de continuar.'); return; }
+  const grupos   = simGetGrupos();
+  if(grupos.length===0){ alert('Adicione ao menos um grupo de parcelas.'); return; }
 
-  const desconto  = parseFloat(document.getElementById('sim-desconto').value)||0;
-  const entrada   = parseFloat(document.getElementById('sim-entrada').value)||0;
-  const nParcelas = parseInt(document.getElementById('sim-parcelas').value)||1;
-  const juros     = simGetTaxaMensal(); // taxa mensal decimal
-  const vencStr   = document.getElementById('sim-vencimento').value;
-  const nome      = document.getElementById('sim-nome').value.trim();
-  const ficha     = document.getElementById('sim-ficha').value.trim();
-  const numReneg  = parseInt(document.getElementById('sim-num-reneg').value)||1;
+  const entrada  = parseFloat(document.getElementById('sim-entrada').value)||0;
+  const vencStr  = document.getElementById('sim-vencimento').value;
+  const nome     = document.getElementById('sim-nome').value.trim();
+  const ficha    = document.getElementById('sim-ficha').value.trim();
+  const numReneg = parseInt(document.getElementById('sim-num-reneg').value)||1;
 
-  const valorBase   = divida * (1 - desconto/100);
-  const aParcelar   = Math.max(0, valorBase - entrada);
-  let valorParcela;
-  if(juros > 0){
-    valorParcela = aParcelar * (juros * Math.pow(1+juros,nParcelas)) / (Math.pow(1+juros,nParcelas)-1);
-  } else {
-    valorParcela = nParcelas > 0 ? aParcelar / nParcelas : 0;
-  }
-  valorParcela = Math.round(valorParcela*100)/100;
+  // Monta lista de parcelas a partir dos grupos
+  const parcelasList = [];
+  grupos.forEach(g=>{ for(let i=0;i<g.qtd;i++) parcelasList.push(g.val); });
+  const totalParc  = parcelasList.reduce((a,b)=>a+b,0);
+  const totalGeral = entrada + totalParc;
 
   // Pré-preenche o modal de nova renegociação
   openNewModal();
   if(nome) document.getElementById('new-nome').value = toUpper(nome);
   if(ficha) document.getElementById('new-ficha').value = ficha;
-  document.getElementById('new-valor-total').value  = (entrada + valorParcela*nParcelas).toFixed(2);
+  document.getElementById('new-valor-total').value   = totalGeral.toFixed(2);
   document.getElementById('new-valor-entrada').value = entrada.toFixed(2);
-  document.getElementById('new-num-reneg').value = numReneg;
+  document.getElementById('new-num-reneg').value     = numReneg;
 
   // Monta as parcelas no modal
   document.getElementById('new-parcelas-list').innerHTML='';
   renegParcelaCount = 0;
   const vencBase = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
-  for(let i=0; i<nParcelas; i++){
+  parcelasList.forEach((pValor, i)=>{
     renegParcelaCount++;
     const vencData = new Date(vencBase);
     vencData.setMonth(vencBase.getMonth()+i);
     const vencISO = vencData.toISOString().slice(0,10);
-    // Ajuste da última parcela para fechar exatamente
-    let pValor = valorParcela;
-    if(i===nParcelas-1 && juros===0){
-      const resto = aParcelar - valorParcela*(nParcelas-1);
-      pValor = Math.round(resto*100)/100;
-    }
     const list=document.getElementById('new-parcelas-list');
     const row=document.createElement('div'); row.className='parcela-row';
     row.innerHTML=`<span>#${renegParcelaCount}</span>
@@ -2050,52 +2155,44 @@ function usarSimulacao(){
       <input type="date" class="parcela-data" value="${vencISO}">
       <button class="btn-remove" onclick="this.closest('.parcela-row').remove();renumberRenegParcelas()">✕</button>`;
     list.appendChild(row);
-  }
-  // Muda para sub-aba kanban para mostrar o modal
+  });
   switchRenegSubtab('reneg-kanban');
 }
 
 function exportarSimulacaoPDF(){
   const divida = parseFloat(document.getElementById('sim-divida').value)||0;
   if(divida <= 0){ alert('Informe o valor da dívida antes de exportar.'); return; }
+  const grupos = simGetGrupos();
+  if(grupos.length===0){ alert('Adicione ao menos um grupo de parcelas.'); return; }
 
-  const nome      = document.getElementById('sim-nome').value.trim() || 'Paciente não identificado';
-  const ficha     = document.getElementById('sim-ficha').value.trim();
-  const numReneg  = document.getElementById('sim-num-reneg').value;
-  const desconto  = parseFloat(document.getElementById('sim-desconto').value)||0;
-  const entrada   = parseFloat(document.getElementById('sim-entrada').value)||0;
-  const nParcelas = parseInt(document.getElementById('sim-parcelas').value)||1;
-  const juros     = simGetTaxaMensal(); // taxa mensal decimal
+  const nome          = document.getElementById('sim-nome').value.trim() || 'Paciente não identificado';
+  const ficha         = document.getElementById('sim-ficha').value.trim();
+  const numReneg      = document.getElementById('sim-num-reneg').value;
+  const desconto      = parseFloat(document.getElementById('sim-desconto').value)||0;
+  const entrada       = parseFloat(document.getElementById('sim-entrada').value)||0;
   const jurosInputVal = parseFloat(document.getElementById('sim-juros').value)||0;
-  const vencStr   = document.getElementById('sim-vencimento').value;
+  const vencStr       = document.getElementById('sim-vencimento').value;
 
-  const valorBase = divida * (1 - desconto/100);
-  const aParcelar = Math.max(0, valorBase - entrada);
-  let valorParcela;
-  if(juros > 0){
-    valorParcela = aParcelar * (juros * Math.pow(1+juros,nParcelas)) / (Math.pow(1+juros,nParcelas)-1);
-  } else {
-    valorParcela = nParcelas > 0 ? aParcelar / nParcelas : 0;
-  }
-  valorParcela = Math.round(valorParcela*100)/100;
-  const totalGeral = entrada + valorParcela * nParcelas;
-  const delta = totalGeral - divida;
+  const parcelasList = [];
+  grupos.forEach(g=>{ for(let i=0;i<g.qtd;i++) parcelasList.push(g.val); });
+  const nParcelas  = parcelasList.length;
+  const totalParc  = parcelasList.reduce((a,b)=>a+b,0);
+  const totalGeral = entrada + totalParc;
+  const delta      = totalGeral - divida;
+  const valorParcela = grupos.length===1 ? grupos[0].val : null;
 
   // Monta linhas da tabela
   let linhasParcelas = '';
   const vencBase = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
-  let saldo = aParcelar;
-  for(let i=1; i<=nParcelas; i++){
-    const jurosParc = juros > 0 ? saldo*juros : 0; // juros decimal
-    const amort = juros > 0 ? valorParcela - jurosParc : valorParcela;
-    saldo = Math.max(0, Math.round((saldo - amort)*100)/100);
+  let saldo = totalParc;
+  for(let i=0; i<parcelasList.length; i++){
+    const pValor = parcelasList[i];
+    saldo = Math.max(0, Math.round((saldo - pValor)*100)/100);
     const vencData = new Date(vencBase);
-    vencData.setMonth(vencBase.getMonth()+(i-1));
-    let pValor = valorParcela;
-    if(i===nParcelas && juros===0) pValor = Math.round((aParcelar - valorParcela*(nParcelas-1))*100)/100;
-    const isLast = i===nParcelas;
+    vencData.setMonth(vencBase.getMonth()+i);
+    const isLast = i===parcelasList.length-1;
     linhasParcelas += `<tr style="${isLast?'font-weight:700;background:#f9f5f0':''}${i%2===0?'background:#fdf9f4':''}">
-      <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;color:#6a1f30">${i}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;color:#6a1f30">${i+1}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8">${fmtDate(vencData.toISOString().slice(0,10))}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;text-align:right;font-weight:600;color:#8b2d42">${fmt(pValor)}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;text-align:right;color:${saldo<=0?'#166534':'#6a1f30'}">${saldo<=0?'✓ Quitado':fmt(saldo)}</td>
@@ -2105,8 +2202,8 @@ function exportarSimulacaoPDF(){
   const dataHoje = fmtDate(today());
   const deltaHtml = delta<0
     ? `<span style="color:#991b1b">−${fmt(Math.abs(delta))} (desconto ${desconto}%)</span>`
-    : delta>0 ? `<span style="color:#166534">+${fmt(delta)} (juros ${jurosInputVal}% ${_simJurosModo==='ano'?'a.a.':'a.m.'})</span>`
-    : '<span style="color:#6a1f30">Sem acréscimo</span>';
+    : delta>0 ? `<span style="color:#166534">+${fmt(delta)}</span>`
+    : '<span style="color:#6a1f30">Sem diferença</span>';
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
   <title>Simulação de Renegociação — ${toUpper(nome)}</title>
@@ -2157,13 +2254,13 @@ function exportarSimulacaoPDF(){
       <div class="kpi-grid">
         <div class="kpi-box"><div class="kpi-label">Dívida Original</div><div class="kpi-value" style="color:#991b1b">${fmt(divida)}</div></div>
         <div class="kpi-box"><div class="kpi-label">Entrada</div><div class="kpi-value" style="color:#854d0e">${fmt(entrada)}</div></div>
-        <div class="kpi-box"><div class="kpi-label">Parcela Mensal</div><div class="kpi-value">${fmt(valorParcela)}</div></div>
+        <div class="kpi-box"><div class="kpi-label">Parcelas</div><div class="kpi-value" style="font-size:${grupos.length>1?'11px':'16px'}">${grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ')}</div></div>
         <div class="kpi-box"><div class="kpi-label">Total a Receber</div><div class="kpi-value" style="color:#166534">${fmt(totalGeral)}</div></div>
       </div>
       <div style="margin-top:10px;background:#f5ede2;border-radius:7px;padding:10px 16px;font-size:12px;border:1px solid #e0c9b8">
-        <strong>${nParcelas}x de ${fmt(valorParcela)}</strong>
+        <strong>${nParcelas} parcela${nParcelas!==1?'s':''}: ${grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ')}</strong>
         ${desconto>0?` · Desconto aplicado: ${desconto}%`:''}
-        ${juros>0?` · Juros: ${juros}% a.m. (Tabela Price)`:'· Sem juros'}
+        · Sem juros
         · Diferença vs. dívida: ${deltaHtml}
       </div>
     </div>
@@ -2204,35 +2301,87 @@ function exportarSimulacaoPDF(){
   if(!win) alert('Permita pop-ups para exportar o PDF.');
 }
 
+function _boletoDiasParaEnvio(b){
+  if(!b.dataEnvio) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const alvo = new Date(b.dataEnvio+'T12:00:00');
+  return Math.ceil((alvo - hoje) / 86400000);
+}
+
 function renderBoletos(){
   const list = document.getElementById('boletos-list');
   const empty = document.getElementById('boletos-empty');
   if(!list) return;
   list.innerHTML='';
-  if(boletosReneg.length===0){ empty.style.display='block'; }
-  else { empty.style.display='none'; }
+  if(boletosReneg.length===0){ empty.style.display='block'; list.style.display='none'; }
+  else { empty.style.display='none'; list.style.display='flex'; }
   document.getElementById('sbadge-reneg-boletos').textContent = boletosReneg.length;
-  boletosReneg.forEach(b=>{
-    const div=document.createElement('div'); div.className='boleto-card';
+  // Ordenar: urgentes primeiro (dataEnvio mais próxima)
+  const sorted = [...boletosReneg].sort((a,b)=>{
+    const da = a.dataEnvio||'9999'; const db = b.dataEnvio||'9999';
+    return da < db ? -1 : da > db ? 1 : 0;
+  });
+  sorted.forEach(b=>{
+    const dias = _boletoDiasParaEnvio(b);
+    const urgente = dias !== null && dias <= 5 && dias >= 0;
+    const atrasado = dias !== null && dias < 0;
+    const div=document.createElement('div');
+    div.className='boleto-card' + (urgente||atrasado ? ' urgente' : '');
+    let alertaHtml='';
+    if(atrasado){
+      alertaHtml=`<span class="boleto-alerta">🚨 Atrasado ${Math.abs(dias)}d</span>`;
+    } else if(urgente){
+      alertaHtml=`<span class="boleto-alerta">⚠️ Enviar em ${dias===0?'hoje':dias+'d'}</span>`;
+    }
+    let dataEnvioHtml='';
+    if(b.dataEnvio){
+      const cor = atrasado ? '#b91c1c' : urgente ? '#d97706' : 'var(--text2)';
+      dataEnvioHtml=`<span style="color:${cor};font-weight:${urgente||atrasado?'700':'400'}">📨 Envio: <strong>${fmtDate(b.dataEnvio)}</strong></span>`;
+    }
     div.innerHTML=`
       <div class="boleto-check-wrap">
         <input type="checkbox" class="boleto-check" title="Marcar como enviado — remove o card" onchange="confirmarEnvioBoleto(${b.renegId},this)">
       </div>
       <div class="boleto-info">
-        <div class="boleto-nome">${b.nome}</div>
+        <div class="boleto-nome" style="display:flex;align-items:center;gap:8px">${b.nome}${alertaHtml}</div>
         <div class="boleto-meta">
           <span>📁 Ficha ${b.ficha||'—'}</span>
-          <span>📄 ${b.qtdParcelas} parcela${b.qtdParcelas!==1?'s':''}</span>
+          <span>📄 ${b.manual ? (b.qtdParcelas||'—') : b.qtdParcelas+' parcela'+(b.qtdParcelas!==1?'s':'')}</span>
+          ${dataEnvioHtml}
           ${b.vencP1?`<span>📅 1ª parcela: <strong style="color:var(--text)">${fmtDate(b.vencP1)}</strong></span>`:''}
+          ${b.obs?`<span style="color:var(--text2)">📝 ${b.obs}</span>`:''}
           <span style="color:var(--text2)">Incluído em ${b.dataReneg||'—'}</span>
         </div>
       </div>
       <div style="font-size:11px;color:var(--text2);text-align:right;line-height:1.6">
-        <div style="font-weight:600;color:var(--cobre);font-size:13px">${b.numReneg}ª Renegociação</div>
-        <div>Aguardando envio</div>
+        ${b.manual ? `<div style="font-weight:600;color:var(--vinho);font-size:13px">${b.valorTotal>0?fmt(b.valorTotal):'—'}</div><div style="color:var(--text2)">Manual</div>` : `<div style="font-weight:600;color:var(--cobre);font-size:13px">${b.numReneg}ª Renegociação</div>`}
+        <div>${urgente||atrasado?'⚠️ Pendente urgente':'Aguardando envio'}</div>
       </div>`;
     list.appendChild(div);
   });
+}
+
+function _checkBoletosUrgentes(){
+  const urgentes = boletosReneg.filter(b=>{
+    const d = _boletoDiasParaEnvio(b);
+    return d !== null && d <= 5;
+  });
+  if(urgentes.length === 0) return;
+  const nomes = urgentes.map(b=>`• ${b.nome}${b.dataEnvio?' ('+fmtDate(b.dataEnvio)+')':''}`).join('\n');
+  // Badge na sub-aba com destaque laranja
+  const badge = document.getElementById('sbadge-reneg-boletos');
+  if(badge){ badge.style.background='#e05252'; badge.style.color='#fff'; }
+  // Toast de notificação não-intrusivo
+  let toast = document.getElementById('boleto-urgente-toast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id='boleto-urgente-toast';
+    toast.style.cssText='position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;border-left:4px solid #e05252;border-radius:10px;padding:14px 18px;font-family:var(--font-body);font-size:13px;z-index:9999;max-width:320px;box-shadow:0 4px 20px rgba(0,0,0,.4);cursor:pointer;';
+    toast.onclick=()=>toast.remove();
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML=`<div style="font-weight:700;margin-bottom:6px;font-size:14px">⚠️ Boleto${urgentes.length>1?'s':''} para enviar</div><div style="font-size:12px;opacity:.85;white-space:pre-line">${nomes}</div><div style="font-size:10px;opacity:.5;margin-top:6px">Clique para fechar</div>`;
+  setTimeout(()=>{ if(toast.parentNode) toast.remove(); }, 8000);
 }
 
 function confirmarEnvioBoleto(renegId, chk){
@@ -2240,6 +2389,43 @@ function confirmarEnvioBoleto(renegId, chk){
   boletosReneg = boletosReneg.filter(b=>b.renegId!==renegId);
   persistBoletos();
   renderBoletos();
+}
+
+function openModalBoletosManual(){
+  document.getElementById('bm-nome').value='';
+  document.getElementById('bm-ficha').value='';
+  document.getElementById('bm-valor').value='';
+  document.getElementById('bm-parcelas').value='';
+  document.getElementById('bm-data-envio').value='';
+  document.getElementById('bm-obs').value='';
+  openModal('modal-boleto-manual');
+}
+
+function saveBoletosManual(){
+  const nome=toUpper(document.getElementById('bm-nome').value.trim());
+  if(!nome){ alert('Informe o nome do paciente.'); return; }
+  const valor=parseFloat(document.getElementById('bm-valor').value)||0;
+  const parcelas=document.getElementById('bm-parcelas').value.trim();
+  const dataEnvio=document.getElementById('bm-data-envio').value||'';
+  const obs=document.getElementById('bm-obs').value.trim();
+  const b={
+    renegId: Date.now(),
+    nome,
+    ficha: document.getElementById('bm-ficha').value.trim(),
+    qtdParcelas: parcelas || '—',
+    vencP1: null,
+    dataReneg: today(),
+    dataEnvio,
+    numReneg: '—',
+    valorTotal: valor,
+    obs,
+    manual: true
+  };
+  boletosReneg.push(b);
+  persistBoletos();
+  closeModal('modal-boleto-manual');
+  renderBoletos();
+  _checkBoletosUrgentes();
 }
 
 // ==================== SUB-TABS ====================
@@ -2940,6 +3126,10 @@ function openNegModal(subtab){
   openModal('modal-neg-new');
 }
 
+function calcNegSaldo(){
+  // campo Saldo removido — função mantida para compatibilidade de chamadas
+}
+
 function previewNegParcelas(){
   const total  = parseFloat(document.getElementById('neg-valor-total').value)||0;
   const qtd    = parseInt(document.getElementById('neg-qtd-parcelas').value)||0;
@@ -2989,10 +3179,42 @@ function saveNeg(){
   const parcelas=_gerarParcelasNeg();
   if(!parcelas.length){ alert('Informe a quantidade de parcelas e o vencimento da 1ª parcela.'); return; }
   const tratamentos=Array.from(document.querySelectorAll('.neg-trat:checked')).map(cb=>cb.value);
-  const n={id:Date.now(), renegId:null, nome, ficha:document.getElementById('neg-ficha').value.trim(),
-    valorTotal:total, parcelas, tratamentos, status:'pendente',
+  const ficha=document.getElementById('neg-ficha').value.trim();
+  const valorTratamento=parseFloat(document.getElementById('neg-valor-tratamento').value)||0;
+  const gerarDes=document.getElementById('neg-gerar-desativacao').checked;
+  const n={id:Date.now(), renegId:null, nome, ficha,
+    valorTotal:total, valorTratamento: valorTratamento||null,
+    parcelas, tratamentos, status:'pendente',
     dataNegativacao:null, dataPagamento:null, protestos:[]};
   negRecords.push(n); saveNegs();
+
+  // Auto-criar card em Desativação de Negativados
+  if(gerarDes){
+    const saldo = valorTratamento > 0 ? valorTratamento - total : null;
+    const novoCard = {
+      id: Date.now()+1,
+      tipo: 'negativado',
+      nome,
+      ficha,
+      valorTotal: valorTratamento || total,
+      valorPago: total,
+      valorExcluir: saldo !== null ? Math.max(0, saldo) : 0,
+      saldoTratamento: saldo,
+      tratamentos,
+      negId: n.id,
+      motivo: '',
+      status: 'pendente',
+      dataConclusao: null,
+      dataExclusao: (new Date().getFullYear()) + '-12-31',
+      tratamentoRealizado: null,
+      estorno: null,
+      valorEstorno: 0
+    };
+    desRecords.push(novoCard);
+    persistDes();
+    if(typeof renderDes === 'function') renderDes();
+  }
+
   closeModal('modal-neg-new'); renderNeg();
 }
 
@@ -3020,10 +3242,12 @@ function renderNeg(){
   document.getElementById('sbadge-neg-pagas').textContent      = pagas.length;
   document.getElementById('sbadge-neg-protesto').textContent   = protesto.length;
   document.getElementById('neg-stat-pendentes').textContent    = pendentes.length;
-  document.getElementById('neg-stat-concluidas').textContent   = negRecords.filter(n=>n.status==='concluida'||n.status==='paga').length;
+  // Negativadas (Serasa): apenas concluídas ativas — pagas são subtraídas em tempo real
+  const negativadasAtivas = negRecords.filter(n=>n.status==='concluida');
+  const totalNegAtivo = negativadasAtivas.reduce((a,n)=>a+n.valorTotal,0);
+  document.getElementById('neg-stat-concluidas').textContent   = negativadasAtivas.length;
   document.getElementById('neg-stat-protesto').textContent     = protesto.length;
-  const totalNeg=negRecords.filter(n=>n.status==='concluida'||n.status==='paga').reduce((a,n)=>a+n.valorTotal,0);
-  document.getElementById('neg-stat-valor-total').textContent  = fmt(totalNeg)+' total';
+  document.getElementById('neg-stat-valor-total').textContent  = fmt(totalNegAtivo)+' negativado';
   updateBadges();
 }
 
@@ -3061,8 +3285,8 @@ function buildNegCard(n, mode){
     if(prot){
       // já protestado: checkbox marcado e desabilitado + data
       protestCb=`<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--purple);cursor:default"><input type="checkbox" checked disabled style="accent-color:var(--purple);width:13px;height:13px"> <span>Protestado ${fmtDate(prot.dataProtesto)}</span></label>`;
-    } else if(n.status==='pendente'||n.status==='concluida'||n.status==='paga'){
-      // disponível para marcar protesto
+    } else if(n.status==='pendente'||n.status==='concluida'){
+      // disponível para marcar protesto (não em pagas)
       protestCb=`<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;color:var(--purple)" onclick="event.stopPropagation()"><input type="checkbox" data-neg="${n.id}" data-parcela="${p.num}" onchange="handleProtestoCheck(this,${n.id},${p.num})" style="accent-color:var(--purple);width:13px;height:13px"> Protesto</label>`;
     }
     return `<div class="neg-parcela-row">
@@ -3111,7 +3335,7 @@ function buildNegCard(n, mode){
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
         <span style="font-size:13px;font-weight:700;color:var(--red)">${fmt(n.valorTotal)}</span>
-        <span style="font-size:12px;color:var(--text2)">${n.dataNegativacao?fmtDate(n.dataNegativacao):'—'}</span>
+        ${n.status==='paga' && n.dataPagamento ? `<span style="font-size:12px;font-weight:600;color:var(--green);background:rgba(22,101,52,.08);border:1px solid rgba(22,101,52,.2);border-radius:6px;padding:2px 8px">✓ Quitado ${fmtDate(n.dataPagamento)}</span>` : `<span style="font-size:12px;color:var(--text2)">${n.dataNegativacao?fmtDate(n.dataNegativacao):'—'}</span>`}
         <div class="neg-card-badges">${badges}</div>
         <button onclick="event.stopPropagation();openEditNegModal(${n.id})" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:var(--font-body)" title="Editar">✏</button>
         <button onclick="event.stopPropagation();deleteNegDirect(${n.id})" style="background:none;border:none;color:var(--red);font-size:15px;cursor:pointer;padding:3px 6px;border-radius:4px;opacity:.6;transition:opacity .2s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.6'" title="Excluir">🗑</button>
@@ -3122,6 +3346,7 @@ function buildNegCard(n, mode){
       <div class="neg-card-body">
         <div class="neg-info"><div class="neg-info-label">Valor Total</div><div class="neg-info-value" style="color:var(--red)">${fmt(n.valorTotal)}</div></div>
         <div class="neg-info"><div class="neg-info-label">Data Negativação</div><div class="neg-info-value">${fmtDate(n.dataNegativacao)}</div></div>
+        ${n.status==='paga' ? `<div class="neg-info"><div class="neg-info-label" style="color:var(--green)">Data de Quitação</div><div class="neg-info-value" style="color:var(--green);font-weight:700">${fmtDate(n.dataPagamento)||'—'}</div></div>` : ''}
         <div class="neg-info"><div class="neg-info-label">Parcelas</div><div class="neg-info-value">${n.parcelas.length}</div></div>
       </div>
       <div class="neg-card-parcelas">${parcRows}</div>
@@ -3388,6 +3613,9 @@ renderKanban();
 
 renderNeg();
 
+// Verificar boletos urgentes ao carregar
+setTimeout(function(){ if(typeof _checkBoletosUrgentes==='function') _checkBoletosUrgentes(); }, 1200);
+
 // ==================== DESATIVAÇÃO STATE ====================
 let desRecords = JSON.parse(localStorage.getItem('desativacoes') || '[]');
 let desMode = 'cancelamento';
@@ -3610,13 +3838,13 @@ function buildDesCard(r, isNeg, isConc){
       </div>
     </div>
     <div class="des-card-values" style="gap:4px;margin-bottom:4px">
-      <div class="des-val" style="gap:1px"><div class="des-val-label" style="font-size:9px">Total</div><div class="des-val-value total" style="font-size:11px">${fmt(r.valorTotal)}</div></div>
+      <div class="des-val" style="gap:1px"><div class="des-val-label" style="font-size:9px">Total Tratamento</div><div class="des-val-value total" style="font-size:11px">${fmt(r.valorTotal)}</div></div>
       <div class="des-val" style="gap:1px"><div class="des-val-label" style="font-size:9px">${labelPago}</div><div class="des-val-value ${isNeg?'neg-val':'pago'}" style="font-size:11px">${fmt(r.valorPago)}</div></div>
       <div class="des-val" style="gap:1px"><div class="des-val-label" style="font-size:9px">A Excluir</div><div class="des-val-value excluir" style="font-size:11px">${fmt(r.valorExcluir)}</div></div>
       <div class="des-val" style="gap:1px"><div class="des-val-label" style="font-size:9px">Prev. Exclusão</div><div class="des-val-value" style="font-size:11px">${fmtDate(r.dataExclusao)}</div></div>
     </div>
     ${r.motivo && !isNeg ? `<div style="font-size:10px;color:var(--text2);margin-bottom:4px;padding:3px 8px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)">Motivo: <strong style="color:var(--text)">${r.motivo}</strong></div>` : ''}
-    <div class="des-trat-block">
+    ${!isNeg ? `<div class="des-trat-block">
       <div class="des-trat-row">
         <span class="des-trat-label">Tratamento realizado?</span>
         <div class="des-trat-radios">
@@ -3635,7 +3863,7 @@ function buildDesCard(r, isNeg, isConc){
         <span class="des-trat-label">Valor do estorno:</span>
         <input type="number" class="des-trat-input" placeholder="0,00" value="${r.valorEstorno||''}" onchange="updateDesTratamentoValor(${r.id},this.value)" onclick="event.stopPropagation()">
       </div>
-    </div>
+    </div>` : ''}
     <div class="des-card-footer" style="padding-top:4px;border-top:1px solid var(--border)">${checkHtml}</div>`;
   return wrap;
 }

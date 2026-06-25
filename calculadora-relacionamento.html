@@ -592,30 +592,20 @@
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">Athena</div>
-  <div class="logo-divider"></div>
-  <div class="logo-sub">Controle Financeiro</div>
-  <button onclick="openBackupModal()" title="Backup / Restaurar dados" style="margin-left:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--marfim);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.04em;display:flex;align-items:center;gap:6px">💾 Backup</button>
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('cobranca')">Cobrança <span class="tab-badge" id="badge-cobranca">0</span></button>
-    <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
-    <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
-    <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
-    <button class="tab" onclick="switchTab('conciliacao')">Conciliações</button>
-    <button class="tab" onclick="switchTab('aprovacoes')">Aprovações</button>
-    <button class="tab" onclick="switchTab('vendas')">Relacionamento</button>
-    <button class="tab" onclick="switchTab('despesas-v2')">Despesas V2</button>
-    <button class="tab" onclick="switchTab('compras')">Compras <span class="tab-badge" id="badge-compras">0</span></button>
-  </div>
-</div>
+<!-- HEADER oculto — modo Calculadora Relacionamento standalone -->
+<style>
+  .header { display: none !important; }
+  /* Ocultar todas as abas exceto vendas */
+  #tab-cobranca, #tab-renegociacao, #tab-negativacao, #tab-desativacao,
+  #tab-conciliacao, #tab-aprovacoes, #tab-despesas-v2, #tab-compras { display: none !important; }
+  #tab-vendas { display: block !important; }
+</style>
 
 <!-- MAIN -->
 <div class="main">
 
   <!-- ===== COBRANÇA ===== -->
-  <div class="tab-content active" id="tab-cobranca">
+  <div class="tab-content" id="tab-cobranca">
 
     <!-- LOGIN WALL -->
     <div id="cob-login-wall">
@@ -1774,7 +1764,7 @@
   </div><!-- /tab-compras -->
 
   <!-- ===== RELACIONAMENTO / SIMULADOR DE NEGOCIAÇÃO ===== -->
-  <div class="tab-content" id="tab-vendas">
+  <div class="tab-content active" id="tab-vendas">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div class="section-title">Simulador de Negociação <span>Simule formas de pagamento sem gerar registros financeiros</span></div>
       <div style="display:flex;gap:8px">
@@ -9693,7 +9683,7 @@ function cprAtualizarIaStatus(){
 // ══════════════════════════════════════════════════════════════════════
 // SIMULADOR DE NEGOCIAÇÃO (Relacionamento / Vendas)
 // ══════════════════════════════════════════════════════════════════════
-let _snMod = 'avista-nf'; // modalidade ativa
+var _snMod = 'avista-nf'; // modalidade ativa
 
 function snFmt(v){ return `R$ ${(+v||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.')}`; }
 function snFmtDate(iso){
@@ -9795,12 +9785,27 @@ function snCalc(){
   if(cen3VaMens) cen3VaMens.textContent = valor > 0 ? snFmt(cen3P)+'/mês' : '—';
   if(cen3Total)  cen3Total.textContent  = valor > 0 ? snFmt(valor) : '—';
 
-  // ── Cálculo por modalidade ──
-  if(_snMod === 'avista-nf'){
+  // ── Atualiza resultados de todos os painéis visíveis ──
+  // NF
+  {
     const desc = parseFloat(document.getElementById('sn-nf-desc')?.value)||0;
     const final = valor * (1 - desc/100);
     const el = document.getElementById('sn-nf-resultado');
     if(el) el.textContent = valor > 0 ? snFmt(final) : '—';
+  }
+  // S/ NF
+  {
+    const desc = parseFloat(document.getElementById('sn-snf-desc')?.value)||0;
+    const final = valor * (1 - desc/100);
+    const el = document.getElementById('sn-snf-resultado');
+    if(el) el.textContent = valor > 0 ? snFmt(final) : '—';
+  }
+
+  // ── Cálculo por modalidade (resumo + tabela) ──
+  if(!_snMod) _snMod = 'avista-nf';
+  if(_snMod === 'avista-nf'){
+    const desc = parseFloat(document.getElementById('sn-nf-desc')?.value)||0;
+    const final = valor * (1 - desc/100);
     snAtualizarSimAtual({
       modalidade:'À Vista c/ Nota Fiscal', valor, desconto:desc,
       final, parcelas:0, entrada:0, juros:0, totalNeg:final, valorParc:0
@@ -9811,8 +9816,6 @@ function snCalc(){
   else if(_snMod === 'avista-snf'){
     const desc = parseFloat(document.getElementById('sn-snf-desc')?.value)||0;
     const final = valor * (1 - desc/100);
-    const el = document.getElementById('sn-snf-resultado');
-    if(el) el.textContent = valor > 0 ? snFmt(final) : '—';
     snAtualizarSimAtual({
       modalidade:'À Vista s/ Nota Fiscal', valor, desconto:desc,
       final, parcelas:0, entrada:0, juros:0, totalNeg:final, valorParc:0
@@ -10176,6 +10179,58 @@ function snLimpar(){
     }
   };
 })();
+
+// Modo standalone — inicializa datas e cálculo direto
+function _snInit() {
+  try {
+    const hoje = new Date().toISOString().slice(0,10);
+    const veP = document.getElementById('sn-venc-parcela');
+    if (veP && !veP.value) veP.value = hoje;
+    const veE = document.getElementById('sn-venc-entrada');
+    if (veE && !veE.value) veE.value = hoje;
+    // Garante estado inicial correto
+    snSetMod('avista-nf');
+  } catch(e) { console.warn('snInit:', e); }
+}
+
+// Atualiza resultado NF diretamente — dispara em qualquer mudança de valor/desconto
+function _snAtualizarNF() {
+  var valor = parseFloat(document.getElementById('sn-valor')?.value) || 0;
+  var desc  = parseFloat(document.getElementById('sn-nf-desc')?.value) || 0;
+  var el    = document.getElementById('sn-nf-resultado');
+  if (el) el.textContent = valor > 0 ? snFmt(valor * (1 - desc/100)) : '—';
+}
+function _snAtualizarSNF() {
+  var valor = parseFloat(document.getElementById('sn-valor')?.value) || 0;
+  var desc  = parseFloat(document.getElementById('sn-snf-desc')?.value) || 0;
+  var el    = document.getElementById('sn-snf-resultado');
+  if (el) el.textContent = valor > 0 ? snFmt(valor * (1 - desc/100)) : '—';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  _snInit();
+
+  // Listeners diretos para garantir atualização independente de _snMod
+  var inputValor  = document.getElementById('sn-valor');
+  var inputNfDesc = document.getElementById('sn-nf-desc');
+  var inputSnfDesc= document.getElementById('sn-snf-desc');
+
+  if (inputValor) {
+    inputValor.addEventListener('input', function() {
+      _snAtualizarNF();
+      _snAtualizarSNF();
+    });
+  }
+  if (inputNfDesc)  inputNfDesc.addEventListener('input',  _snAtualizarNF);
+  if (inputSnfDesc) inputSnfDesc.addEventListener('input', _snAtualizarSNF);
+
+  // Re-disparo de segurança
+  setTimeout(function() {
+    _snInit();
+    _snAtualizarNF();
+    _snAtualizarSNF();
+  }, 400);
+});
 </script>
 </body>
 </html>
