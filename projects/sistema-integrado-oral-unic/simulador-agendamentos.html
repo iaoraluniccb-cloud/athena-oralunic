@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comanda Protocolo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand: #8B2D42;
+      --brand-light: #F5EDE2;
+      --brand-dark: #6A1F30;
+      --accent: #C4955A;
+      --gold: #C4955A;
+      --gold-light: #FDF9F4;
+      --green: #5A7A4A;
+      --green-light: #f0fdf4;
+      --text: #3D2A20;
+      --text-muted: #9A7B6E;
+      --border: #E0C9B8;
+      --bg: #FDF9F4;
+      --white: #ffffff;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(139,45,66,0.08);
+      --shadow-hover: 0 6px 24px rgba(139,45,66,0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Josefin Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #4A1020 0%, var(--brand-dark) 50%, var(--brand) 100%);
+      color: white;
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(139,45,66,0.3);
+    }
+    header .logo {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.3px; }
+    header p { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
+
+    /* MAIN LAYOUT */
+    main {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title .icon {
+      width: 32px; height: 32px;
+      background: var(--brand-light);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    /* FORM */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input[type="text"], input[type="date"], select {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(46,173,212,0.12);
+    }
+
+    /* PROTOCOL CARDS */
+    .protocol-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 4px;
+    }
+    @media (max-width: 580px) { .protocol-grid { grid-template-columns: 1fr; } }
+
+    .protocol-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      background: var(--white);
+    }
+    .protocol-card:hover {
+      border-color: var(--accent);
+      background: var(--brand-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+    .protocol-card.selected {
+      border-color: var(--brand);
+      background: var(--brand-light);
+      box-shadow: 0 0 0 3px rgba(139,45,66,0.12);
+    }
+    .protocol-card .emoji { font-size: 28px; margin-bottom: 8px; }
+    .protocol-card .name { font-size: 0.9rem; font-weight: 700; color: var(--brand-dark); }
+    .protocol-card .desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* BTN */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(139,45,66,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139,45,66,0.4);
+    }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--brand);
+      border: 1.5px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--brand-light); }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    /* RESULTADO */
+    #resultado { display: none; }
+
+    .result-header {
+      background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      color: white;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .result-header .icon { font-size: 32px; }
+    .result-header h2 { font-size: 1.15rem; font-weight: 700; }
+    .result-header p { font-size: 0.9rem; opacity: 0.85; margin-top: 4px; }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--brand-dark) 0%, var(--brand) 100%);
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+
+    .timeline-dot {
+      position: absolute;
+      left: -27px;
+      top: 6px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--brand);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--brand);
+    }
+    .timeline-item.highlight .timeline-dot {
+      background: var(--gold);
+      box-shadow: 0 0 0 2px var(--gold);
+      width: 18px; height: 18px;
+      left: -29px;
+      top: 4px;
+    }
+
+    .timeline-content {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      transition: box-shadow 0.2s;
+    }
+    .timeline-content:hover { box-shadow: var(--shadow); }
+    .timeline-item.highlight .timeline-content {
+      border-color: var(--gold);
+      background: var(--gold-light);
+    }
+
+    .timeline-step {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--brand);
+      margin-bottom: 4px;
+    }
+    .timeline-item.highlight .timeline-step { color: var(--gold); }
+
+    .timeline-date {
+      font-size: 1.0rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .timeline-time {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--brand-light);
+      color: var(--brand-dark);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-top: 4px;
+    }
+    .timeline-item.highlight .timeline-time {
+      background: rgba(200,168,75,0.2);
+      color: #8a6e1a;
+    }
+    .timeline-item.bloqueio .timeline-dot {
+      background: #f59e0b;
+      box-shadow: 0 0 0 2px #f59e0b;
+    }
+    .timeline-item.bloqueio .timeline-content {
+      border: 2px dashed #f59e0b;
+      background: #fffbea;
+    }
+    .timeline-item.bloqueio .timeline-step { color: #b45309; }
+    .timeline-item.bloqueio .timeline-time {
+      background: rgba(245,158,11,0.15);
+      color: #92400e;
+    }
+    .bloqueio-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: #f59e0b;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .timeline-duration {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* SUMMARY BOX */
+    .summary-box {
+      background: var(--brand-light);
+      border: 1.5px solid var(--brand);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .summary-box .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 0.88rem;
+    }
+    .summary-box .row .label { color: var(--text-muted); }
+    .summary-box .row .value { font-weight: 600; color: var(--brand-dark); }
+
+    /* ALERT */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .alert-warning {
+      background: #fffbea;
+      border: 1.5px solid #f5c842;
+      color: #7a5c00;
+    }
+    .alert-info {
+      background: var(--brand-light);
+      border: 1.5px solid var(--accent);
+      color: var(--brand-dark);
+    }
+
+    /* PRINT */
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--white);
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .print-btn:hover { background: var(--bg); color: var(--text); }
+
+    @media print {
+      @page { size: A4 portrait; margin: 10mm 12mm; }
+
+      header, .btn-row, .print-btn, #formulario { display: none !important; }
+      body { background: white; font-size: 11px; }
+      main { max-width: 100%; margin: 0; padding: 0; }
+
+      .result-header { padding: 10px 14px; margin-bottom: 10px; }
+      .result-header .icon { font-size: 20px; }
+      .result-header h2 { font-size: 1rem; }
+      .result-header p { font-size: 0.78rem; }
+
+      .summary-box { padding: 8px 12px; margin-bottom: 10px; }
+      .summary-box .row { font-size: 0.78rem; padding: 2px 0; }
+
+      .card { box-shadow: none; border: 1px solid #ddd; padding: 12px 16px; margin-bottom: 10px; }
+      .card-title { font-size: 0.85rem; margin-bottom: 10px; }
+
+      .timeline { padding-left: 24px; }
+      .timeline-item { margin-bottom: 10px; }
+      .timeline-content { padding: 8px 12px; border-radius: 6px; }
+      .timeline-step { font-size: 0.65rem; margin-bottom: 2px; }
+      .timeline-date { font-size: 0.88rem; margin-bottom: 2px; }
+      .timeline-time { font-size: 0.72rem; padding: 2px 7px; }
+      .timeline-duration { font-size: 0.68rem; margin-top: 2px; }
+      .bloqueio-badge { font-size: 0.62rem; padding: 1px 5px; }
+    }
+
+    /* VALIDATION */
+    .field-error {
+      font-size: 0.78rem;
+      color: #e53e3e;
+      margin-top: 2px;
+    }
+    input.error, select.error {
+      border-color: #e53e3e;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🦷</div>
+  <div>
+    <h1>Athena</h1>
+    <p>Simulador de Agendamentos — Oral Unic Carlos Barbosa</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- FORMULÁRIO -->
+  <div id="formulario">
+    <div class="card">
+      <div class="card-title">
+        <div class="icon">👤</div>
+        Dados do Paciente
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome do Paciente</label>
+          <input type="text" id="nome" placeholder="Ex: Maria Silva" />
+          <span class="field-error" id="err-nome"></span>
+        </div>
+        <div class="form-group">
+          <label>Nº da Ficha</label>
+          <input type="text" id="ficha" placeholder="Ex: 00123" />
+          <span class="field-error" id="err-ficha"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon">⚙️</div>
+        Tipo de Protocolo
+      </div>
+      <div class="protocol-grid" id="protocol-grid">
+        <div class="protocol-card" data-protocol="superior" onclick="selectProtocol(this)">
+          <div class="emoji">⬆️</div>
+          <div class="name">Protocolo Superior</div>
+          <div class="desc">Reabilitação arcada superior</div>
+        </div>
+        <div class="protocol-card" data-protocol="inferior" onclick="selectProtocol(this)">
+          <div class="emoji">⬇️</div>
+          <div class="name">Protocolo Inferior</div>
+          <div class="desc">Reabilitação arcada inferior</div>
+        </div>
+        <div class="protocol-card" data-protocol="duplo" onclick="selectProtocol(this)">
+          <div class="emoji">↕️</div>
+          <div class="name">Duplo (Completo)</div>
+          <div class="desc">Arcadas superior + inferior</div>
+        </div>
+      </div>
+      <span class="field-error" id="err-protocol" style="margin-top:10px;display:block;"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon">📅</div>
+        Data da Cirurgia
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Data da Cirurgia</label>
+          <input type="date" id="dataCirurgia" />
+          <span class="field-error" id="err-data"></span>
+        </div>
+        <div class="form-group">
+          <label>Turno da Cirurgia</label>
+          <select id="turnoCirurgia">
+            <option value="manha">Manhã (até 12h)</option>
+            <option value="tarde">Tarde (após 12h)</option>
+          </select>
+        </div>
+      </div>
+      <div class="alert alert-info" style="margin-top:16px;">
+        <span>ℹ️</span>
+        <span>Os agendamentos são calculados em <strong>dias úteis</strong> (seg–sex), descontando feriados nacionais.</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="simular()">
+        📋 Simular Agendamentos
+      </button>
+      <button class="btn btn-secondary" onclick="limpar()">
+        ↺ Limpar
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="resultado">
+    <div class="result-header">
+      <div class="icon">✅</div>
+      <div>
+        <h2 id="res-titulo">Cronograma gerado</h2>
+        <p id="res-subtitulo"></p>
+      </div>
+    </div>
+
+    <div class="summary-box" id="res-summary"></div>
+
+    <div class="card">
+      <div class="card-title">
+        <div class="icon">🗓️</div>
+        Sequência de Consultas
+        <button class="print-btn" style="margin-left:auto;" onclick="window.print()">🖨️ Imprimir</button>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="voltar()">
+        ← Nova Simulação
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ─── FERIADOS NACIONAIS ─────────────────────────────────────────────────────
+  // Formato: "MM-DD" (recorrentes) ou "YYYY-MM-DD" (pontuais)
+  const FERIADOS_NACIONAIS = new Set([
+    "01-01","04-21","05-01","09-07","10-12","11-02","11-15","11-20","12-25",
+    // 2025
+    "2025-03-03","2025-03-04","2025-04-18","2025-04-19",
+    // 2026
+    "2026-02-16","2026-02-17","2026-04-03","2026-04-04",
+    // 2027
+    "2026-03-01","2027-02-15","2027-02-16","2027-03-28","2027-03-29",
+  ]);
+
+  function isFeriado(date) {
+    const mm = String(date.getMonth()+1).padStart(2,'0');
+    const dd = String(date.getDate()).padStart(2,'0');
+    const yyyy = date.getFullYear();
+    return FERIADOS_NACIONAIS.has(`${mm}-${dd}`) || FERIADOS_NACIONAIS.has(`${yyyy}-${mm}-${dd}`);
+  }
+
+  function isUtil(date) {
+    const dow = date.getDay(); // 0=dom, 6=sab
+    return dow !== 0 && dow !== 6 && !isFeriado(date);
+  }
+
+  // ─── ADICIONAR HORAS ÚTEIS ────────────────────────────────────────────────
+  // Expediente: 08:00 – 18:00 (10h úteis/dia)
+  const START_HOUR = 8;
+  const END_HOUR = 18;
+
+  // Avança para o próximo instante útil (ignora fins de semana e feriados)
+  function proximoDiaUtil(d) {
+    let r = new Date(d.getTime());
+    r.setDate(r.getDate() + 1);
+    r.setHours(START_HOUR, 0, 0, 0);
+    while (!isUtil(r)) { r.setDate(r.getDate() + 1); }
+    return r;
+  }
+
+  // Normaliza: se o instante base cair fora do expediente ou em dia não-útil,
+  // reposiciona para o início do próximo dia útil.
+  function normalizarBase(d) {
+    let r = new Date(d.getTime());
+    // Se não é dia útil, avança
+    while (!isUtil(r)) {
+      r.setDate(r.getDate() + 1);
+      r.setHours(START_HOUR, 0, 0, 0);
+    }
+    // Se antes do expediente, ajusta para início
+    if (r.getHours() < START_HOUR || (r.getHours() === START_HOUR && r.getMinutes() === 0 && r.getSeconds() === 0)) {
+      r.setHours(START_HOUR, 0, 0, 0);
+    }
+    // Se no fim ou depois do expediente, vai para o próximo dia útil
+    if (r.getHours() >= END_HOUR) {
+      r = proximoDiaUtil(r);
+    }
+    return r;
+  }
+
+  // Adiciona N dias úteis a partir de uma data base (ignora fins de semana e feriados)
+  function addDiasUteis(dataBase, dias) {
+    let d = new Date(dataBase.getTime());
+    let restantes = dias;
+    while (restantes > 0) {
+      d.setDate(d.getDate() + 1);
+      if (isUtil(d)) restantes--;
+    }
+    return d;
+  }
+
+  // ─── FORMATAR DATA ─────────────────────────────────────────────────────────
+  const DIAS_SEMANA = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+  function formatarData(d) {
+    const dia = d.getDate();
+    const diasem = DIAS_SEMANA[d.getDay()];
+    const mes = MESES[d.getMonth()];
+    const ano = d.getFullYear();
+    return `${dia} de ${mes} de ${ano} — ${diasem}`;
+  }
+
+  function formatarHora(d) {
+    const h = String(d.getHours()).padStart(2,'0');
+    const m = String(d.getMinutes()).padStart(2,'0');
+    return `${h}h${m}`;
+  }
+
+  function formatarDuracao(min) {
+    if (min < 60) return `${min} min`;
+    const h = Math.floor(min/60);
+    const m = min % 60;
+    return m === 0 ? `${h}h` : `${h}h${m}min`;
+  }
+
+  // ─── ESTADO ────────────────────────────────────────────────────────────────
+  let protocoloSelecionado = null;
+
+  function selectProtocol(el) {
+    document.querySelectorAll('.protocol-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    protocoloSelecionado = el.dataset.protocol;
+    document.getElementById('err-protocol').textContent = '';
+  }
+
+  // ─── VALIDAÇÃO ────────────────────────────────────────────────────────────
+  function validar() {
+    let ok = true;
+    const nome = document.getElementById('nome').value.trim();
+    const ficha = document.getElementById('ficha').value.trim();
+    const data = document.getElementById('dataCirurgia').value;
+
+    if (!nome) {
+      document.getElementById('err-nome').textContent = 'Informe o nome do paciente.';
+      document.getElementById('nome').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('err-nome').textContent = '';
+      document.getElementById('nome').classList.remove('error');
+    }
+
+    if (!ficha) {
+      document.getElementById('err-ficha').textContent = 'Informe o número da ficha.';
+      document.getElementById('ficha').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('err-ficha').textContent = '';
+      document.getElementById('ficha').classList.remove('error');
+    }
+
+    if (!protocoloSelecionado) {
+      document.getElementById('err-protocol').textContent = 'Selecione um protocolo.';
+      ok = false;
+    } else {
+      document.getElementById('err-protocol').textContent = '';
+    }
+
+    if (!data) {
+      document.getElementById('err-data').textContent = 'Informe a data da cirurgia.';
+      document.getElementById('dataCirurgia').classList.add('error');
+      ok = false;
+    } else {
+      document.getElementById('err-data').textContent = '';
+      document.getElementById('dataCirurgia').classList.remove('error');
+    }
+
+    return ok;
+  }
+
+  // ─── CALCULAR AGENDAMENTOS ────────────────────────────────────────────────
+  /*
+   * Regras:
+   * Rodete: 48h úteis após cirurgia (livre)
+   * Prova de dentes: 48h úteis após rodete → forçar turno manhã (08:00–12:00)
+   * Prova da barra: 48h úteis após prova de dentes → forçar 10:30–12:00
+   * Barra/dentes: 24h úteis após barra → forçar manhã (08:00–12:00)
+   * Entrega: 36h úteis após barra/dentes → forçar fim de dia (16:30+)
+   */
+
+  function forcarManha(d) {
+    let r = new Date(d.getTime());
+    r.setHours(8, 0, 0, 0);
+    return r;
+  }
+
+  function forcarBarra(d) {
+    let r = new Date(d.getTime());
+    r.setHours(10, 30, 0, 0);
+    return r;
+  }
+
+  function forcarFimDia(d) {
+    let r = new Date(d.getTime());
+    r.setHours(16, 30, 0, 0);
+    return r;
+  }
+
+  function calcularAgendamentos(dataCirurgia, protocolo, turnoCirurgia) {
+    const isDuplo = protocolo === 'duplo';
+
+    const duracoes = isDuplo
+      ? { rodete: 75, provaDentes: 45, barra: 30, barraDentes: 45, entrega: 60 }
+      : { rodete: 60, provaDentes: 30, barra: 30, barraDentes: 30, entrega: 45 };
+
+    // Base: a contagem de dias úteis começa a partir do dia da cirurgia
+    // 1. Rodete: +2 dias úteis
+    //    cirurgia manhã → qualquer horário (sem horário fixo)
+    //    cirurgia tarde → após 15h30
+    let rodete = addDiasUteis(dataCirurgia, 2);
+    const rodeteComHorario = turnoCirurgia === 'tarde';
+    if (rodeteComHorario) rodete.setHours(15, 30, 0, 0);
+
+    // 2. Prova de dentes: +2 dias úteis — sempre turno manhã (08h00)
+    let provaDentes = addDiasUteis(rodete, 2);
+    provaDentes = forcarManha(provaDentes);
+
+    // 3. Prova adicional: +1 dia útil — sempre turno manhã (08h00)
+    let provaAdicional = addDiasUteis(provaDentes, 1);
+    provaAdicional = forcarManha(provaAdicional);
+
+    // 4. Prova da barra: +2 dias úteis após prova adicional → 10:30
+    let barra = addDiasUteis(provaAdicional, 2);
+    barra = forcarBarra(barra);
+
+    // 4. Barra/dentes: +1 dia útil → após 16h30
+    let barraDentes = addDiasUteis(barra, 1);
+    barraDentes = forcarFimDia(barraDentes);
+
+    // 5. Entrega: duas opções fixas
+    //    Opção A: +14 dias após cirurgia, após 16h30
+    //    Opção B: +15 dias após cirurgia, qualquer horário (manhã 08h00)
+    let entregaOpcaoA = new Date(dataCirurgia.getTime());
+    entregaOpcaoA.setDate(entregaOpcaoA.getDate() + 14);
+    entregaOpcaoA.setHours(16, 30, 0, 0);
+
+    let entregaOpcaoB = new Date(dataCirurgia.getTime());
+    entregaOpcaoB.setDate(entregaOpcaoB.getDate() + 15);
+    entregaOpcaoB.setHours(8, 0, 0, 0);
+
+    let entregaOpcoes = { opcaoA: entregaOpcaoA, opcaoB: entregaOpcaoB };
+    let entrega = entregaOpcaoA;
+
+    return [
+      {
+        etapa: 'Rodete',
+        icon: '🦷',
+        data: rodete,
+        duracao: duracoes.rodete,
+        desc: turnoCirurgia === 'tarde' ? 'Turno da tarde — após 15h30' : 'Primeira consulta pós-cirurgia',
+        highlight: false,
+        semHorario: !rodeteComHorario,
+      },
+      {
+        etapa: 'Prova de Dentes',
+        icon: '😁',
+        data: provaDentes,
+        duracao: duracoes.provaDentes,
+        desc: 'Turno da manhã — aprovação estética',
+        highlight: false,
+        semHorario: false,
+      },
+      {
+        etapa: 'Prova Adicional',
+        icon: '🔒',
+        data: provaAdicional,
+        duracao: duracoes.provaDentes,
+        desc: 'Turno da manhã — reservar este horário',
+        highlight: false,
+        bloqueio: true,
+        semHorario: false,
+      },
+      {
+        etapa: 'Prova da Barra',
+        icon: '🔩',
+        data: barra,
+        duracao: duracoes.barra,
+        desc: 'Das 10h30 às 12h — ajuste estrutural',
+        highlight: false,
+      },
+      {
+        etapa: 'Prova Barra + Dentes',
+        icon: '✨',
+        data: barraDentes,
+        duracao: duracoes.barraDentes,
+        desc: 'Final do dia — aprovação final',
+        highlight: false,
+      },
+      {
+        etapa: 'Entrega da Prótese',
+        icon: '🎉',
+        data: entregaOpcoes ? entregaOpcoes.opcaoA : entrega,
+        duracao: duracoes.entrega,
+        desc: 'Final do dia — entrega e orientações',
+        highlight: true,
+        entregaOpcoes: entregaOpcoes || null,
+      },
+    ];
+  }
+
+  // ─── SIMULAR ──────────────────────────────────────────────────────────────
+  function simular() {
+    if (!validar()) return;
+
+    const nome = document.getElementById('nome').value.trim();
+    const ficha = document.getElementById('ficha').value.trim();
+    const dataStr = document.getElementById('dataCirurgia').value; // YYYY-MM-DD
+    const [ano, mes, dia] = dataStr.split('-').map(Number);
+    const dataCirurgia = new Date(ano, mes - 1, dia, 8, 0, 0);
+
+    if (!isUtil(dataCirurgia)) {
+      document.getElementById('err-data').textContent = 'A data selecionada é fim de semana ou feriado. Escolha um dia útil.';
+      document.getElementById('dataCirurgia').classList.add('error');
+      return;
+    }
+
+    const protNome = {
+      superior: 'Protocolo Superior',
+      inferior: 'Protocolo Inferior',
+      duplo: 'Protocolo Duplo (Completo)',
+    }[protocoloSelecionado];
+
+    const turno = document.getElementById('turnoCirurgia').value;
+    const agendamentos = calcularAgendamentos(dataCirurgia, protocoloSelecionado, turno);
+
+    // Sumário
+    document.getElementById('res-titulo').textContent = `Cronograma — ${nome}`;
+    document.getElementById('res-subtitulo').textContent = `${protNome} · Cirurgia: ${formatarData(dataCirurgia)}`;
+
+    const summary = document.getElementById('res-summary');
+    summary.innerHTML = `
+      <div class="row"><span class="label">Paciente</span><span class="value">${nome}</span></div>
+      <div class="row"><span class="label">Ficha</span><span class="value">${ficha}</span></div>
+      <div class="row"><span class="label">Protocolo</span><span class="value">${protNome}</span></div>
+      <div class="row"><span class="label">Data da Cirurgia</span><span class="value">${formatarData(dataCirurgia)}</span></div>
+      <div class="row"><span class="label">Turno da Cirurgia</span><span class="value">${turno === 'tarde' ? 'Tarde' : 'Manhã'}</span></div>
+    `;
+
+    // Timeline
+    const timeline = document.getElementById('timeline');
+    timeline.innerHTML = '';
+
+    // Cirurgia como primeiro item
+    const itemCirurgia = document.createElement('div');
+    itemCirurgia.className = 'timeline-item';
+    itemCirurgia.innerHTML = `
+      <div class="timeline-dot"></div>
+      <div class="timeline-content">
+        <div class="timeline-step">🔪 Cirurgia</div>
+        <div class="timeline-date">${formatarData(dataCirurgia)}</div>
+        <div class="timeline-time">Dia da cirurgia</div>
+      </div>
+    `;
+    timeline.appendChild(itemCirurgia);
+
+    agendamentos.forEach(ag => {
+      const item = document.createElement('div');
+      item.className = 'timeline-item' + (ag.highlight ? ' highlight' : '') + (ag.bloqueio ? ' bloqueio' : '');
+      const badgeBloqueio = ag.bloqueio ? '<span class="bloqueio-badge">⚠ BLOQUEIO DE AGENDA</span>' : '';
+      let conteudoEntrega = '';
+      if (ag.entregaOpcoes) {
+        const op = ag.entregaOpcoes;
+        conteudoEntrega = `
+          <div class="timeline-step">${ag.icon} Entrega da Prótese${badgeBloqueio}</div>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+            <div style="background:#FDF9F4;border:1.5px solid #C4955A;border-radius:8px;padding:10px 14px;">
+              <div style="font-size:0.72rem;font-weight:700;color:#8B4A00;letter-spacing:0.05em;margin-bottom:4px;">OPÇÃO A</div>
+              <div style="font-weight:700;font-size:0.95rem;color:#3D2A20;">${formatarData(op.opcaoA)}</div>
+              <div style="font-size:0.82rem;color:#6B4F44;margin-top:2px;">⏰ Após 16h30 · 14 dias após a cirurgia</div>
+            </div>
+            <div style="background:#FDF9F4;border:1.5px solid #C4955A;border-radius:8px;padding:10px 14px;">
+              <div style="font-size:0.72rem;font-weight:700;color:#8B4A00;letter-spacing:0.05em;margin-bottom:4px;">OPÇÃO B</div>
+              <div style="font-weight:700;font-size:0.95rem;color:#3D2A20;">${formatarData(op.opcaoB)}</div>
+              <div style="font-size:0.82rem;color:#6B4F44;margin-top:2px;">⏰ Qualquer horário · 15 dias após a cirurgia</div>
+            </div>
+          </div>
+          <div style="font-size:0.78rem;color:#9A7B6E;margin-top:8px;">⏱ Duração: ${formatarDuracao(ag.duracao)} · Entrega e orientações</div>`;
+      } else {
+        conteudoEntrega = `
+          <div class="timeline-step">${ag.icon} ${ag.etapa}${badgeBloqueio}</div>
+          <div class="timeline-date">${formatarData(ag.data)}</div>
+          ${ag.semHorario ? '' : `<div class="timeline-time">⏰ Aproximadamente ${formatarHora(ag.data)}</div>`}
+          <div class="timeline-duration">⏱ Duração: ${formatarDuracao(ag.duracao)} · ${ag.desc}</div>`;
+      }
+      item.innerHTML = `
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          ${conteudoEntrega}
+        </div>
+      `;
+      timeline.appendChild(item);
+    });
+
+    document.getElementById('formulario').style.display = 'none';
+    document.getElementById('resultado').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function voltar() {
+    document.getElementById('formulario').style.display = 'block';
+    document.getElementById('resultado').style.display = 'none';
+  }
+
+  function limpar() {
+    document.getElementById('nome').value = '';
+    document.getElementById('ficha').value = '';
+    document.getElementById('dataCirurgia').value = '';
+    document.querySelectorAll('.protocol-card').forEach(c => c.classList.remove('selected'));
+    protocoloSelecionado = null;
+    ['nome','ficha','dataCirurgia'].forEach(id => {
+      document.getElementById(id).classList.remove('error');
+      const err = document.getElementById('err-'+id);
+      if (err) err.textContent = '';
+    });
+    document.getElementById('err-protocol').textContent = '';
+  }
+
+  // Data mínima = hoje
+  document.addEventListener('DOMContentLoaded', () => {
+    const hoje = new Date();
+    const y = hoje.getFullYear();
+    const m = String(hoje.getMonth()+1).padStart(2,'0');
+    const d = String(hoje.getDate()).padStart(2,'0');
+    document.getElementById('dataCirurgia').min = `${y}-${m}-${d}`;
+  });
+</script>
+</body>
+</html>
