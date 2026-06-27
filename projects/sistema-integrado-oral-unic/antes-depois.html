@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antes e Depois — Oral Unic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, onSnapshot, setDoc, getDoc, deleteDoc, collection, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const fbCfg = {apiKey:"AIzaSyBi19VA29AjnAWC1Dm1aIGtwp9uTtshAZw",authDomain:"athena-calculadora.firebaseapp.com",projectId:"athena-calculadora",storageBucket:"athena-calculadora.firebasestorage.app",messagingSenderId:"1011963451590",appId:"1:1011963451590:web:f9bdd7a7eaa1dec0335fc7"};
+const app = initializeApp(fbCfg);
+const db = getFirestore(app);
+const REF_PACIENTES = doc(db, 'ou_antes_depois', 'pacientes');
+const CHUNK_SIZE = 700000;
+
+let _pacientes = [], _fbReady = false;
+
+async function _fbLoad() {
+  try {
+    const sp = await getDoc(REF_PACIENTES);
+    _pacientes = sp.exists() ? JSON.parse(sp.data().data || '[]') : [];
+    _fbReady = true;
+    window._adReady();
+  } catch(e) { _fbReady = true; window._adReady(); }
+}
+
+onSnapshot(REF_PACIENTES, snap => {
+  if (!snap.exists()) return;
+  const novos = JSON.parse(snap.data().data || '[]');
+
+  // Preserva dataUrls já em memória e detecta fotos novas para carregar automaticamente
+  const fotosNovas = []; // { pac, f } — fotos que chegaram de outro dispositivo sem dataUrl
+  novos.forEach(pac => {
+    const antigo = _pacientes.find(a => a.id === pac.id);
+    if (antigo) {
+      if (antigo.capaDataUrl) pac.capaDataUrl = antigo.capaDataUrl;
+      (pac.fotos || []).forEach(f => {
+        const fa = (antigo.fotos || []).find(a => a.id === f.id);
+        if (fa?.dataUrl) {
+          f.dataUrl = fa.dataUrl; // já carregado — reutiliza
+        } else if (!f.dataUrl && f.chunks) {
+          fotosNovas.push({ pac, f }); // nova foto de outro dispositivo
+        }
+      });
+    } else {
+      // Paciente novo — todas as fotos precisam ser carregadas
+      (pac.fotos || []).forEach(f => { if (!f.dataUrl && f.chunks) fotosNovas.push({ pac, f }); });
+    }
+  });
+
+  _pacientes = novos;
+  if (_fbReady) window.render();
+
+  // Carrega fotos novas em background sem bloquear a UI
+  if (fotosNovas.length) _carregarFotosNovas(fotosNovas);
+});
+
+async function _carregarFotosNovas(lista) {
+  for (const { pac, f } of lista) {
+    try {
+      f.dataUrl = await window.getFotoUrl(f.id, f.chunks);
+      // Se este paciente está selecionado, atualiza o card na tela sem re-render completo
+      if (window._adPacSelecionadoId === pac.id) {
+        const placeholder = document.querySelector(`[onclick="_loadFotoThumb('${f.id}')"]`);
+        if (placeholder) {
+          const img = document.createElement('img');
+          img.className = 'foto-thumb'; img.src = f.dataUrl; img.alt = '';
+          img.onclick = () => window.abrirLightbox(f.id);
+          placeholder.replaceWith(img);
+        }
+      }
+    } catch(e) { /* silencioso */ }
+  }
+}
+
+window.getPacientes  = () => _pacientes;
+window.savePacientes = async (p) => {
+  _pacientes = p;
+  // Remove dataUrl e capaDataUrl antes de salvar — são cache local, dados reais estão nos chunks
+  const limpo = p.map(pac => {
+    const fotos = (pac.fotos || []).map(f => {
+      const { dataUrl, ...resto } = f;
+      return resto;
+    });
+    const { capaDataUrl, ...pacResto } = pac;
+    return { ...pacResto, fotos };
+  });
+  await setDoc(REF_PACIENTES, { data: JSON.stringify(limpo) });
+};
+
+window.uploadFotoDataUrl = async (dataUrl, fotoId) => {
+  const chunks = [];
+  for (let i = 0; i < dataUrl.length; i += CHUNK_SIZE) chunks.push(dataUrl.slice(i, i + CHUNK_SIZE));
+  const batch = writeBatch(db);
+  chunks.forEach((chunk, idx) => {
+    batch.set(doc(db, 'ou_antes_depois_files', `${fotoId}_${idx}`), { fotoId, idx, total: chunks.length, data: chunk });
+  });
+  await batch.commit();
+  return chunks.length;
+};
+
+window.uploadFoto = async (file, fotoId) => {
+  const base64 = await new Promise((res, rej) => {
+    const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsDataURL(file);
+  });
+  return window.uploadFotoDataUrl(base64, fotoId);
+};
+
+window.getFotoUrl = async (fotoId, numChunks) => {
+  const parts = [];
+  for (let i = 0; i < numChunks; i++) {
+    const snap = await getDoc(doc(db, 'ou_antes_depois_files', `${fotoId}_${i}`));
+    if (snap.exists()) parts.push(snap.data().data);
+  }
+  return parts.join('');
+};
+
+window.deleteFoto = async (fotoId, numChunks) => {
+  if (!fotoId || !numChunks) return;
+  const batch = writeBatch(db);
+  for (let i = 0; i < numChunks; i++) batch.delete(doc(db, 'ou_antes_depois_files', `${fotoId}_${i}`));
+  try { await batch.commit(); } catch(e) {}
+};
+
+// Limpeza automática de fotos com mais de 7 dias
+window.limparFotosExpiradas = async () => {
+  const DIAS = 7;
+  const limite = Date.now() - DIAS * 24 * 60 * 60 * 1000;
+  const pacs = window.getPacientes();
+  let alterou = false;
+  for (const pac of pacs) {
+    const antes = (pac.fotos || []).length;
+    const fotosDeletar = (pac.fotos || []).filter(f => {
+      // Converte data DD/MM/YYYY para timestamp
+      try {
+        if (!f.data) return false;
+        const [d, m, y] = f.data.split('/');
+        return new Date(`${y}-${m}-${d}`).getTime() < limite;
+      } catch { return false; }
+    });
+    for (const f of fotosDeletar) {
+      if (f.chunks) await window.deleteFoto(f.id, f.chunks);
+    }
+    pac.fotos = (pac.fotos || []).filter(f => !fotosDeletar.find(x => x.id === f.id));
+    if (pac.fotos.length !== antes) alterou = true;
+  }
+  if (alterou) await window.savePacientes(pacs);
+};
+
+window._fbAdReady = _fbLoad;
+_fbLoad();
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --vinho: #6A1F30; --vinho-light: #8B2D42; --marfim: #FDF9F4;
+  --muted: rgba(26,15,10,0.45); --border: rgba(26,15,10,0.1);
+  --verde: #16a34a; --verde-light: #15803d;
+  --azul: #2563eb; --azul-light: #1d4ed8;
+  --bg: #f8f5f0;
+}
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #1a0f0a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+.header { background: var(--vinho); color: var(--marfim); padding: 14px 24px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.header-title { font-size: 1rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.header-sub { font-size: 0.72rem; opacity: .6; margin-top: 1px; }
+.header-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.82rem; font-weight: 600; font-family: inherit; transition: all .15s; }
+.btn-primary { background: var(--marfim); color: var(--vinho); }
+.btn-primary:hover { background: #fff; }
+.btn-ghost { background: rgba(253,249,244,0.12); color: var(--marfim); border: 1px solid rgba(253,249,244,0.25); }
+.btn-ghost:hover { background: rgba(253,249,244,0.2); }
+
+.search-bar { padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.search-input { flex: 1; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-family: inherit; outline: none; }
+.search-input:focus { border-color: var(--vinho); }
+
+.app-body { display: flex; flex: 1; overflow: hidden; }
+
+/* LISTA DE PACIENTES */
+.pacientes-list { width: 260px; flex-shrink: 0; background: #fff; border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+.pac-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s; display: flex; align-items: center; gap: 10px; }
+.pac-item:hover { background: #f9f5f0; }
+.pac-item.active { background: #fdf2f4; border-left: 3px solid var(--vinho); }
+.pac-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--vinho); color: var(--marfim); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+.pac-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pac-info { flex: 1; min-width: 0; }
+.pac-nome { font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pac-meta { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+.pac-fotos-count { font-size: 0.65rem; background: #fce7f3; color: var(--vinho); padding: 2px 6px; border-radius: 10px; font-weight: 700; flex-shrink: 0; }
+
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.pac-header { padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.pac-header-nome { font-size: 1.1rem; font-weight: 700; }
+.pac-header-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+.pac-header-actions { margin-left: auto; display: flex; gap: 8px; }
+
+.fotos-area { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+/* SEÇÕES ANTES/DEPOIS */
+.secao-wrap { margin-bottom: 28px; }
+.secao-title { font-size: 0.8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.secao-title span { padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; }
+.badge-antes { background: #fee2e2; color: #dc2626; }
+.badge-depois { background: #dcfce7; color: #16a34a; }
+.fotos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+.foto-card { background: #fff; border-radius: 10px; border: 1.5px solid var(--border); overflow: hidden; transition: all .15s; position: relative; }
+.foto-card:hover { border-color: var(--vinho); box-shadow: 0 4px 14px rgba(106,31,48,0.1); transform: translateY(-2px); }
+.foto-thumb { width: 100%; height: 140px; object-fit: cover; display: block; cursor: pointer; }
+.foto-thumb-placeholder { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; font-size: 36px; cursor: pointer; }
+.foto-card-body { padding: 8px 10px; }
+.foto-data { font-size: 0.68rem; color: var(--muted); }
+.foto-obs { font-size: 0.72rem; color: #374151; margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.foto-del { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 6px; padding: 3px 7px; font-size: 11px; cursor: pointer; display: none; }
+.foto-card:hover .foto-del { display: block; }
+
+/* UPLOAD ZONE */
+.upload-zone { border: 2px dashed #d1d5db; border-radius: 10px; padding: 16px; text-align: center; font-size: 0.78rem; color: var(--muted); cursor: pointer; transition: all .15s; }
+.upload-zone:hover, .upload-zone.drag-active { border-color: var(--vinho); background: #fdf2f4; color: var(--vinho); }
+
+/* EMPTY */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+.empty-state-icon { font-size: 52px; margin-bottom: 14px; }
+.empty-state-title { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.empty-state-sub { font-size: 0.8rem; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; width: 420px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; }
+.modal-header { padding: 16px 20px; background: var(--vinho); color: var(--marfim); font-size: 0.95rem; font-weight: 700; }
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-footer { padding: 12px 20px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border); }
+.form-label { font-size: 0.78rem; font-weight: 600; color: #374151; display: block; margin-bottom: 5px; }
+.form-input { width: 100%; padding: 9px 12px; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; font-family: inherit; outline: none; }
+.form-input:focus { border-color: var(--vinho); }
+.btn-cancel { background: #f3f4f6; color: #374151; }
+.btn-cancel:hover { background: #e5e7eb; }
+.btn-save { background: var(--vinho); color: #fff; }
+.btn-save:hover { background: var(--vinho-light); }
+
+/* LIGHTBOX */
+.lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 200; flex-direction: column; }
+.lightbox-overlay.open { display: flex; }
+
+/* barra topo */
+.lb-topbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; flex-shrink: 0; background: rgba(0,0,0,0.4); }
+.lb-info { flex: 1; color: rgba(255,255,255,0.8); font-size: 0.82rem; }
+.lb-badge { display: inline-block; padding: 3px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
+.lb-badge.antes { background: #fee2e2; color: #dc2626; }
+.lb-badge.depois { background: #dcfce7; color: #16a34a; }
+.lb-badge.slider { background: rgba(255,255,255,0.15); color: #fff; }
+.lb-close { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 20px; cursor: pointer; border-radius: 8px; padding: 4px 12px; }
+.lb-close:hover { background: rgba(255,255,255,0.22); }
+
+/* area central */
+.lb-center { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+
+/* modo imagem simples */
+.lb-img { max-width: 92vw; max-height: calc(100vh - 110px); border-radius: 6px; object-fit: contain; display: block; }
+
+/* setas navegação */
+.lb-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 22px; cursor: pointer; border-radius: 10px; padding: 10px 14px; transition: background .15s; z-index: 10; user-select: none; }
+.lb-arrow:hover { background: rgba(255,255,255,0.25); }
+.lb-arrow.prev { left: 16px; }
+.lb-arrow.next { right: 16px; }
+.lb-arrow:disabled { opacity: 0.2; cursor: default; }
+
+/* modo slider antes/depois */
+.lb-slider-wrap { position: relative; display: none; touch-action: none; border-radius: 6px; overflow: hidden; cursor: ew-resize; }
+.lb-slider-wrap.show { display: block; }
+.lb-img.show { display: block; }
+.lb-img.hide { display: none; }
+.lb-slider-before { display: block; max-width: 92vw; max-height: calc(100vh - 110px); object-fit: contain; user-select: none; }
+.lb-slider-after  { position: absolute; inset: 0; overflow: hidden; }
+.lb-slider-after img { display: block; max-width: 92vw; max-height: calc(100vh - 110px); object-fit: contain; user-select: none; }
+.lb-divider { position: absolute; top: 0; bottom: 0; width: 3px; background: #fff; box-shadow: 0 0 8px rgba(0,0,0,0.6); transform: translateX(-50%); pointer-events: none; }
+.lb-handle { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; background: #fff; border-radius: 50%; box-shadow: 0 2px 12px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none; color: #333; font-weight: 700; }
+
+/* tabs modos */
+.lb-tabs { display: flex; gap: 6px; padding: 10px 20px 0; flex-shrink: 0; justify-content: center; }
+.lb-tab { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.65); padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+.lb-tab.active { background: #fff; color: #1a0f0a; border-color: #fff; }
+.lb-tab:hover:not(.active) { background: rgba(255,255,255,0.18); }
+
+/* contador */
+.lb-counter { color: rgba(255,255,255,0.45); font-size: 0.72rem; margin-left: auto; }
+
+/* PROGRESS */
+.upload-progress { display: none; margin: 0 24px 12px; height: 4px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+.upload-progress.show { display: block; }
+.upload-progress-bar { height: 100%; background: var(--vinho); border-radius: 4px; transition: width .3s; width: 0; }
+
+/* MODAL SIMULADOR IA */
+.simulador-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500; flex-direction: column; }
+.simulador-overlay.open { display: flex; }
+.simulador-header { background: var(--vinho); color: var(--marfim); padding: 10px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.simulador-header-title { font-size: 0.9rem; font-weight: 700; letter-spacing: .04em; flex: 1; }
+.simulador-close { background: rgba(253,249,244,0.15); border: 1px solid rgba(253,249,244,0.3); color: var(--marfim); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+.simulador-close:hover { background: rgba(253,249,244,0.25); }
+.simulador-frame { flex: 1; border: none; width: 100%; }
+.btn-ia { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+.btn-ia:hover { opacity: 0.9; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: #1a0f0a; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; opacity: 0; transform: translateY(8px); transition: all .2s; pointer-events: none; z-index: 999; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+#file-input-antes, #file-input-depois, #file-input-capa { display: none; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <div class="header-title">📷 Antes e Depois</div>
+    <div class="header-sub">Oral Unic Carlos Barbosa</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-ia" onclick="abrirSimulador()">🤖 Simulador IA</button>
+    <button class="btn btn-ghost" id="btn-pdf" onclick="exportarPDF()" style="display:none">📄 Exportar PDF</button>
+    <button class="btn btn-ghost" onclick="abrirModalNovoPaciente()">+ Novo Paciente</button>
+  </div>
+</header>
+
+<!-- MODAL SIMULADOR IA -->
+<div class="simulador-overlay" id="simulador-overlay">
+  <div class="simulador-header">
+    <span class="simulador-header-title">🤖 Simulador de Sorriso — IA · Oral Unic</span>
+    <span id="simulador-pac-label" style="font-size:0.78rem;opacity:0.7;"></span>
+    <button class="simulador-close" onclick="fecharSimulador()">✕ Fechar</button>
+  </div>
+  <iframe class="simulador-frame" id="simulador-frame" src="about:blank"></iframe>
+</div>
+
+<div class="search-bar">
+  <input type="text" class="search-input" id="search-input" placeholder="🔍 Buscar paciente..." oninput="renderPacientes()">
+</div>
+
+<div class="app-body">
+  <!-- LISTA -->
+  <aside class="pacientes-list" id="pacientes-list"></aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main-content">
+    <div class="empty-state" style="margin:auto">
+      <div class="empty-state-icon">📷</div>
+      <div class="empty-state-title">Selecione um paciente</div>
+      <div class="empty-state-sub">Ou crie um novo para começar</div>
+    </div>
+  </main>
+</div>
+
+<!-- INPUTS OCULTOS -->
+<input type="file" id="file-input-antes" accept="image/*" multiple onchange="uploadFotos(this.files,'antes')">
+<input type="file" id="file-input-depois" accept="image/*" multiple onchange="uploadFotos(this.files,'depois')">
+<input type="file" id="file-input-capa" accept="image/*" onchange="uploadCapa(this.files[0])">
+
+<!-- MODAL NOVO PACIENTE -->
+<div class="modal-overlay" id="modal-paciente" onclick="if(event.target===this)fecharModal()">
+  <div class="modal">
+    <div class="modal-header" id="modal-pac-titulo">+ Novo Paciente</div>
+    <div class="modal-body">
+      <div>
+        <label class="form-label">Nome do paciente</label>
+        <input type="text" class="form-input" id="input-pac-nome" placeholder="Ex: Maria Silva" maxlength="60">
+      </div>
+      <div>
+        <label class="form-label">Observação (opcional)</label>
+        <input type="text" class="form-input" id="input-pac-obs" placeholder="Ex: Clareamento + facetas" maxlength="100">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <input type="hidden" id="pac-edit-id">
+      <button class="btn btn-cancel" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-save" onclick="salvarPaciente()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD FOTO (obs) -->
+<div class="modal-overlay" id="modal-foto" onclick="if(event.target===this)fecharModalFoto()">
+  <div class="modal">
+    <div class="modal-header" id="modal-foto-titulo">Adicionar observação</div>
+    <div class="modal-body">
+      <div>
+        <label class="form-label">Observação da foto (opcional)</label>
+        <input type="text" class="form-input" id="input-foto-obs" placeholder="Ex: Sorriso reto, clareamento ativo">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-cancel" onclick="fecharModalFoto()">Pular</button>
+      <button class="btn btn-save" onclick="confirmarFotoObs()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" id="lightbox">
+  <!-- barra topo -->
+  <div class="lb-topbar">
+    <div class="lb-info" id="lb-info"></div>
+    <span class="lb-counter" id="lb-counter"></span>
+    <button class="lb-close" onclick="fecharLightbox()">✕</button>
+  </div>
+
+  <!-- tabs de modo (só aparece quando tem par antes/depois) -->
+  <div class="lb-tabs" id="lb-tabs" style="display:none">
+    <button class="lb-tab active" id="lb-tab-foto"   onclick="lbSetModo('foto')">Foto</button>
+    <button class="lb-tab"        id="lb-tab-slider" onclick="lbSetModo('slider')">⇔ Comparar</button>
+  </div>
+
+  <!-- área central -->
+  <div class="lb-center">
+    <!-- seta prev -->
+    <button class="lb-arrow prev" id="lb-prev" onclick="lbNav(-1)">‹</button>
+
+    <!-- imagem simples -->
+    <img class="lb-img show" id="lb-img" src="" alt="">
+
+    <!-- slider antes/depois -->
+    <div class="lb-slider-wrap" id="lb-slider-wrap">
+      <img class="lb-slider-before" id="lb-sl-before" src="" alt="Antes" draggable="false">
+      <div class="lb-slider-after" id="lb-sl-after" style="clip-path:inset(0 0 0 50%)">
+        <img id="lb-sl-after-img" src="" alt="Depois" draggable="false">
+      </div>
+      <div class="lb-divider" id="lb-divider" style="left:50%"></div>
+      <div class="lb-handle"  id="lb-handle"  style="left:50%">◀▶</div>
+    </div>
+
+    <!-- seta next -->
+    <button class="lb-arrow next" id="lb-next" onclick="lbNav(1)">›</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+let _pacSelecionado = null;
+let _pendingFiles = [], _pendingTipo = null, _pendingIdx = 0;
+let _pendingObsList = [];
+
+// Fallback local
+if (!window.getPacientes)  window.getPacientes  = () => { try { return JSON.parse(localStorage.getItem('ou_ad_pacs')||'[]'); } catch { return []; } };
+if (!window.savePacientes) window.savePacientes = p => localStorage.setItem('ou_ad_pacs', JSON.stringify(p));
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+window._adReady = function() { render(); };
+window.render = function() {
+  // Atualiza referência do paciente selecionado com dados novos do Firebase
+  if (_pacSelecionado) {
+    const atualizado = getPacientes().find(p => p.id === _pacSelecionado.id);
+    if (atualizado) _pacSelecionado = atualizado;
+  }
+  renderPacientes();
+  if (_pacSelecionado) renderMain(_pacSelecionado);
+};
+
+// ── RENDER LISTA ───────────────────────────────────────────────────────────
+function renderPacientes() {
+  const busca = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const pacs = getPacientes().filter(p => !busca || p.nome.toLowerCase().includes(busca));
+  const list = document.getElementById('pacientes-list');
+
+  if (!pacs.length) {
+    list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:0.8rem;">${busca ? 'Nenhum resultado' : 'Nenhum paciente ainda'}</div>`;
+    return;
+  }
+
+  list.innerHTML = pacs.map(p => {
+    const totalFotos = (p.fotos || []).length;
+    const capaUrl = p.capaDataUrl || '';
+    const initials = p.nome.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    const isActive = _pacSelecionado?.id === p.id;
+    return `
+      <div class="pac-item${isActive?' active':''}" onclick="selecionarPaciente('${p.id}')">
+        <div class="pac-avatar">
+          ${capaUrl ? `<img src="${capaUrl}" alt="${_esc(p.nome)}">` : initials}
+        </div>
+        <div class="pac-info">
+          <div class="pac-nome">${_esc(p.nome)}</div>
+          <div class="pac-meta">${p.obs || 'Sem observação'}</div>
+        </div>
+        <span class="pac-fotos-count">${totalFotos}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── SELECIONAR PACIENTE ────────────────────────────────────────────────────
+function selecionarPaciente(id) {
+  const p = getPacientes().find(x => x.id === id);
+  if (!p) return;
+  _pacSelecionado = p;
+  window._adPacSelecionadoId = id; // expõe para o módulo Firebase
+  renderPacientes();
+  renderMain(p);
+  _atualizarBtnPDF();
+  // Carrega automaticamente thumbs de fotos que não têm dataUrl local (salvas em outro dispositivo)
+  _autoCarregarThumbs(p);
+}
+
+async function _autoCarregarThumbs(p) {
+  const fotos = (p.fotos || []).filter(f => !f.dataUrl && f.chunks);
+  if (!fotos.length) return;
+  for (const f of fotos) {
+    if (_pacSelecionado?.id !== p.id) return; // paciente mudou, aborta
+    try {
+      f.dataUrl = await window.getFotoUrl(f.id, f.chunks);
+      // Atualiza só o card desta foto sem re-renderizar tudo
+      const placeholder = document.querySelector(`[onclick="_loadFotoThumb('${f.id}')"]`);
+      if (placeholder) {
+        const card = placeholder.closest('.foto-card');
+        if (card) {
+          const img = document.createElement('img');
+          img.className = 'foto-thumb';
+          img.src = f.dataUrl;
+          img.alt = '';
+          img.onclick = () => abrirLightbox(f.id);
+          placeholder.replaceWith(img);
+        }
+      }
+    } catch(e) { /* silencioso */ }
+  }
+}
+
+function renderMain(p) {
+  const main = document.getElementById('main-content');
+  const fotos = p.fotos || [];
+  const antes  = fotos.filter(f => f.tipo === 'antes');
+  const depois = fotos.filter(f => f.tipo === 'depois');
+
+  main.innerHTML = `
+    <div class="pac-header">
+      <div>
+        <div class="pac-header-nome">👤 ${_esc(p.nome)}</div>
+        <div class="pac-header-sub">${p.obs || ''} · ${fotos.length} foto${fotos.length!==1?'s':''}</div>
+      </div>
+      <div class="pac-header-actions">
+        <button class="btn" style="background:#f3f4f6;color:#374151" onclick="editarPaciente('${p.id}')">✏️ Editar</button>
+        <button class="btn" style="background:#fff1f2;color:#dc2626" onclick="excluirPaciente('${p.id}')">🗑 Excluir</button>
+      </div>
+    </div>
+    <div class="upload-progress" id="upload-progress"><div class="upload-progress-bar" id="upload-progress-bar"></div></div>
+    <div class="fotos-area">
+
+      <!-- ANTES -->
+      <div class="secao-wrap">
+        <div class="secao-title">📸 Fotos <span class="badge-antes">ANTES</span></div>
+        <div class="fotos-grid" id="grid-antes">
+          ${renderFotosGrid(antes)}
+        </div>
+        <div class="upload-zone" style="margin-top:10px" onclick="document.getElementById('file-input-antes').click()"
+             ondragover="this.classList.add('drag-active');event.preventDefault()"
+             ondragleave="this.classList.remove('drag-active')"
+             ondrop="this.classList.remove('drag-active');event.preventDefault();uploadFotos(event.dataTransfer.files,'antes')">
+          + Adicionar fotos ANTES
+        </div>
+      </div>
+
+      <!-- DEPOIS -->
+      <div class="secao-wrap">
+        <div class="secao-title">✨ Fotos <span class="badge-depois">DEPOIS</span></div>
+        <div class="fotos-grid" id="grid-depois">
+          ${renderFotosGrid(depois)}
+        </div>
+        <div class="upload-zone" style="margin-top:10px" onclick="document.getElementById('file-input-depois').click()"
+             ondragover="this.classList.add('drag-active');event.preventDefault()"
+             ondragleave="this.classList.remove('drag-active')"
+             ondrop="this.classList.remove('drag-active');event.preventDefault();uploadFotos(event.dataTransfer.files,'depois')">
+          + Adicionar fotos DEPOIS
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+function renderFotosGrid(fotos) {
+  if (!fotos.length) return `<div style="color:var(--muted);font-size:0.78rem;padding:8px 0;">Nenhuma foto ainda</div>`;
+  return fotos.map(f => `
+    <div class="foto-card">
+      ${f.dataUrl
+        ? `<img class="foto-thumb" src="${f.dataUrl}" alt="" onclick="abrirLightbox('${f.id}')">`
+        : `<div class="foto-thumb-placeholder" onclick="_loadFotoThumb('${f.id}')">⏳</div>`}
+      <button class="foto-del" onclick="excluirFoto('${f.id}')">✕</button>
+      <div class="foto-card-body">
+        <div class="foto-data">${f.data}</div>
+        ${f.obs ? `<div class="foto-obs">${_esc(f.obs)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// Lazy load foto
+async function _loadFotoThumb(fotoId) {
+  const p = _pacSelecionado; if (!p) return;
+  const f = (p.fotos||[]).find(x => x.id === fotoId); if (!f) return;
+  const el = document.querySelector(`[onclick="_loadFotoThumb('${fotoId}')"]`);
+  if (el) el.textContent = '⏳ Carregando...';
+  try {
+    const dataUrl = await window.getFotoUrl(fotoId, f.chunks);
+    f.dataUrl = dataUrl;
+    renderMain(p);
+  } catch(e) { toast('Erro ao carregar foto.'); }
+}
+
+// ── UPLOAD FOTOS ───────────────────────────────────────────────────────────
+async function uploadFotos(files, tipo) {
+  if (!_pacSelecionado || !files?.length) return;
+  _pendingFiles = Array.from(files);
+  _pendingTipo = tipo;
+  _pendingObsList = [];
+  _pendingIdx = 0;
+  // Pede obs para a primeira foto
+  document.getElementById('input-foto-obs').value = '';
+  document.getElementById('modal-foto-titulo').textContent = `Foto ${1}/${_pendingFiles.length} — Observação`;
+  document.getElementById('modal-foto').classList.add('open');
+}
+
+function fecharModalFoto() {
+  document.getElementById('modal-foto').classList.remove('open');
+  _processarUploadComObs('');
+}
+
+function confirmarFotoObs() {
+  const obs = document.getElementById('input-foto-obs').value.trim();
+  document.getElementById('modal-foto').classList.remove('open');
+  _processarUploadComObs(obs);
+}
+
+async function _processarUploadComObs(obs) {
+  _pendingObsList.push(obs);
+  _pendingIdx++;
+  if (_pendingIdx < _pendingFiles.length) {
+    // Próxima foto
+    document.getElementById('input-foto-obs').value = '';
+    document.getElementById('modal-foto-titulo').textContent = `Foto ${_pendingIdx+1}/${_pendingFiles.length} — Observação`;
+    document.getElementById('modal-foto').classList.add('open');
+    return;
+  }
+  // Todas obs coletadas — faz upload
+  await _executarUploads();
+}
+
+async function _executarUploads() {
+  const progressEl = document.getElementById('upload-progress');
+  const barEl = document.getElementById('upload-progress-bar');
+  if (progressEl) progressEl.classList.add('show');
+
+  const pacs = getPacientes();
+  const idx = pacs.findIndex(x => x.id === _pacSelecionado.id);
+  if (idx < 0) return;
+  if (!pacs[idx].fotos) pacs[idx].fotos = [];
+
+  for (let i = 0; i < _pendingFiles.length; i++) {
+    const f = _pendingFiles[i];
+    const obs = _pendingObsList[i] || '';
+    toast(`Enviando ${i+1}/${_pendingFiles.length}...`);
+    try {
+      const fotoId = uid();
+      const chunks = await window.uploadFoto(f, fotoId);
+      // Gera dataUrl local para exibição imediata
+      const dataUrl = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(f); });
+      pacs[idx].fotos.push({
+        id: fotoId, tipo: _pendingTipo, obs,
+        data: new Date().toLocaleDateString('pt-BR'),
+        chunks, dataUrl, mimeType: f.type
+      });
+      if (barEl) barEl.style.width = Math.round(((i+1)/_pendingFiles.length)*100) + '%';
+    } catch(e) { toast('Erro ao enviar foto.'); }
+  }
+
+  await savePacientes(pacs);
+  _pacSelecionado = pacs[idx];
+  renderPacientes();
+  renderMain(_pacSelecionado);
+  toast(`${_pendingFiles.length} foto(s) salva(s)!`);
+  setTimeout(() => { if (progressEl) { progressEl.classList.remove('show'); if(barEl) barEl.style.width='0'; } }, 1000);
+
+  // Limpa inputs
+  ['file-input-antes','file-input-depois'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+}
+
+async function uploadCapa(file) {
+  if (!_pacSelecionado || !file) return;
+  const dataUrl = await new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+  const pacs = getPacientes();
+  const idx = pacs.findIndex(x => x.id === _pacSelecionado.id);
+  if (idx < 0) return;
+  pacs[idx].capaDataUrl = dataUrl;
+  await savePacientes(pacs);
+  _pacSelecionado = pacs[idx];
+  renderPacientes();
+  toast('Foto de capa atualizada!');
+}
+
+// ── LIGHTBOX ───────────────────────────────────────────────────────────────
+let _lbFotos = [];   // todas as fotos do paciente (antes + depois)
+let _lbIdx   = 0;   // índice atual
+let _lbModo  = 'foto'; // 'foto' | 'slider'
+let _lbSliderDrag = false;
+
+async function abrirLightbox(fotoId) {
+  if (!_pacSelecionado) return;
+  _lbFotos = (_pacSelecionado.fotos || []).slice(); // cópia
+  _lbIdx   = _lbFotos.findIndex(f => f.id === fotoId);
+  if (_lbIdx < 0) _lbIdx = 0;
+  _lbModo = 'foto';
+  document.getElementById('lightbox').classList.add('open');
+  await _lbRender();
+  document.addEventListener('keydown', _lbKeyHandler);
+}
+
+function fecharLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.removeEventListener('keydown', _lbKeyHandler);
+  // Para slider
+  document.removeEventListener('mousemove', _lbSliderMove);
+  document.removeEventListener('mouseup',   _lbSliderUp);
+  document.removeEventListener('touchmove', _lbSliderMoveT);
+  document.removeEventListener('touchend',  _lbSliderUp);
+}
+
+function _lbKeyHandler(e) {
+  if (e.key === 'Escape')     { fecharLightbox(); return; }
+  if (e.key === 'ArrowRight') { lbNav(1);  return; }
+  if (e.key === 'ArrowLeft')  { lbNav(-1); return; }
+}
+
+async function lbNav(dir) {
+  const novo = _lbIdx + dir;
+  if (novo < 0 || novo >= _lbFotos.length) return;
+  _lbIdx = novo;
+  _lbModo = 'foto';
+  await _lbRender();
+}
+
+function lbSetModo(modo) {
+  _lbModo = modo;
+  _lbRenderModo();
+}
+
+async function _lbRender() {
+  const f = _lbFotos[_lbIdx]; if (!f) return;
+
+  // Carrega imagem se necessário
+  if (!f.dataUrl && f.chunks) {
+    toast('Carregando...');
+    f.dataUrl = await window.getFotoUrl(f.id, f.chunks);
+  }
+
+  // Verifica se existe par (antes↔depois com mesma obs ou consecutivos)
+  const par = _lbEncontrarPar(f);
+
+  // Atualiza tabs
+  const tabsEl = document.getElementById('lb-tabs');
+  if (par) {
+    tabsEl.style.display = 'flex';
+    // Pré-carrega par
+    if (!par.dataUrl && par.chunks) par.dataUrl = await window.getFotoUrl(par.id, par.chunks);
+  } else {
+    tabsEl.style.display = 'none';
+    _lbModo = 'foto';
+  }
+
+  // Setas
+  document.getElementById('lb-prev').disabled = _lbIdx === 0;
+  document.getElementById('lb-next').disabled = _lbIdx === _lbFotos.length - 1;
+
+  // Contador
+  document.getElementById('lb-counter').textContent = (_lbIdx + 1) + ' / ' + _lbFotos.length;
+
+  // Info
+  const badge = `<span class="lb-badge ${f.tipo}">${f.tipo.toUpperCase()}</span>`;
+  document.getElementById('lb-info').innerHTML = badge + (f.obs ? _esc(f.obs) + ' · ' : '') + f.data;
+
+  // Tab ativa
+  document.getElementById('lb-tab-foto').classList.toggle('active',   _lbModo === 'foto');
+  document.getElementById('lb-tab-slider').classList.toggle('active', _lbModo === 'slider');
+
+  _lbRenderModo(f, par);
+}
+
+function _lbRenderModo(f, par) {
+  f   = f   || _lbFotos[_lbIdx];
+  par = par !== undefined ? par : _lbEncontrarPar(f);
+
+  const imgEl    = document.getElementById('lb-img');
+  const sliderEl = document.getElementById('lb-slider-wrap');
+
+  // Tab ativa
+  document.getElementById('lb-tab-foto').classList.toggle('active',   _lbModo === 'foto');
+  document.getElementById('lb-tab-slider').classList.toggle('active', _lbModo === 'slider');
+
+  if (_lbModo === 'foto' || !par) {
+    imgEl.src = f.dataUrl || '';
+    imgEl.classList.add('show'); imgEl.classList.remove('hide');
+    sliderEl.classList.remove('show');
+    return;
+  }
+
+  // Modo slider
+  imgEl.classList.remove('show'); imgEl.classList.add('hide');
+  sliderEl.classList.add('show');
+
+  const antes  = f.tipo === 'antes'  ? f   : par;
+  const depois = f.tipo === 'depois' ? f   : par;
+
+  document.getElementById('lb-sl-before').src    = antes.dataUrl  || '';
+  document.getElementById('lb-sl-after-img').src = depois.dataUrl || '';
+
+  // Centraliza slider em 50%
+  _lbSliderSetPct(50);
+
+  // Bind eventos
+  _lbSliderBind();
+}
+
+function _lbEncontrarPar(f) {
+  if (!f || !_lbFotos) return null;
+  // Busca foto do tipo oposto com mesma obs (resultado simulador)
+  const tipoOposto = f.tipo === 'antes' ? 'depois' : 'antes';
+  let par = null;
+  if (f.obs) par = _lbFotos.find(x => x.tipo === tipoOposto && x.obs === f.obs);
+  // Fallback: foto adjacente do tipo oposto
+  if (!par) par = _lbFotos.find(x => x.tipo === tipoOposto);
+  return par || null;
+}
+
+function _lbSliderSetPct(pct) {
+  pct = Math.max(0, Math.min(100, pct));
+  document.getElementById('lb-sl-after').style.clipPath  = `inset(0 0 0 ${pct}%)`;
+  document.getElementById('lb-divider').style.left       = pct + '%';
+  document.getElementById('lb-handle').style.left        = pct + '%';
+}
+
+function _lbSliderFromEvent(e) {
+  const wrap = document.getElementById('lb-slider-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX);
+  const pct = ((x - rect.left) / rect.width) * 100;
+  _lbSliderSetPct(pct);
+}
+
+function _lbSliderMove(e)  { if (_lbSliderDrag) _lbSliderFromEvent(e); }
+function _lbSliderMoveT(e) { if (_lbSliderDrag) { e.preventDefault(); _lbSliderFromEvent(e); } }
+function _lbSliderUp()     { _lbSliderDrag = false; }
+
+function _lbSliderBind() {
+  const wrap = document.getElementById('lb-slider-wrap');
+  // Remove listeners antigos para não duplicar
+  wrap.onmousedown  = function(e) { _lbSliderDrag = true; _lbSliderFromEvent(e); };
+  wrap.ontouchstart = function(e) { _lbSliderDrag = true; _lbSliderFromEvent(e); };
+  document.removeEventListener('mousemove', _lbSliderMove);
+  document.removeEventListener('mouseup',   _lbSliderUp);
+  document.removeEventListener('touchmove', _lbSliderMoveT);
+  document.removeEventListener('touchend',  _lbSliderUp);
+  document.addEventListener('mousemove', _lbSliderMove);
+  document.addEventListener('mouseup',   _lbSliderUp);
+  document.addEventListener('touchmove', _lbSliderMoveT, { passive: false });
+  document.addEventListener('touchend',  _lbSliderUp);
+}
+
+// ── EXCLUIR FOTO ───────────────────────────────────────────────────────────
+async function excluirFoto(fotoId) {
+  if (!confirm('Excluir esta foto?')) return;
+  const pacs = getPacientes();
+  const idx = pacs.findIndex(x => x.id === _pacSelecionado.id);
+  if (idx < 0) return;
+  const f = pacs[idx].fotos?.find(x => x.id === fotoId);
+  if (f?.chunks && window.deleteFoto) await window.deleteFoto(fotoId, f.chunks);
+  pacs[idx].fotos = (pacs[idx].fotos||[]).filter(x => x.id !== fotoId);
+  await savePacientes(pacs);
+  _pacSelecionado = pacs[idx];
+  renderMain(_pacSelecionado);
+  renderPacientes();
+  toast('Foto excluída.');
+}
+
+// ── PACIENTE CRUD ─────────────────────────────────────────────────────────
+function abrirModalNovoPaciente(nome) {
+  document.getElementById('pac-edit-id').value = '';
+  document.getElementById('modal-pac-titulo').textContent = '+ Novo Paciente';
+  document.getElementById('input-pac-nome').value = nome || '';
+  document.getElementById('input-pac-obs').value = '';
+  document.getElementById('modal-paciente').classList.add('open');
+  setTimeout(() => document.getElementById('input-pac-nome').focus(), 100);
+}
+
+function editarPaciente(id) {
+  const p = getPacientes().find(x => x.id === id); if (!p) return;
+  document.getElementById('pac-edit-id').value = id;
+  document.getElementById('modal-pac-titulo').textContent = '✏️ Editar Paciente';
+  document.getElementById('input-pac-nome').value = p.nome;
+  document.getElementById('input-pac-obs').value = p.obs || '';
+  document.getElementById('modal-paciente').classList.add('open');
+  setTimeout(() => document.getElementById('input-pac-nome').focus(), 100);
+}
+
+function fecharModal() { document.getElementById('modal-paciente').classList.remove('open'); }
+
+async function salvarPaciente() {
+  const nome = document.getElementById('input-pac-nome').value.trim();
+  if (!nome) { toast('Informe o nome do paciente.'); return; }
+  const obs = document.getElementById('input-pac-obs').value.trim();
+  const editId = document.getElementById('pac-edit-id').value;
+  const pacs = getPacientes();
+  if (editId) {
+    const i = pacs.findIndex(p => p.id === editId);
+    if (i >= 0) { pacs[i].nome = nome; pacs[i].obs = obs; }
+  } else {
+    pacs.unshift({ id: uid(), nome, obs, fotos: [], criadoEm: new Date().toLocaleDateString('pt-BR') });
+  }
+  await savePacientes(pacs);
+  fecharModal();
+  if (!editId) selecionarPaciente(pacs[0].id);
+  else { _pacSelecionado = pacs.find(p=>p.id===editId)||_pacSelecionado; render(); }
+  toast(editId ? 'Paciente atualizado!' : 'Paciente criado!');
+}
+
+async function excluirPaciente(id) {
+  if (!confirm('Excluir este paciente e todas as fotos?')) return;
+  const pacs = getPacientes();
+  const p = pacs.find(x => x.id === id);
+  if (p?.fotos) {
+    for (const f of p.fotos) { if (f.chunks && window.deleteFoto) await window.deleteFoto(f.id, f.chunks); }
+  }
+  await savePacientes(pacs.filter(x => x.id !== id));
+  if (_pacSelecionado?.id === id) {
+    _pacSelecionado = null;
+    document.getElementById('main-content').innerHTML = `<div class="empty-state" style="margin:auto"><div class="empty-state-icon">📷</div><div class="empty-state-title">Selecione um paciente</div></div>`;
+  }
+  renderPacientes();
+  toast('Paciente excluído.');
+}
+
+// ── SIMULADOR IA ──────────────────────────────────────────────────────────
+function abrirSimulador(nomeOverride) {
+  const frame = document.getElementById('simulador-frame');
+  const nome = nomeOverride || (_pacSelecionado ? _pacSelecionado.nome : '');
+  const label = document.getElementById('simulador-pac-label');
+
+  // Monta URL com nome como query param para pré-preencher o campo
+  const url = 'https://simulador-sorriso-giq5lgw1d-iaoraluniccb-8815s-projects.vercel.app/index.html' + (nome ? '?nome=' + encodeURIComponent(nome) : '');
+  frame.src = url;
+
+  if (nome) {
+    label.textContent = 'Paciente: ' + nome;
+  } else {
+    label.textContent = 'Selecione um paciente para salvar automaticamente';
+  }
+  document.getElementById('simulador-overlay').classList.add('open');
+}
+
+function fecharSimulador() {
+  document.getElementById('simulador-overlay').classList.remove('open');
+  // Limpa iframe para não manter estado da análise anterior
+  const frame = document.getElementById('simulador-frame');
+  frame.src = 'about:blank';
+}
+
+// Salva dataUrl diretamente no Firebase em chunks (sem conversão para File)
+async function _uploadDataUrl(dataUrl, fotoId) {
+  const CHUNK_SIZE = 700000;
+  const chunks = [];
+  for (let i = 0; i < dataUrl.length; i += CHUNK_SIZE) chunks.push(dataUrl.slice(i, i + CHUNK_SIZE));
+  if (window.uploadFotoDataUrl) {
+    return window.uploadFotoDataUrl(dataUrl, fotoId);
+  }
+  // Fallback: cria File e usa uploadFoto normal
+  const arr = dataUrl.split(',');
+  const mime = (arr[0].match(/:(.*?);/) || ['','image/jpeg'])[1];
+  const bstr = atob(arr[1]); let n = bstr.length;
+  const u8arr = new Uint8Array(n); while (n--) u8arr[n] = bstr.charCodeAt(n);
+  const file = new File([u8arr], fotoId + '.jpg', { type: mime });
+  return window.uploadFoto(file, fotoId);
+}
+
+// ── RECEBE PACIENTE DO PERFIL VIA postMessage ─────────────────────────────
+window.addEventListener('message', async function(e) {
+  // Resultado do simulador IA — salva ANTES e DEPOIS automaticamente
+  if (e.data?.type === 'simulador_resultado') {
+    const { nome, estilo, beforeDataUrl, afterDataUrl } = e.data;
+
+    // Garante paciente selecionado ou cria pelo nome enviado
+    let pac = _pacSelecionado;
+    if (!pac && nome) {
+      const pacs = getPacientes();
+      pac = pacs.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+      if (!pac) {
+        const novo = { id: uid(), nome, obs: estilo || '', fotos: [], criadoEm: new Date().toLocaleDateString('pt-BR') };
+        pacs.unshift(novo);
+        await savePacientes(pacs);
+        pac = pacs[0];
+      }
+      selecionarPaciente(pac.id);
+      await new Promise(r => setTimeout(r, 300));
+      pac = getPacientes().find(p => p.id === pac.id);
+    }
+
+    if (!pac) { toast('Selecione um paciente antes de usar o simulador.'); return; }
+
+    fecharSimulador();
+    toast('Salvando resultado do simulador...');
+
+    const obs = estilo || 'Simulação IA';
+    const pacs = getPacientes();
+    const idx = pacs.findIndex(x => x.id === pac.id);
+    if (idx < 0) return;
+    if (!pacs[idx].fotos) pacs[idx].fotos = [];
+
+    // Salva ANTES
+    if (beforeDataUrl) {
+      try {
+        const fotoId = uid();
+        const chunks = await _uploadDataUrl(beforeDataUrl, fotoId);
+        pacs[idx].fotos.push({ id: fotoId, tipo: 'antes', obs, data: new Date().toLocaleDateString('pt-BR'), chunks, dataUrl: beforeDataUrl, mimeType: 'image/png' });
+      } catch(err) { console.error('Erro ANTES:', err); toast('Erro ao salvar foto ANTES.'); }
+    }
+
+    // Salva DEPOIS
+    if (afterDataUrl) {
+      try {
+        const fotoId = uid();
+        const chunks = await _uploadDataUrl(afterDataUrl, fotoId);
+        pacs[idx].fotos.push({ id: fotoId, tipo: 'depois', obs, data: new Date().toLocaleDateString('pt-BR'), chunks, dataUrl: afterDataUrl, mimeType: 'image/png' });
+      } catch(err) { console.error('Erro DEPOIS:', err); toast('Erro ao salvar foto DEPOIS.'); }
+    }
+
+    await savePacientes(pacs);
+    _pacSelecionado = pacs[idx];
+    render();
+    toast('✅ ANTES e DEPOIS salvos para ' + pac.nome + '!');
+    return;
+  }
+
+  // Criação de paciente pelo Perfil do Paciente → abre simulador com nome pré-preenchido
+  if (e.data?.type === 'novo_paciente_antes_depois') {
+    const nome = e.data.nome || '';
+    if (!nome) return;
+    // Idempotente: ignora chamadas duplicadas para o mesmo nome em menos de 5s
+    if (window._ultimoNomeTour === nome && window._ultimoNomeTourTs && (Date.now() - window._ultimoNomeTourTs) < 5000) return;
+    window._ultimoNomeTour = nome;
+    window._ultimoNomeTourTs = Date.now();
+
+    const pacs = getPacientes();
+    let existing = pacs.find(p => p.nome.toLowerCase() === nome.toLowerCase());
+    if (!existing) {
+      const novo = { id: uid(), nome, obs: e.data.obs || '', fotos: [], criadoEm: new Date().toLocaleDateString('pt-BR') };
+      pacs.unshift(novo);
+      await savePacientes(pacs);
+      existing = pacs[0];
+    }
+    selecionarPaciente(existing.id);
+    // Abre simulador IA já com o nome preenchido
+    setTimeout(() => abrirSimulador(nome), 400);
+  }
+});
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+let _toastTimer;
+function toast(msg) {
+  if (!msg) return;
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(_toastTimer); _toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+window._adReady = function() {
+  render();
+  // Limpeza automática de fotos com mais de 7 dias ao carregar
+  setTimeout(() => { if (window.limparFotosExpiradas) window.limparFotosExpiradas(); }, 2000);
+};
+setTimeout(() => { if (typeof getPacientes === 'function') render(); }, 400);
+
+// ── EXPORTAR PDF ──────────────────────────────────────────────────────────
+async function exportarPDF() {
+  const p = _pacSelecionado;
+  if (!p) { toast('Selecione um paciente.'); return; }
+  const fotos = p.fotos || [];
+  if (!fotos.length) { toast('Nenhuma foto para exportar.'); return; }
+
+  toast('Gerando PDF...');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, M = 14;
+
+  // Cabeçalho
+  pdf.setFillColor(106, 31, 48);
+  pdf.rect(0, 0, W, 22, 'F');
+  pdf.setTextColor(253, 249, 244);
+  pdf.setFontSize(13); pdf.setFont('helvetica', 'bold');
+  pdf.text('Oral Unic Carlos Barbosa — Antes e Depois', M, 13);
+  pdf.setFontSize(9); pdf.setFont('helvetica', 'normal');
+  pdf.text('Paciente: ' + p.nome + (p.obs ? '  |  ' + p.obs : '') + '  |  Gerado em: ' + new Date().toLocaleDateString('pt-BR'), M, 19);
+
+  let y = 30;
+  const imgW = (W - M * 2 - 6) / 2; // 2 fotos por linha
+  const imgH = imgW * 0.75;
+  let col = 0;
+
+  const antes  = fotos.filter(f => f.tipo === 'antes');
+  const depois = fotos.filter(f => f.tipo === 'depois');
+
+  async function _addSecao(lista, titulo, cor) {
+    if (!lista.length) return;
+    // Título da seção
+    if (col !== 0) { y += imgH + 10; col = 0; } // nova linha
+    if (y + 8 > H - M) { pdf.addPage(); y = M; }
+    pdf.setFillColor(...cor);
+    pdf.roundedRect(M, y, W - M * 2, 7, 2, 2, 'F');
+    pdf.setTextColor(255,255,255); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+    pdf.text(titulo, M + 3, y + 5);
+    pdf.setTextColor(30,15,10); pdf.setFont('helvetica','normal');
+    y += 10; col = 0;
+
+    for (const f of lista) {
+      let dataUrl = f.dataUrl;
+      if (!dataUrl && f.chunks) {
+        try { dataUrl = await window.getFotoUrl(f.id, f.chunks); } catch(e) { continue; }
+      }
+      if (!dataUrl) continue;
+
+      const x = M + col * (imgW + 6);
+      if (y + imgH > H - M) { pdf.addPage(); y = M; col = 0; }
+
+      try {
+        const fmt = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+        pdf.addImage(dataUrl, fmt, x, y, imgW, imgH, '', 'FAST');
+      } catch(e) { /* imagem inválida, pula */ }
+
+      // Legenda
+      pdf.setFontSize(7); pdf.setTextColor(100,80,80);
+      pdf.text(f.data || '', x + 1, y + imgH + 3.5);
+      if (f.obs) pdf.text(f.obs.substring(0, 30), x + 1, y + imgH + 7);
+
+      col++;
+      if (col >= 2) { col = 0; y += imgH + (f.obs ? 10 : 7); }
+    }
+    if (col !== 0) { y += imgH + 10; col = 0; }
+  }
+
+  await _addSecao(antes,  '📸  ANTES',  [220, 38, 38]);
+  await _addSecao(depois, '✨  DEPOIS', [22, 163, 74]);
+
+  const nomeArq = `antes-depois-${p.nome.replace(/\s+/g,'-').toLowerCase()}-${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
+  pdf.save(nomeArq);
+  toast('PDF salvo!');
+}
+
+// Mostra/esconde botão PDF conforme paciente selecionado
+function _atualizarBtnPDF() {
+  const btn = document.getElementById('btn-pdf');
+  if (btn) btn.style.display = _pacSelecionado ? 'inline-flex' : 'none';
+}
+</script>
+</body>
+</html>
