@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Athena — Controle Financeiro</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+SC:wght@300;400&family=Cormorant:ital,wght@1,300&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
 <style>
   /* Standalone — header e login ativos */
   :root {
@@ -43,7 +43,7 @@
 
     /* Typography */
     --font-display: 'Cormorant SC', Georgia, serif;
-    --font-body:    'Josefin Sans', system-ui, sans-serif;
+    --font-body:    'Inter', 'Josefin Sans', system-ui, sans-serif;
     --font-italic:  'Cormorant', Georgia, serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -595,7 +595,7 @@
         <div style="display:flex;gap:10px;align-items:center">
           <label style="font-size:11px;color:var(--text2);letter-spacing:.04em;text-transform:uppercase">Filtrar por mês</label>
           <input type="month" id="cob-filter-month" style="padding:7px 12px;font-size:13px;width:160px" onchange="renderCob()">
-          <button class="btn-secondary" onclick="cobLogout()" style="font-size:12px;padding:7px 14px">Sair</button>
+          
         </div>
       </div>
 
@@ -948,6 +948,16 @@
           <div class="form-group" style="margin-bottom:14px">
             <label>Valor Total da Dívida (R$)</label>
             <input type="number" id="sim-divida" placeholder="0,00" step="0.01" min="0" style="font-size:13px;font-weight:600" oninput="calcSimulador()">
+          </div>
+
+          <!-- Campo: paciente sugeriu valor de parcela -->
+          <div class="form-group" style="margin-bottom:14px">
+            <label style="display:flex;align-items:center;gap:6px;">
+              <span>Paciente sugeriu parcela de (R$)</span>
+              <span style="font-size:10px;color:var(--text2);font-weight:400;">(opcional)</span>
+            </label>
+            <input type="number" id="sim-pac-valor" min="0" step="0.01" placeholder="Ex: 350,00" style="font-size:13px" oninput="simCalcPorParcela()">
+            <div id="sim-pac-resultado" style="font-size:11px;color:var(--text2);margin-top:4px;min-height:14px"></div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
@@ -1946,29 +1956,53 @@ function _simCalcParcela(base, n, juros){
 function simRenderCenarios(){
   const container = document.getElementById('sim-cenarios');
   if(!container) return;
-  const divida  = parseFloat(document.getElementById('sim-divida')?.value)||0;
-  const desconto= parseFloat(document.getElementById('sim-desconto')?.value)||0;
-  const entrada = parseFloat(document.getElementById('sim-entrada')?.value)||0;
+  const divida  = parseFloat(document.getElementById('sim-divida') ? document.getElementById('sim-divida').value : 0)||0;
+  const desconto= parseFloat(document.getElementById('sim-desconto') ? document.getElementById('sim-desconto').value : 0)||0;
+  const entrada = parseFloat(document.getElementById('sim-entrada') ? document.getElementById('sim-entrada').value : 0)||0;
   const base    = Math.max(0, divida*(1-desconto/100) - entrada);
   container.innerHTML='';
-  _SIM_CENARIOS_FIXOS.forEach(c=>{
+
+  let menorParcela = Infinity;
+  _SIM_CENARIOS_FIXOS.forEach(function(c){
+    const p = base>0 ? _simCalcParcela(base, c.n, c.juros) : 0;
+    if(p > 0 && p < menorParcela) menorParcela = p;
+  });
+
+  _SIM_CENARIOS_FIXOS.forEach(function(c){
     const parcela = base>0 ? _simCalcParcela(base, c.n, c.juros) : 0;
     const totalC  = parcela * c.n;
-    const val = base>0 ? fmt(parcela)+'/mês' : '—';
-    const totalStr = base>0 && c.juros>0 ? `<div style="font-size:9px;color:var(--text2);margin-top:2px">Total: ${fmt(totalC)}</div>` : '';
+    const isMelhor = parcela > 0 && Math.abs(parcela - menorParcela) < 0.01;
+    const temJuros = c.juros > 0;
     const div = document.createElement('div');
-    div.style.cssText='text-align:center;padding:10px 8px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)';
-    div.innerHTML=`
-      <div style="font-size:10px;color:var(--text2);margin-bottom:5px">${c.label} · ${c.desc}</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text)">${val}</div>
-      ${totalStr}`;
+    const bg = isMelhor ? 'rgba(139,45,66,.07)' : '#ffffff';
+    const border = isMelhor ? '2px solid var(--vinho)' : '1.5px solid #e2e8f0';
+    div.style.cssText = 'position:relative;text-align:center;padding:12px 10px 10px;background:' + bg + ';border-radius:10px;border:' + border + ';';
+    const melhorBadge = isMelhor ? '<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--vinho);color:#fff;font-size:9px;font-weight:700;padding:1px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.3px;">MAIS ACESS\u00cdVEL</div>' : '';
+    const parcelaStr = base>0 ? '<div style="font-size:16px;font-weight:800;color:' + (isMelhor?'var(--vinho)':'#1e293b') + ';line-height:1;">' + fmt(parcela) + '</div><div style="font-size:9px;color:#94a3b8;margin-top:1px;">por m\u00eas</div>' : '<div style="font-size:15px;font-weight:700;color:#94a3b8;">&#8212;</div>';
+    const totalStr = base>0 && temJuros ? '<div style="font-size:9px;color:#ef4444;margin-top:4px;font-weight:600;">+juros &middot; total: ' + fmt(totalC) + '</div>' : base>0 ? '<div style="font-size:9px;color:#22c55e;margin-top:4px;font-weight:600;">sem juros &middot; total: ' + fmt(totalC) + '</div>' : '';
+    div.innerHTML = melhorBadge + '<div style="font-size:11px;font-weight:700;color:' + (isMelhor?'var(--vinho)':'#475569') + ';margin-bottom:6px;">' + c.label + '</div>' + parcelaStr + totalStr;
     container.appendChild(div);
   });
-  // Card "Simulação atual"
+
   const curr = document.createElement('div');
-  curr.style.cssText='text-align:center;padding:10px 8px;background:rgba(139,45,66,.06);border-radius:8px;border:2px solid var(--vinho)';
-  curr.innerHTML=`<div style="font-size:10px;color:var(--vinho);font-weight:600;margin-bottom:5px">Simulação atual</div><div style="font-size:13px;font-weight:700;color:var(--vinho)" id="cen-atual">—</div>`;
+  curr.style.cssText = 'position:relative;text-align:center;padding:12px 10px 10px;background:rgba(139,45,66,.04);border-radius:10px;border:2px dashed var(--vinho);';
+  curr.innerHTML = '<div style="font-size:9px;color:var(--vinho);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Sua simula\u00e7\u00e3o</div><div style="font-size:16px;font-weight:800;color:var(--vinho);line-height:1;" id="cen-atual">&#8212;</div><div style="font-size:9px;color:#94a3b8;margin-top:1px;">por m\u00eas</div>';
   container.appendChild(curr);
+}
+
+function simCalcPorParcela(){
+  const pacVal = parseFloat(document.getElementById('sim-pac-valor') ? document.getElementById('sim-pac-valor').value : 0)||0;
+  const resultado = document.getElementById('sim-pac-resultado');
+  if(!resultado) return;
+  if(pacVal <= 0){ resultado.textContent = ''; return; }
+  const divida   = parseFloat(document.getElementById('sim-divida') ? document.getElementById('sim-divida').value : 0)||0;
+  const desconto = parseFloat(document.getElementById('sim-desconto') ? document.getElementById('sim-desconto').value : 0)||0;
+  const entrada  = parseFloat(document.getElementById('sim-entrada') ? document.getElementById('sim-entrada').value : 0)||0;
+  const base = Math.max(0, divida*(1-desconto/100) - entrada);
+  if(base <= 0){ resultado.textContent = ''; return; }
+  const n = Math.ceil(base / pacVal);
+  const valAjustado = Math.round(base/n*100)/100;
+  resultado.innerHTML = '<span style="color:var(--vinho);font-weight:600">' + n + 'x de R$ ' + valAjustado.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</span> <span style="color:var(--text2)">aplique nos grupos abaixo</span>';
 }
 
 function simToggleJuros(modo){
@@ -2316,7 +2350,6 @@ function renderBoletos(){
   if(boletosReneg.length===0){ empty.style.display='block'; list.style.display='none'; }
   else { empty.style.display='none'; list.style.display='flex'; }
   document.getElementById('sbadge-reneg-boletos').textContent = boletosReneg.length;
-  // Ordenar: urgentes primeiro (dataEnvio mais próxima)
   const sorted = [...boletosReneg].sort((a,b)=>{
     const da = a.dataEnvio||'9999'; const db = b.dataEnvio||'9999';
     return da < db ? -1 : da > db ? 1 : 0;
@@ -2326,36 +2359,48 @@ function renderBoletos(){
     const urgente = dias !== null && dias <= 5 && dias >= 0;
     const atrasado = dias !== null && dias < 0;
     const div=document.createElement('div');
-    div.className='boleto-card' + (urgente||atrasado ? ' urgente' : '');
-    let alertaHtml='';
+    // Status visual
+    let borderColor = '#e2e8f0';
+    let bgColor = '#ffffff';
+    if(atrasado){ borderColor='#ef4444'; bgColor='#fff5f5'; }
+    else if(urgente){ borderColor='#f59e0b'; bgColor='#fffbeb'; }
+    div.style.cssText=`display:flex;align-items:flex-start;gap:14px;background:${bgColor};border:1.5px solid ${borderColor};border-radius:12px;padding:14px 16px;margin-bottom:8px;transition:box-shadow 0.2s;`;
+    // Alerta badge
+    let alertaBadge='';
     if(atrasado){
-      alertaHtml=`<span class="boleto-alerta">🚨 Atrasado ${Math.abs(dias)}d</span>`;
+      alertaBadge=`<span style="background:#ef4444;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.3px;">ATRASADO ${Math.abs(dias)}d</span>`;
     } else if(urgente){
-      alertaHtml=`<span class="boleto-alerta">⚠️ Enviar em ${dias===0?'hoje':dias+'d'}</span>`;
+      alertaBadge=`<span style="background:#f59e0b;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:0.3px;">ENVIAR ${dias===0?'HOJE':'EM '+dias+'D'}</span>`;
     }
-    let dataEnvioHtml='';
+    // 1a parcela
+    const p1Html = b.vencP1 ? `<span style="color:#64748b;font-size:12px;">1ª parcela: <strong style="color:#334155;">${fmtDate(b.vencP1)}</strong></span>` : '';
+    // Envio date
+    let envioHtml='';
     if(b.dataEnvio){
-      const cor = atrasado ? '#b91c1c' : urgente ? '#d97706' : 'var(--text2)';
-      dataEnvioHtml=`<span style="color:${cor};font-weight:${urgente||atrasado?'700':'400'}">📨 Envio: <strong>${fmtDate(b.dataEnvio)}</strong></span>`;
+      const cor = atrasado ? '#ef4444' : urgente ? '#f59e0b' : '#64748b';
+      envioHtml=`<span style="color:${cor};font-size:12px;font-weight:${urgente||atrasado?'700':'400'};">Envio: ${fmtDate(b.dataEnvio)}</span>`;
     }
     div.innerHTML=`
-      <div class="boleto-check-wrap">
-        <input type="checkbox" class="boleto-check" title="Marcar como enviado — remove o card" onchange="confirmarEnvioBoleto(${b.renegId},this)">
+      <div style="padding-top:2px;">
+        <input type="checkbox" class="boleto-check" title="Marcar como enviado" onchange="confirmarEnvioBoleto(${b.renegId},this)" style="width:18px;height:18px;accent-color:#8B2D42;cursor:pointer;">
       </div>
-      <div class="boleto-info">
-        <div class="boleto-nome" style="display:flex;align-items:center;gap:8px">${b.nome}${alertaHtml}</div>
-        <div class="boleto-meta">
-          <span>📁 Ficha ${b.ficha||'—'}</span>
-          <span>📄 ${b.manual ? (b.qtdParcelas||'—') : b.qtdParcelas+' parcela'+(b.qtdParcelas!==1?'s':'')}</span>
-          ${dataEnvioHtml}
-          ${b.vencP1?`<span>📅 1ª parcela: <strong style="color:var(--text)">${fmtDate(b.vencP1)}</strong></span>`:''}
-          ${b.obs?`<span style="color:var(--text2)">📝 ${b.obs}</span>`:''}
-          <span style="color:var(--text2)">Incluído em ${b.dataReneg||'—'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          <span style="font-size:14px;font-weight:700;color:#1e293b;">${b.nome}</span>
+          ${alertaBadge}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <span style="color:#64748b;font-size:12px;">Ficha <strong style="color:#334155;">${b.ficha||'—'}</strong></span>
+          ${p1Html}
+          ${envioHtml}
+          ${b.obs?`<span style="color:#94a3b8;font-size:11px;font-style:italic;">${b.obs}</span>`:''}
         </div>
       </div>
-      <div style="font-size:11px;color:var(--text2);text-align:right;line-height:1.6">
-        ${b.manual ? `<div style="font-weight:600;color:var(--vinho);font-size:13px">${b.valorTotal>0?fmt(b.valorTotal):'—'}</div><div style="color:var(--text2)">Manual</div>` : `<div style="font-weight:600;color:var(--cobre);font-size:13px">${b.numReneg}ª Renegociação</div>`}
-        <div>${urgente||atrasado?'⚠️ Pendente urgente':'Aguardando envio'}</div>
+      <div style="text-align:right;flex-shrink:0;">
+        ${b.manual
+          ? `<div style="font-size:13px;font-weight:700;color:#8B2D42;">${b.valorTotal>0?fmt(b.valorTotal):'—'}</div><div style="font-size:10px;color:#94a3b8;margin-top:2px;">Manual</div>`
+          : `<div style="font-size:13px;font-weight:700;color:#92400e;">${b.numReneg}ª Reneg.</div>`
+        }
       </div>`;
     list.appendChild(div);
   });
