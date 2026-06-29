@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><!-- v20260629-1009 -->
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1904,11 +1904,20 @@ function authHeaders() {
   return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
 }
 
-async function apiFetch(url, opts = {}) {
+async function apiFetch(url, opts = {}, _retry = 0) {
   opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
-  const r = await fetch(API + url, opts);
-  if (r.status === 401) { logout(); return null; }
-  return r;
+  try {
+    const r = await fetch(API + url, opts);
+    if (r.status === 401) { logout(); return null; }
+    return r;
+  } catch(e) {
+    // Render dormindo — tenta acortar até 2x com espera crescente
+    if (_retry < 2) {
+      await new Promise(res => setTimeout(res, 3000 * (_retry + 1)));
+      return apiFetch(url, opts, _retry + 1);
+    }
+    return null;
+  }
 }
 
 function logout() {
