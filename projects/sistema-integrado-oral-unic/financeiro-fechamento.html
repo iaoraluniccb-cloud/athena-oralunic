@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athena — Fechamento | Oral Unic</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%238B2D42'/><text y='72' x='50' text-anchor='middle' font-size='62' font-family='serif'>📋</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+SC:wght@300;400&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --vinho:        #8B2D42;
+  --vinho-deep:   #6A1F30;
+  --vinho-light:  #B85C72;
+  --cobre:        #C4955A;
+  --marfim:       #FDF9F4;
+  --creme:        #F5EDE2;
+  --blush:        #EDDDD4;
+  --warm:         #E0C9B8;
+  --moka:         #3D2A20;
+  --tinta:        #1A0F0A;
+  --ok-bg:        #dcfce7; --ok-text:      #15803d;
+  --over-bg:      #fee2e2; --over-text:    #dc2626;
+  --warn-bg:      #fef9c3; --warn-text:    #b45309;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', 'Nunito', sans-serif; background: var(--marfim); color: var(--tinta); min-height: 100vh; }
+
+/* HEADER */
+header { display: none !important; }
+header {
+  background: linear-gradient(135deg, var(--vinho-deep), var(--vinho));
+  color: white; padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 16px rgba(106,31,48,.35);
+  position: sticky; top: 0; z-index: 200;
+}
+.hdr-brand { font-family: 'Cormorant SC', serif; font-size: 1.2rem; font-weight: 400; letter-spacing: .15em; }
+.hdr-sub   { font-size: .6rem; letter-spacing: .22em; opacity: .65; text-transform: uppercase; margin-top: 2px; }
+
+/* MAIN */
+.main { padding: 24px 28px; }
+
+/* Month pills */
+.month-pill {
+  font-family: 'Nunito', sans-serif; font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  background: white; border: 1px solid var(--warm); border-radius: 20px; padding: 5px 14px;
+  cursor: pointer; color: var(--moka); transition: all .15s;
+}
+.month-pill:hover  { background: var(--blush); border-color: var(--cobre); }
+.month-pill.active { background: var(--vinho); color: white; border-color: var(--vinho); }
+
+/* Botões */
+.btn-primary   { background: var(--vinho); color: var(--marfim); border: none; border-radius: 10px; padding: 7px 18px; font-family: 'Nunito', sans-serif; font-size: 11px; letter-spacing: .08em; cursor: pointer; transition: background .15s; }
+.btn-primary:hover { background: var(--vinho-deep); }
+.btn-secondary { background: transparent; color: var(--moka); border: 1px solid var(--warm); border-radius: 10px; padding: 6px 16px; font-family: 'Nunito', sans-serif; font-size: 11px; letter-spacing: .08em; cursor: pointer; }
+.btn-pill      { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; border: none; border-radius: 14px; padding: 5px 16px; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.btn-vinho  { background: var(--vinho); color: var(--marfim); }
+.btn-cobre  { background: var(--cobre); color: var(--marfim); }
+.btn-ghost  { background: transparent; color: var(--moka); border: 1px solid var(--warm); }
+.btn-danger { background: transparent; color: var(--over-text); border: 1px solid var(--over-text); }
+
+/* Import card */
+.import-card { background: white; border: 1px solid var(--warm); border-radius: 12px; padding: 24px 28px; }
+.import-card h2 { font-family: 'Cormorant SC', serif; font-size: 1rem; font-weight: 400; color: var(--vinho); letter-spacing: .12em; margin-bottom: 8px; }
+.import-card p  { font-size: .75rem; color: var(--moka); line-height: 1.6; margin-bottom: 16px; }
+.month-select { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.month-select label { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--moka); opacity: .7; }
+.month-select select, .month-select input {
+  border: 1px solid var(--warm); border-radius: 6px; padding: 6px 10px;
+  font-family: 'Nunito', sans-serif; font-size: 12px; color: var(--tinta);
+  background: var(--marfim); outline: none;
+}
+.drop-zone {
+  border: 2px dashed var(--warm); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer;
+  font-size: .75rem; color: var(--moka); opacity: .7; transition: border-color .15s, opacity .15s;
+}
+.drop-zone:hover { border-color: var(--vinho); opacity: 1; }
+.import-log { margin-top: 12px; font-size: .72rem; color: var(--moka); background: var(--creme); border-radius: 6px; padding: 8px 12px; display: none; max-height: 120px; overflow-y: auto; line-height: 1.6; }
+.import-log.visible { display: block; }
+
+/* Tabela de fechamento */
+.table-wrap { overflow-x: auto; margin-top: 16px; }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+.table-wrap th { background: var(--creme); padding: 9px 14px; font-size: .65rem; text-transform: uppercase; letter-spacing: .1em; color: var(--moka); opacity: .7; text-align: left; border-bottom: 2px solid var(--warm); }
+.table-wrap th.right { text-align: right; }
+.fech-cat-row td { background: var(--vinho); color: var(--marfim); font-family: 'Cormorant SC', serif; font-weight: 400; font-size: 13px; letter-spacing: .12em; padding: 9px 14px; }
+.fech-cat-row td.right { text-align: right; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 300; color: var(--cobre); }
+.fech-data-row td { padding: 8px 14px; border-bottom: 1px solid var(--blush); vertical-align: middle; }
+.fech-data-row:last-child td { border-bottom: none; }
+.fech-data-row td.right { text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.fech-data-row td.label-col { padding-left: 26px; font-size: 12.5px; }
+.fech-total-row td { background: var(--creme); font-family: 'Cormorant SC', serif; font-size: 14px; font-weight: 400; color: var(--vinho); padding: 10px 14px; border-top: 2px solid var(--warm); }
+.fech-total-row td.right { text-align: right; }
+.fech-badge-dinheiro { background: #dcfce7; color: #15803d; border-radius: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: .08em; }
+.fech-badge-pix      { background: #dbeafe; color: #1d4ed8; border-radius: 10px; padding: 2px 8px; font-size: 10px; letter-spacing: .08em; }
+.frow-actions { text-align: right; white-space: nowrap; padding-right: 6px !important; }
+.frow-btn { background: none; border: none; cursor: pointer; padding: 2px 5px; border-radius: 3px; font-size: 12px; color: var(--over-text); opacity: .45; transition: opacity .15s, color .15s; }
+.frow-btn:hover { opacity: 1; }
+.frow-del:hover { color: #c0392b; }
+.frow-save:hover { color: #15803d; }
+.frow-input { border: 1px solid var(--warm); border-radius: 3px; padding: 3px 6px; font-family: 'Nunito', sans-serif; font-size: 12.5px; color: var(--tinta); background: var(--marfim); outline: none; box-sizing: border-box; }
+.frow-input:focus { border-color: var(--vinho); }
+.frow-num { width: 90px; text-align: right; }
+.fech-add-row td { padding: 4px 8px 8px 8px !important; border: none !important; }
+.frow-add-btn { background: none; border: 1px dashed var(--warm); border-radius: 4px; color: var(--moka); font-family: 'Nunito', sans-serif; font-size: 11px; padding: 3px 12px; cursor: pointer; opacity: .6; transition: opacity .15s; }
+.frow-add-btn:hover { opacity: 1; border-color: var(--vinho); color: var(--vinho); }
+.frow-editing td { background: #fafafa; }
+.frow-pago td { background: #f0fdf4 !important; }
+.frow-pago td.label-col { color: #15803d; }
+.frow-pago .frow-pago-btn { color: #15803d; opacity: 1; }
+.frow-importado td { background: #f0fdf4 !important; border-left: 3px solid #86efac !important; }
+.frow-importado td.label-col { color: #166534; }
+.frow-pago-btn { background: none; border: none; cursor: pointer; padding: 2px 5px; border-radius: 3px; font-size: 14px; color: var(--over-text); opacity: .3; transition: opacity .15s, color .15s; }
+.frow-pago-btn:hover { opacity: .8; }
+
+/* Summary cards (dir-card reutilizado) */
+.dir-card { background: white; border-radius: 10px; box-shadow: 0 2px 12px rgba(106,31,48,0.07); overflow: hidden; transition: box-shadow .2s; }
+.dir-card:hover { box-shadow: 0 4px 20px rgba(106,31,48,0.12); }
+.dir-card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; border-top: 3px solid var(--vinho); transition: background .15s; user-select: none; }
+.dir-card-header:hover { background: var(--creme); }
+.dir-card-label { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--moka); opacity: .6; margin-bottom: 5px; }
+.dir-card-total { font-family: 'Cormorant SC', serif; font-size: 18px; white-space: nowrap; color: var(--tinta); letter-spacing: .03em; }
+.dir-card-arrow { font-size: 14px; color: var(--cobre); opacity: .7; }
+.dir-card-body  { border-top: 1px solid rgba(196,149,90,0.15); padding: 12px 14px; background: var(--marfim); }
+
+/* Section divider */
+.section-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 10px; }
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--warm); }
+.section-divider span { font-size: .65rem; text-transform: uppercase; letter-spacing: .15em; color: var(--moka); opacity: .5; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="hdr-brand">Athena — Fechamento</div>
+    <div class="hdr-sub">Oral Unic · Carlos Barbosa</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Seletor de mês -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <div id="fech-month-switcher" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    <button class="btn-pill btn-vinho" onclick="showFechImport()">↑ Importar</button>
+    <button class="btn-pill btn-cobre" onclick="showFechNewMonth()">+ Novo mês</button>
+    <button id="fech-del-btn" class="btn-pill btn-danger" onclick="deleteFechMonth()" style="display:none">Apagar mês</button>
+    <button class="btn-pill btn-ghost" onclick="showFechPdf()" title="Importar PDF do fechamento">📄 PDF</button>
+    <button class="btn-pill btn-ghost" onclick="showFechMigracao()" title="Migrar dados de outra origem">⇄ Migrar dados</button>
+  </div>
+
+  <!-- Painel migração -->
+  <div id="fech-migracao-panel" style="display:none;margin-bottom:24px;">
+    <div class="import-card" style="max-width:560px;">
+      <h2>⇄ Migrar dados do Desktop</h2>
+      <p>Cole abaixo o conteúdo copiado do arquivo <strong>Desktop/fechamento.html</strong>.<br>
+      <strong>Como copiar:</strong> Abra o arquivo do Desktop → F12 → Console → cole o comando abaixo e copie o resultado:</p>
+      <div style="background:var(--creme);border-radius:6px;padding:10px 14px;font-family:monospace;font-size:12px;color:var(--moka);margin-bottom:14px;user-select:all;">copy(localStorage.getItem('ou_athena_fechamento'))</div>
+      <textarea id="fech-migr-input" placeholder="Cole aqui o JSON copiado…"
+        style="width:100%;height:110px;border:1px solid var(--warm);border-radius:6px;padding:10px;font-family:monospace;font-size:11px;color:var(--tinta);background:var(--marfim);resize:vertical;outline:none;"></textarea>
+      <div id="fech-migr-status" style="font-size:11px;margin-top:6px;min-height:18px;"></div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn-primary" onclick="executarFechMigracao()">Importar dados</button>
+        <button class="btn-secondary" onclick="hideFechMigracao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel PDF -->
+  <div id="fech-pdf-panel" style="display:none;margin-bottom:24px;">
+    <div class="import-card" style="max-width:560px;">
+      <h2>📄 PDF do Fechamento</h2>
+      <p>Importe o PDF do fechamento mensal. O arquivo fica salvo e disponível para consulta a qualquer momento.</p>
+      <div class="month-select" style="margin-bottom:16px;">
+        <label>Mês</label>
+        <select id="fech-pdf-month">
+          <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+          <option value="3">Março</option><option value="4">Abril</option>
+          <option value="5" selected>Maio</option><option value="6">Junho</option>
+          <option value="7">Julho</option><option value="8">Agosto</option>
+          <option value="9">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+        <label>Ano</label>
+        <input type="number" id="fech-pdf-year" value="2026" min="2020" max="2099" style="width:86px">
+      </div>
+      <div class="drop-zone" id="fech-pdf-drop" onclick="document.getElementById('fech-pdf-file').click()">
+        <p>Clique ou arraste o PDF aqui</p>
+        <small>Formato .pdf — será exibido em tela após carregamento</small>
+      </div>
+      <input type="file" id="fech-pdf-file" accept=".pdf" style="display:none" onchange="handleFechPdfFile(event)">
+      <div id="fech-pdf-status" style="font-size:11px;margin-top:8px;min-height:18px;"></div>
+      <div id="fech-pdf-viewer" style="display:none;margin-top:16px;border:1px solid var(--warm);border-radius:8px;overflow:hidden;">
+        <div style="background:var(--creme);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;">
+          <span id="fech-pdf-label" style="font-size:11px;color:var(--moka);font-weight:600;"></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-secondary" style="font-size:10px;padding:3px 10px;" onclick="downloadFechPdf()">⬇ Baixar</button>
+            <button class="btn-danger" style="font-size:10px;padding:3px 10px;" onclick="deleteFechPdf()">✕ Remover</button>
+          </div>
+        </div>
+        <iframe id="fech-pdf-frame" style="width:100%;height:600px;border:none;" src="about:blank"></iframe>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="btn-secondary" onclick="hideFechPdf()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- select oculto para compatibilidade JS -->
+  <select id="fech-month-sel" onchange="renderFechamento()" style="display:none;"></select>
+
+  <!-- Painel novo mês -->
+  <div id="fech-new-panel" style="display:none;margin-bottom:24px;">
+    <div class="import-card" style="max-width:480px;">
+      <h2>Criar novo mês</h2>
+      <p>Selecione o mês e escolha se deseja copiar as linhas do mês anterior.</p>
+      <div class="month-select">
+        <label>Mês</label>
+        <select id="fech-new-month">
+          <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+          <option value="3">Março</option><option value="4">Abril</option>
+          <option value="5">Maio</option><option value="6">Junho</option>
+          <option value="7">Julho</option><option value="8">Agosto</option>
+          <option value="9">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12" selected>Dezembro</option>
+        </select>
+        <label>Ano</label>
+        <input type="number" id="fech-new-year" value="2026" min="2024" max="2030" style="width:80px">
+      </div>
+      <div style="margin:14px 0 6px;display:flex;gap:10px;align-items:center;">
+        <label style="font-size:11px;color:var(--moka);display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="fech-new-copy" checked style="accent-color:var(--vinho);">
+          Copiar linhas do mês anterior (valores em vermelho para preencher)
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button class="btn-primary" onclick="createFechNewMonth()">Criar mês</button>
+        <button class="btn-secondary" onclick="hideFechNewMonth()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel importação CSV -->
+  <div id="fech-import-panel" style="display:none;margin-bottom:24px;">
+    <div class="import-card" style="max-width:560px;">
+      <h2>Importar Fechamento</h2>
+      <p>Selecione o mês e importe o arquivo <strong>.xlsx</strong> exportado como <strong>.csv UTF-8</strong>.<br>
+      Colunas esperadas: <strong>BENEFICIÁRIO · DINHEIRO · TRANSFERÊNCIA</strong></p>
+      <div class="month-select">
+        <label>Mês</label>
+        <select id="fech-imp-month">
+          <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+          <option value="3">Março</option><option value="4">Abril</option>
+          <option value="5" selected>Maio</option><option value="6">Junho</option>
+          <option value="7">Julho</option><option value="8">Agosto</option>
+          <option value="9">Setembro</option><option value="10">Outubro</option>
+          <option value="11">Novembro</option><option value="12">Dezembro</option>
+        </select>
+        <label>Ano</label>
+        <input type="number" id="fech-imp-year" value="2026" min="2020" max="2099" style="width:86px">
+      </div>
+      <div class="drop-zone" id="fech-drop-zone" onclick="document.getElementById('fech-file-input').click()">
+        <p>Clique ou arraste o arquivo aqui</p>
+        <small>.csv com colunas: Beneficiário · Dinheiro · Transferência</small>
+      </div>
+      <input type="file" id="fech-file-input" accept=".csv,.xlsx" style="display:none" onchange="handleFechFile(event)">
+      <div style="margin-top:12px;display:flex;gap:10px;">
+        <button class="btn-secondary" onclick="hideFechImport()">Cancelar</button>
+      </div>
+      <div class="import-log" id="fech-import-log"></div>
+    </div>
+  </div>
+
+  <!-- Estado vazio -->
+  <div id="fech-empty" style="text-align:center;padding:60px 24px;color:var(--moka);opacity:.5;">
+    <div style="font-family:'Cormorant SC',serif;font-size:18px;color:var(--vinho);margin-bottom:8px;">Nenhum fechamento carregado</div>
+    <p style="font-size:12px;">Clique em <strong>↑ Importar</strong> ou <strong>+ Novo mês</strong> para começar.</p>
+  </div>
+
+  <!-- Conteúdo -->
+  <div id="fech-content" style="display:none">
+    <!-- Cards analíticos -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;" id="fech-summary-cards"></div>
+
+    <!-- Divisão de Lucros por Sócio — acima dos pagamentos -->
+    <div id="fech-divisao-section" style="margin-bottom:24px;display:none;"></div>
+
+    <!-- Tabela -->
+    <div class="section-divider"><span>Pagamentos do mês</span></div>
+    <div class="table-wrap">
+      <table id="fech-table">
+        <thead>
+          <tr>
+            <th style="width:50%">Beneficiário</th>
+            <th class="right">Dinheiro</th>
+            <th class="right">Transferência</th>
+            <th class="right">Total</th>
+            <th style="width:64px"></th>
+          </tr>
+        </thead>
+        <tbody id="fech-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const fmt  = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\/\(\)\-\. ]/g,'').trim();
+
+function monthLabel(m,y){ return ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m]+' '+y; }
+function monthKey(m,y)  { return y+'-'+String(m).padStart(2,'0'); }
+
+// Direção (lê do mesmo localStorage para os cards analíticos)
+const DIR_KEY = 'ou_athena_direcao';
+function getDirData(){ try{ return JSON.parse(localStorage.getItem(DIR_KEY)||'{}'); }catch(e){ return {}; } }
+
+// ═══════════════════════════════════════
+// FECHAMENTO
+// ═══════════════════════════════════════
+const FECH_KEY = 'ou_athena_fechamento';
+
+const FECH_CATS = [
+  { key: 'avaliadora',    label: 'Avaliadora',          match: ['dra. mone','avaliadora','mone'] },
+  { key: 'comissoes',     label: 'Comissões',            match: ['comissão','comissao'] },
+  { key: 'dentistas',     label: 'Dentistas',            match: ['dr.','dra.','pagamento dr','pagamento dra'] },
+  { key: 'protetico',     label: 'Protético / Lab',      match: ['protetico','protético','marcelo','breda','lab','laboratorio','laboratório','guilherme','kaefer'] },
+  { key: 'folha',         label: 'Folha / Equipe',       match: ['salario','salário','fran','marta','bruna','jarina','andressa','mariele','alexia','bianca'] },
+  { key: 'marketing',     label: 'Marketing / Mídia',    match: ['radio','rádio','patrocinio','patrocínio','programa','comercial','facebook','instagram','outdoor','acbf','citadino','campo','municipal'] },
+  { key: 'estrutura',     label: 'Estrutura / Capex',    match: ['iptu','aluguel','energia','eletricista','leandro','janela','pintura','ares','ar condicionado','assistencia tecnica','ritieli','encanador','conserto','caneta','motor'] },
+  { key: 'eventos',       label: 'Eventos / Comunidade', match: ['festa','evento','ingresso','colono','jantar','churrasco','missa','caravaggio'] },
+  { key: 'bonificacoes',  label: 'Bonificações / Outros',match: [] },
+];
+
+const FECH_RESUMO = {
+  "2025-03": { bruto:627339.91,fluxo:419053.68,despesas:377458.77,dinheiro:46911.51,sobra_anterior:970.19,sobra_atual:3044.51 },
+  "2025-04": { bruto:596745.75,fluxo:437409.44,despesas:341395.4,dinheiro:32333.72,sobra_anterior:4014.7,saque:4000.0 },
+  "2025-05": { bruto:585050.4,fluxo:426982.41,despesas:341395.4,dinheiro:32370.02,sobra_anterior:1984.15,saque:14400.0 },
+  "2025-06": { bruto:743003.67,fluxo:462242.7,despesas:367674.53,dinheiro:27067.35,sobra_anterior:31.56,saque:12000.0 },
+  "2025-07": { bruto:801554.91,fluxo:493661.56,despesas:417751.18,dinheiro:41892.95,sobra_anterior:188.94,saque:14000.0 },
+  "2025-08": { bruto:771238.88,fluxo:535922.03,despesas:390575.81,dinheiro:38652.99,sobra_anterior:3485.14,saque:4000.0 },
+  "2025-09": { bruto:625835.01,fluxo:461925.36,despesas:415764.79,dinheiro:29259.6,sobra_anterior:366.21,saque:7000.0 },
+  "2025-10": { bruto:592388.67,fluxo:464350.25,despesas:420867.03,dinheiro:29517.09,sobra_anterior:934.44,saque:12000.0 },
+  "2025-11": { bruto:649969.98,fluxo:542727.79,despesas:411388.1,dinheiro:130957.63,sobra_anterior:207.15 },
+  "2025-12": { fluxo:624455.06,despesas:403507.58,dinheiro:92580.62,sobra_anterior:23573.43 },
+  "2026-01": { bruto:572004.58,fluxo:471487.53,despesas:390614.95,dinheiro:137367.33,sobra_anterior:12621.37 },
+  "2026-02": { bruto:433029.99,fluxo:481610.89,despesas:359621.68,dinheiro:102751.6,sobra_anterior:68747.47,divisao:28000.0 },
+  "2026-03": { bruto:635940.0,fluxo:508958.76,despesas:344463.97,dinheiro:103281.89,sobra_anterior:99469.0,divisao:50000.0 },
+  "2026-04": { bruto:565009.89,fluxo:449822.78,despesas:406322.77,dinheiro:69320.2,sobra_anterior:21469.0 },
+};
+
+function getFechData(){ try{ return JSON.parse(localStorage.getItem(FECH_KEY)||'{}'); }catch(e){ return {}; } }
+function saveFechData(d){ localStorage.setItem(FECH_KEY, JSON.stringify(d)); }
+
+function populateFechMonthSel(){
+  const data = getFechData();
+  const keys = Object.keys(data).sort().reverse();
+  const sel  = document.getElementById('fech-month-sel');
+  const cur  = sel.value;
+  sel.innerHTML = '<option value="">— Selecione —</option>' +
+    keys.map(k=>`<option value="${k}">${data[k].label}</option>`).join('');
+  if(cur && data[cur]) sel.value = cur;
+  const sw = document.getElementById('fech-month-switcher');
+  if(sw) sw.innerHTML = keys.map(k=>{
+    const parts = data[k].label.split(' ');
+    const lbl = parts[0].substring(0,3)+' '+(parts[1]?.slice(2)||'');
+    return `<button class="month-pill${sel.value===k?' active':''}" onclick="selectFechMonth('${k}')">${lbl}</button>`;
+  }).join('');
+}
+function selectFechMonth(k){
+  document.getElementById('fech-month-sel').value = k;
+  renderFechamento();
+  populateFechMonthSel();
+}
+
+function showFechImport(){ document.getElementById('fech-import-panel').style.display=''; hideFechNewMonth(); }
+function hideFechImport(){ document.getElementById('fech-import-panel').style.display='none'; }
+
+function showFechNewMonth(){
+  hideFechImport();
+  const data = getFechData();
+  const keys = Object.keys(data).sort();
+  if(keys.length){
+    const last = keys[keys.length-1];
+    const [ly, lm] = last.split('-').map(Number);
+    let nm = lm + 1, ny = ly;
+    if(nm > 12){ nm = 1; ny++; }
+    document.getElementById('fech-new-month').value = nm;
+    document.getElementById('fech-new-year').value  = ny;
+  }
+  document.getElementById('fech-new-panel').style.display='';
+}
+function hideFechNewMonth(){ document.getElementById('fech-new-panel').style.display='none'; }
+
+function createFechNewMonth(){
+  const m   = parseInt(document.getElementById('fech-new-month').value);
+  const y   = parseInt(document.getElementById('fech-new-year').value);
+  const copy = document.getElementById('fech-new-copy').checked;
+  const key  = monthKey(m, y);
+  const label= monthLabel(m, y);
+  const data = getFechData();
+  if(data[key]){ if(!confirm(`${label} já existe. Deseja substituir?`)) return; }
+  let rows = [];
+  if(copy){
+    const keys = Object.keys(data).sort();
+    const prevKey = keys.filter(k => k < key).pop();
+    if(prevKey && data[prevKey]?.rows){
+      rows = data[prevKey].rows.map(r => ({ b: r.b, d: 0, t: 0, _cat: r._cat || null, _pending: true }));
+    }
+  }
+  data[key] = { label, rows };
+  saveFechData(data);
+  hideFechNewMonth();
+  populateFechMonthSel();
+  document.getElementById('fech-month-sel').value = key;
+  renderFechamento();
+}
+
+function fechLog(msg){ const el=document.getElementById('fech-import-log'); el.classList.add('visible'); el.innerHTML+=msg+'<br>'; el.scrollTop=el.scrollHeight; }
+function fechLogClear(){ const el=document.getElementById('fech-import-log'); el.innerHTML=''; }
+
+function handleFechFile(e){
+  const file = e.target.files[0]; if(!file) return;
+  fechLogClear();
+  fechLog('Arquivo: ' + file.name);
+  if(!file.name.endsWith('.csv')){ fechLog('⚠ Salve o arquivo como CSV UTF-8 primeiro.'); return; }
+  const m = parseInt(document.getElementById('fech-imp-month').value);
+  const y = parseInt(document.getElementById('fech-imp-year').value);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const rows = parseFechCSV(ev.target.result);
+    if(!rows.length){ fechLog('❌ Nenhum dado encontrado. Verifique as colunas.'); return; }
+    const key   = monthKey(m, y);
+    const label = monthLabel(m, y);
+    const data  = getFechData();
+    data[key]   = { label, rows };
+    saveFechData(data);
+    fechLog('✓ ' + rows.length + ' registros importados para ' + label);
+    populateFechMonthSel();
+    document.getElementById('fech-month-sel').value = key;
+    setTimeout(()=>{ hideFechImport(); renderFechamento(); }, 600);
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseFechCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if(!lines.length) return [];
+  const sep = lines[0].includes(';') ? ';' : ',';
+  const hdr  = lines[0].split(sep).map(h=>norm(h));
+  const iB   = hdr.findIndex(h=>h.includes('benefici')||h.includes('descri')||h.includes('nome'));
+  const iD   = hdr.findIndex(h=>h.includes('dinheiro')||h.includes('cash'));
+  const iT   = hdr.findIndex(h=>h.includes('transfer')||h.includes('pix')||h.includes('ted'));
+  if(iB<0){ fechLog('❌ Coluna "Beneficiário" não encontrada.'); return []; }
+  const rows = [];
+  for(const line of lines.slice(1)){
+    const c = line.split(sep).map(x=>x.trim().replace(/^"|"$/g,''));
+    const b = c[iB]||'';
+    if(!b.trim()) continue;
+    const vD = iD>=0 ? parseFloat((c[iD]||'0').replace(/[^0-9,\.]/g,'').replace(',','.')) || 0 : 0;
+    const vT = iT>=0 ? parseFloat((c[iT]||'0').replace(/[^0-9,\.]/g,'').replace(',','.')) || 0 : 0;
+    rows.push({ b: b.trim(), d: vD, t: vT });
+  }
+  return rows;
+}
+
+function categorizeFech(benef){
+  const n = benef.toLowerCase();
+  for(const cat of FECH_CATS){
+    if(cat.match.length && cat.match.some(m=>n.includes(m))) return cat.key;
+  }
+  return 'bonificacoes';
+}
+
+function deleteFechMonth(){
+  const key = document.getElementById('fech-month-sel').value;
+  if(!key) return;
+  const data = getFechData();
+  if(!confirm('Apagar ' + (data[key]?.label||key) + '?')) return;
+  delete data[key];
+  saveFechData(data);
+  populateFechMonthSel();
+  document.getElementById('fech-month-sel').value = '';
+  renderFechamento();
+}
+
+function renderFechamento(){
+  const key  = document.getElementById('fech-month-sel').value;
+  const data = getFechData();
+  const emptyEl   = document.getElementById('fech-empty');
+  const contentEl = document.getElementById('fech-content');
+  const delBtn    = document.getElementById('fech-del-btn');
+  if(!key || !data[key]){
+    emptyEl.style.display   = '';
+    contentEl.style.display = 'none';
+    delBtn.style.display    = 'none';
+    return;
+  }
+  emptyEl.style.display   = 'none';
+  contentEl.style.display = '';
+  delBtn.style.display    = '';
+
+  const month = data[key];
+  const rows  = month.rows || [];
+  const totalD = rows.reduce((s,r)=>s+(r.d||0),0);
+  const totalT = rows.reduce((s,r)=>s+(r.t||0),0);
+  const totalG = totalD + totalT;
+
+  function acardEffective(acKey, autoVal){
+    const items = (month.acards||{})[acKey] || [];
+    if(items.length) return items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    return autoVal;
+  }
+
+  const dirData  = getDirData();
+  const dirMonth = dirData[key];
+  const resumo   = FECH_RESUMO[key] || {};
+  function getDirCardTotal(card){
+    if(!dirMonth) return null;
+    const items = dirMonth.cards[card]||[];
+    if(!items.length) return null;
+    return items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+  }
+
+  const faturamentoBrutoAuto = resumo.bruto    != null ? resumo.bruto    : getDirCardTotal('faturamento');
+  const fluxoCaixaAuto       = resumo.fluxo    != null ? resumo.fluxo    : getDirCardTotal('fluxo');
+  const despesasAuto         = resumo.despesas != null ? resumo.despesas : totalG;
+  const faturamentoBruto     = acardEffective('fat_bruto', faturamentoBrutoAuto);
+  const fluxoCaixa           = acardEffective('fluxo',     fluxoCaixaAuto);
+  const despesas             = acardEffective('despesas',  despesasAuto);
+  const resultadoGerAuto     = (fluxoCaixa !== null) ? fluxoCaixa - despesas : null;
+  const resultadoGer         = acardEffective('resultado', resultadoGerAuto);
+
+  const allFechKeys = Object.keys(getFechData()).sort();
+  const idxCur      = allFechKeys.indexOf(key);
+  const prevKey     = idxCur > 0 ? allFechKeys[idxCur - 1] : null;
+
+  function calcSobra(mKey, depth){
+    if(!mKey || depth > 24) return 0;
+    const mData = getFechData()[mKey];
+    if(!mData) return 0;
+    const mResumo = FECH_RESUMO[mKey] || {};
+    const mAcards = mData.acards || {};
+    const mFluxoItems = mAcards['fluxo'] || [];
+    let mFluxo;
+    if(mFluxoItems.length){ mFluxo = mFluxoItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0); }
+    else if(mResumo.fluxo != null){ mFluxo = mResumo.fluxo; }
+    else { const dirM = getDirData()[mKey]; mFluxo = dirM ? (dirM.cards.fluxo||[]).reduce((s,it)=>s+(parseFloat(it.val)||0),0) : 0; }
+    const mDinheiroItems = mAcards['dinheiro'] || [];
+    let mDinEntradas;
+    if(mDinheiroItems.length){ mDinEntradas = mDinheiroItems.reduce((s,it)=>s+(parseFloat(it.val)||0),0); }
+    else if(mResumo.dinheiro != null){ mDinEntradas = mResumo.dinheiro; }
+    else { mDinEntradas = (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0); }
+    const mSaidasD = (mData.rows||[]).reduce((s,r)=>s+(r.d||0),0);
+    if(mResumo.sobra_anterior != null && depth > 0){ return mResumo.sobra_anterior + mDinEntradas - mSaidasD; }
+    const allK  = Object.keys(getFechData()).sort();
+    const idxM  = allK.indexOf(mKey);
+    const prevM = idxM > 0 ? allK[idxM-1] : null;
+    return calcSobra(prevM, depth+1) + mDinEntradas - mSaidasD;
+  }
+
+  const sobraAnterior   = resumo.sobra_anterior != null ? resumo.sobra_anterior : calcSobra(prevKey, 0);
+  const dinheiroAutoVal = resumo.dinheiro != null ? resumo.dinheiro : totalD;
+  const dinheiroEfetivo = acardEffective('dinheiro', dinheiroAutoVal);
+  const saidasDinheiro  = totalD;
+  const sobraAtualAuto  = sobraAnterior + dinheiroEfetivo - saidasDinheiro;
+  const sobraAtual      = acardEffective('sobra', sobraAtualAuto);
+
+  function fmtColor(v, showSign){
+    if(v === null) return '<span style="opacity:.4">—</span>';
+    const color = v >= 0 ? 'var(--cobre)' : '#c0392b';
+    const sign  = showSign && v > 0 ? '+' : '';
+    return `<span style="color:${color}">${sign}${fmt(v)}</span>`;
+  }
+  function fmtNeutral(v){ return v === null ? '<span style="opacity:.4">—</span>' : fmt(v); }
+
+  const saqueAutoVal = resumo.saque != null ? resumo.saque : (resumo.divisao != null ? resumo.divisao : null);
+  const saqueEfetivo = acardEffective('saque', saqueAutoVal);
+
+  const FECH_ACARDS = [
+    { key:'fat_bruto', label:'Faturamento Bruto', autoVal: faturamentoBrutoAuto, sub: resumo.bruto!=null?'da planilha':'da aba Direção' },
+    { key:'fluxo',     label:'Fluxo de Caixa',   autoVal: fluxoCaixaAuto,       sub: resumo.fluxo!=null?'da planilha':'da aba Direção' },
+    { key:'despesas',  label:'Despesas',          autoVal: despesasAuto,         sub: resumo.despesas!=null?'da planilha':`${rows.length} pagamentos` },
+    { key:'dinheiro',  label:'Dinheiro',          autoVal: dinheiroAutoVal,      sub: resumo.dinheiro!=null?'da planilha':`${rows.filter(r=>r.d>0).length} saídas` },
+    { key:'saque',     label:'Saque',             autoVal: saqueAutoVal,         sub: saqueAutoVal!=null?'da planilha':'manual' },
+    { key:'sobra',     label:'Sobra de Caixa',    autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, signed:true },
+  ];
+
+  if(!month.acards) month.acards = {};
+  for(const ac of FECH_ACARDS){ if(!month.acards[ac.key]) month.acards[ac.key] = []; }
+  saveFechData(data);
+
+  document.getElementById('fech-summary-cards').innerHTML = FECH_ACARDS.map(ac => {
+    const items   = month.acards[ac.key] || [];
+    const manualT = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    const total   = items.length ? manualT : ac.autoVal;
+    const dispVal = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
+    const singleVal = items.length ? items[0].val : '';
+    return `<div class="dir-card" style="min-width:0">
+      <div class="dir-card-header" onclick="toggleFechACard('${ac.key}')">
+        <div>
+          <div class="dir-card-label">${ac.label}</div>
+          <div class="dir-card-total" id="facard-total-${ac.key}">${dispVal}</div>
+        </div>
+        <span class="dir-card-arrow" id="facard-arrow-${ac.key}">▾</span>
+      </div>
+      <div class="dir-card-body" id="facard-body-${ac.key}" style="display:none">
+        <div style="padding:8px 14px 10px;display:flex;align-items:center;gap:8px">
+          <input type="text" id="facard-input-${ac.key}" value="${singleVal}"
+            placeholder="${ac.autoVal!=null ? fmt(ac.autoVal).replace('R$ ','') : '0,00'}"
+            onblur="saveFechACardSimple('${key}','${ac.key}',this.value)"
+            onkeydown="if(event.key==='Enter'){this.blur();toggleFechACard('${ac.key}')}"
+            style="flex:1;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--vinho);outline:none;padding:4px 6px;text-align:right;">
+          ${singleVal ? `<button onclick="saveFechACardSimple('${key}','${ac.key}','');document.getElementById('facard-input-${ac.key}').value=''"
+            style="background:none;border:1px solid var(--warm);border-radius:4px;cursor:pointer;color:var(--moka);font-size:10px;padding:2px 7px;font-family:'Nunito',sans-serif;">↺ auto</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const groups = {};
+  for(const cat of FECH_CATS) groups[cat.key] = { label: cat.label, rows: [] };
+  rows.forEach((r, idx) => {
+    const catKey = (r._cat && groups[r._cat]) ? r._cat : categorizeFech(r.b);
+    groups[catKey].rows.push({ ...r, _idx: idx });
+  });
+
+  let html = '';
+  for(const cat of FECH_CATS){
+    const g = groups[cat.key];
+    if(!g.rows.length && cat.key !== 'bonificacoes') continue;
+    const catD = g.rows.reduce((s,r)=>s+(r.d||0),0);
+    const catT = g.rows.reduce((s,r)=>s+(r.t||0),0);
+    const catG = catD + catT;
+    html += `<tr class="fech-cat-row">
+      <td>${g.label}</td>
+      <td class="right">${catD>0?fmt(catD):'—'}</td>
+      <td class="right">${catT>0?fmt(catT):'—'}</td>
+      <td class="right">${catG>0?fmt(catG):'—'}</td>
+      <td></td>
+    </tr>`;
+    for(const r of g.rows){
+      const tot = (r.d||0)+(r.t||0);
+      const isPending = r._pending === true;
+      const isPago = r._pago === true;
+      const isImportado = r._importado === true && !isPago;
+      const pendStyle = isPending ? 'color:#c0392b;font-style:italic;' : '';
+      const pendBadge = isPending ? ' <span style="font-size:9px;background:#c0392b;color:#fff;border-radius:3px;padding:1px 5px;vertical-align:middle;margin-left:4px;">preencher</span>' : '';
+      const dSpan = r.d>0 ? `<span class="fech-badge-dinheiro">${fmt(r.d)}</span>` : (isPending?`<span style="color:#c0392b;font-size:11px;">—</span>`:'—');
+      const tSpan = r.t>0 ? `<span class="fech-badge-pix">${fmt(r.t)}</span>` : (isPending?`<span style="color:#c0392b;font-size:11px;">—</span>`:'—');
+      html += `<tr class="fech-data-row${isPending?' frow-pending':''}${isPago?' frow-pago':''}${isImportado?' frow-importado':''}" id="frow-${r._idx}" style="${isPending?'background:rgba(192,57,43,.04);':''}">
+        <td class="label-col" style="${pendStyle}">${r.b}${pendBadge}</td>
+        <td class="right">${dSpan}</td>
+        <td class="right">${tSpan}</td>
+        <td class="right" style="${isPending?'color:#c0392b;':''}">${tot>0?fmt(tot):'—'}</td>
+        <td class="frow-actions">
+          <button class="frow-pago-btn" title="${isPago?'Desmarcar pago':'Marcar como pago'}" onclick="toggleFechRowPago('${key}',${r._idx})">${isPago?'✓':'✓'}</button>
+          <button class="frow-btn" title="Editar" onclick="editFechRow('${key}',${r._idx})">✎</button>
+          <button class="frow-btn frow-del" title="Excluir" onclick="deleteFechRow('${key}',${r._idx})">✕</button>
+        </td>
+      </tr>`;
+    }
+    html += `<tr class="fech-add-row"><td colspan="5" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <button class="frow-add-btn" onclick="addFechRow('${key}','${cat.key}')">+ Adicionar linha em ${g.label}</button>
+      <button class="frow-add-btn frow-import-prev" onclick="importarLinhasMesAnterior('${key}','${cat.key}')" title="Importa as linhas do mês anterior como base (verde)" style="border-color:#a3d9a5;color:#276227;opacity:.7;">↑ Importar do mês anterior</button>
+    </td></tr>`;
+  }
+  html += `<tr class="fech-total-row">
+    <td>Total</td>
+    <td class="right">${fmt(totalD)}</td>
+    <td class="right">${fmt(totalT)}</td>
+    <td class="right">${fmt(totalG)}</td>
+    <td></td>
+  </tr>`;
+  document.getElementById('fech-tbody').innerHTML = html;
+
+  // Divisão: usa SOMENTE o card "divisao" da aba Direção — nenhum fallback
+  const divisaoVal = getDirCardTotal('divisao') ?? 0;
+  // Passa o mês para o elemento para poder salvar override por mês
+  const divEl = document.getElementById('fech-divisao-section');
+  if(divEl) divEl.dataset.key = key;
+  renderFechDivisao(divisaoVal);
+}
+
+function renderFechDivisao(autoValor){
+  const el = document.getElementById('fech-divisao-section');
+  if(!el) return;
+
+  // Lê override manual salvo para o mês atual
+  const key = document.getElementById('fech-divisao-section').dataset.key || '';
+  const overrideKey = 'fech_divisao_override_' + key;
+  const saved = localStorage.getItem(overrideKey);
+  // Sempre mostra — usa override salvo, ou valor automático, ou 0 como fallback editável
+  const valor = saved !== null ? parseFloat(saved) : (autoValor != null ? autoValor : 0);
+  el.style.display = '';
+  const total = valor || 0;
+
+  // rows will be populated by _renderDivisaoRows after innerHTML is set
+
+  const autoHint = autoValor != null ? `automático: ${fmt(autoValor)}` : 'edite o valor';
+  const inputVal = total > 0 ? total.toFixed(2).replace('.',',') : '';
+
+  el.innerHTML = `<div style="background:#fff;border:1px solid rgba(0,0,0,.10);border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);">
+    <div style="padding:12px 14px 10px;border-bottom:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:13px;font-weight:700;letter-spacing:.5px;color:#555;text-transform:uppercase;">Divisão de Lucros</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:10px;color:#aaa;">${autoHint}</span>
+        <div style="display:flex;align-items:center;gap:4px;background:var(--creme,#fdf6ee);border:1px solid rgba(0,0,0,.12);border-radius:8px;padding:4px 10px;">
+          <span style="font-size:11px;color:#888;font-weight:600;">R$</span>
+          <input id="fech-divisao-input" type="text" value="${inputVal}"
+            placeholder="0,00"
+            style="border:none;background:transparent;font-size:14px;font-weight:700;color:var(--cobre,#8B6F47);width:120px;text-align:right;outline:none;font-family:inherit;"
+            oninput="fechDivisaoAtualizar()"
+            onblur="fechDivisaoSalvar()">
+        </div>
+      </div>
+    </div>
+    <div id="fech-divisao-rows"></div>
+  </div>`;
+  _renderDivisaoRows(key, total);
+}
+
+function fechDivSetMet(key, socioId, metodo){
+  const metKey = 'fech_div_met_' + key + '_' + socioId;
+  const current = localStorage.getItem(metKey) || '';
+  // toggle: clicar no mesmo método desativa
+  if(current === metodo){
+    localStorage.removeItem(metKey);
+  } else {
+    localStorage.setItem(metKey, metodo);
+  }
+  // re-renderiza apenas as linhas sem mexer no input
+  const input = document.getElementById('fech-divisao-input');
+  if(!input) return;
+  const raw = (input.value||'').replace(/\./g,'').replace(',','.');
+  const total = parseFloat(raw) || 0;
+  _renderDivisaoRows(key, total);
+}
+
+function _renderDivisaoRows(key, total){
+  const wrap = document.getElementById('fech-divisao-rows');
+  if(!wrap) return;
+  const socios = [
+    { nome:'MB',         pct:0.525, id:'mb'     },
+    { nome:'AGO',        pct:0.235, id:'ago'    },
+    { nome:'Torres',     pct:0.200, id:'torres' },
+    { nome:'Thalis Ryan',pct:0.040, id:'thalis' },
+  ];
+  wrap.innerHTML = socios.map(s => {
+    const val = total * s.pct;
+    const pctLabel = (s.pct*100).toFixed(1).replace('.',',') + '%';
+    const metKey = 'fech_div_met_' + key + '_' + s.id;
+    const met = localStorage.getItem(metKey) || '';
+    const btnD = `<button onclick="fechDivSetMet('${key}','${s.id}','dinheiro')"
+      style="padding:3px 10px;font-size:10px;font-weight:700;border-radius:20px;cursor:pointer;border:1px solid;font-family:inherit;transition:all .12s;
+      ${met==='dinheiro'?'background:#dcfce7;color:#15803d;border-color:#86efac;':'background:transparent;color:#aaa;border-color:#ddd;'}">
+      Dinheiro</button>`;
+    const btnT = `<button onclick="fechDivSetMet('${key}','${s.id}','transferencia')"
+      style="padding:3px 10px;font-size:10px;font-weight:700;border-radius:20px;cursor:pointer;border:1px solid;font-family:inherit;transition:all .12s;
+      ${met==='transferencia'?'background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;':'background:transparent;color:#aaa;border-color:#ddd;'}">
+      Transferência</button>`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.06);gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;min-width:120px;">
+        <span style="font-size:13px;font-weight:600;color:#333;">${s.nome}</span>
+        <span style="font-size:11px;color:#888;background:rgba(0,0,0,.05);padding:2px 7px;border-radius:10px;">${pctLabel}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${btnD}${btnT}
+        <span style="font-size:14px;font-weight:700;color:var(--cobre,#8B6F47);min-width:90px;text-align:right;">${fmt(val)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fechDivisaoAtualizar(){
+  const input = document.getElementById('fech-divisao-input');
+  if(!input) return;
+  const raw = (input.value||'').replace(/\./g,'').replace(',','.');
+  const total = parseFloat(raw) || 0;
+  const key = document.getElementById('fech-divisao-section').dataset.key || '';
+  _renderDivisaoRows(key, total);
+}
+
+function fechDivisaoSalvar(){
+  const input = document.getElementById('fech-divisao-input');
+  if(!input) return;
+  const raw = (input.value||'').replace(/\./g,'').replace(',','.');
+  const total = parseFloat(raw);
+  const key = document.getElementById('fech-divisao-section').dataset.key || '';
+  if(!isNaN(total) && total > 0){
+    localStorage.setItem('fech_divisao_override_'+key, total);
+  } else {
+    localStorage.removeItem('fech_divisao_override_'+key);
+  }
+}
+
+function toggleFechACard(cardKey){
+  const body  = document.getElementById('facard-body-'+cardKey);
+  const arrow = document.getElementById('facard-arrow-'+cardKey);
+  if(!body) return;
+  const open = body.style.display === 'none';
+  body.style.display = open ? '' : 'none';
+  if(arrow) arrow.textContent = open ? '▴' : '▾';
+}
+
+function saveFechACardSimple(monthKey, cardKey, value){
+  const data = getFechData();
+  if(!data[monthKey]) return;
+  if(!data[monthKey].acards) data[monthKey].acards = {};
+  const cleaned = String(value).replace(',','.').replace(/[^0-9.]/g,'');
+  const num = parseFloat(cleaned);
+  if(!value || value.trim()==='' || isNaN(num)){
+    data[monthKey].acards[cardKey] = [];
+  } else {
+    data[monthKey].acards[cardKey] = [{ desc:'', val: num }];
+  }
+  saveFechData(data);
+  renderFechamento();
+  setTimeout(()=>{
+    const body = document.getElementById('facard-body-'+cardKey);
+    const arrow = document.getElementById('facard-arrow-'+cardKey);
+    if(body){ body.style.display=''; if(arrow) arrow.textContent='▴'; }
+  }, 30);
+}
+
+function editFechRow(monthKey, idx){
+  const tr = document.getElementById('frow-'+idx);
+  if(!tr || tr.classList.contains('frow-editing')) return;
+  const data = getFechData();
+  const r = data[monthKey]?.rows?.[idx];
+  if(!r) return;
+  tr.classList.add('frow-editing');
+  const dVal = r.d > 0 ? r.d : '';
+  const tVal = r.t > 0 ? r.t : '';
+  tr.innerHTML = `
+    <td colspan="2"><input class="frow-input" id="frow-b-${idx}" value="${r.b.replace(/"/g,'&quot;')}" placeholder="Beneficiário" style="width:100%"></td>
+    <td><input class="frow-input frow-num" id="frow-d-${idx}" value="${dVal}" placeholder="Dinheiro"></td>
+    <td><input class="frow-input frow-num" id="frow-t-${idx}" value="${tVal}" placeholder="Transferência"></td>
+    <td class="frow-actions">
+      <button class="frow-btn frow-save" title="Salvar" onclick="saveFechRowEdit('${monthKey}',${idx})">✓</button>
+      <button class="frow-btn" title="Cancelar" onclick="renderFechamento()">✕</button>
+    </td>`;
+  document.getElementById('frow-b-'+idx)?.focus();
+}
+
+function saveFechRowEdit(monthKey, idx){
+  const data = getFechData();
+  const rows = data[monthKey]?.rows;
+  if(!rows || !rows[idx]) return;
+  const b = document.getElementById('frow-b-'+idx)?.value.trim() || rows[idx].b;
+  const dRaw = document.getElementById('frow-d-'+idx)?.value.replace(',','.') || '0';
+  const tRaw = document.getElementById('frow-t-'+idx)?.value.replace(',','.') || '0';
+  const prevCat = rows[idx]?._cat || null;
+  rows[idx] = { b, d: parseFloat(dRaw)||0, t: parseFloat(tRaw)||0 };
+  if(prevCat) rows[idx]._cat = prevCat;
+  rows[idx]._pending = false;
+  saveFechData(data);
+  renderFechamento();
+}
+
+function deleteFechRow(monthKey, idx){
+  const data = getFechData();
+  data[monthKey]?.rows?.splice(idx, 1);
+  saveFechData(data);
+  renderFechamento();
+}
+
+function toggleFechRowPago(monthKey, idx){
+  const data = getFechData();
+  const row = data[monthKey]?.rows?.[idx];
+  if(!row) return;
+  row._pago = !row._pago;
+  saveFechData(data);
+  renderFechamento();
+}
+
+function addFechRow(monthKey, catKey){
+  const data = getFechData();
+  if(!data[monthKey]) return;
+  if(!data[monthKey].rows) data[monthKey].rows = [];
+  const newIdx = data[monthKey].rows.length;
+  data[monthKey].rows.push({ b: '', d: 0, t: 0, _cat: catKey });
+  saveFechData(data);
+  renderFechamento();
+  setTimeout(()=>{ editFechRow(monthKey, newIdx); }, 30);
+}
+
+function importarLinhasMesAnterior(monthKey, catKey){
+  const data = getFechData();
+  const allKeys = Object.keys(data).sort();
+  const idx = allKeys.indexOf(monthKey);
+  if(idx <= 0){ alert('Nenhum mês anterior encontrado.'); return; }
+  const prevKey = allKeys[idx - 1];
+  const prevRows = (data[prevKey]?.rows || []).filter(r => {
+    const rCat = (r._cat && data[prevKey]) ? r._cat : categorizeFech(r.b);
+    return rCat === catKey && r.b && r.b.trim();
+  });
+  if(!prevRows.length){ alert('O mês anterior não tem linhas nesta categoria.'); return; }
+  if(!data[monthKey].rows) data[monthKey].rows = [];
+  // Evita duplicar linhas já existentes com o mesmo nome
+  const existingNames = new Set((data[monthKey].rows).map(r=>(r.b||'').trim().toLowerCase()));
+  let added = 0;
+  prevRows.forEach(r => {
+    if(existingNames.has((r.b||'').trim().toLowerCase())) return;
+    data[monthKey].rows.push({ b: r.b, d: r.d||0, t: r.t||0, _cat: catKey, _importado: true, _pago: false });
+    added++;
+  });
+  if(!added){ alert('Todas as linhas do mês anterior já existem nesta categoria.'); return; }
+  saveFechData(data);
+  renderFechamento();
+}
+
+// ═══════════════════════════════════════
+// MIGRAÇÃO DE DADOS
+// ═══════════════════════════════════════
+function showFechMigracao(){
+  document.getElementById('fech-migracao-panel').style.display = '';
+  hideFechImport(); hideFechNewMonth();
+  document.getElementById('fech-migr-status').textContent = '';
+  document.getElementById('fech-migr-input').value = '';
+}
+function hideFechMigracao(){
+  document.getElementById('fech-migracao-panel').style.display = 'none';
+}
+function executarFechMigracao(){
+  const raw = document.getElementById('fech-migr-input').value.trim();
+  const status = document.getElementById('fech-migr-status');
+  if(!raw){ status.style.color='#c0392b'; status.textContent='⚠ Nenhum dado colado.'; return; }
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch(e){ status.style.color='#c0392b'; status.textContent='❌ JSON inválido. Verifique se copiou corretamente.'; return; }
+  if(typeof parsed !== 'object' || Array.isArray(parsed)){ status.style.color='#c0392b'; status.textContent='❌ Formato inesperado.'; return; }
+  const existing = getFechData();
+  const mesesNovos = Object.keys(parsed).filter(k => !existing[k]).length;
+  const mesesAtualizados = Object.keys(parsed).filter(k => existing[k]).length;
+  const merged = { ...existing, ...parsed };
+  saveFechData(merged);
+  status.style.color='#15803d';
+  status.textContent = `✓ ${Object.keys(parsed).length} meses importados (${mesesNovos} novos, ${mesesAtualizados} atualizados).`;
+  populateFechMonthSel();
+  const keys = Object.keys(merged).sort().reverse();
+  if(keys.length){
+    document.getElementById('fech-month-sel').value = keys[0];
+    renderFechamento();
+    populateFechMonthSel();
+  }
+  setTimeout(hideFechMigracao, 1200);
+}
+
+// ═══════════════════════════════════════
+// REPARO DE ACENTOS (U+FFFD → UTF-8 PT-BR)
+// ═══════════════════════════════════════
+function repairAccents(s){
+  if(!s) return s;
+  // Padrões comuns em português com contexto para desambiguar
+  var map = [
+    // ção / ssão / ção
+    [/\uFFFD\uFFFDo/g, 'ção'],
+    [/\uFFFDo /g, 'ão '],
+    [/\uFFFDo\b/g, 'ão'],
+    [/\uFFFDa\b/g, 'ã'],
+    [/\uFFFDa /g, 'ã '],
+    // vogais acentuadas por contexto frequente
+    [/urg\uFFFDn/g, 'urgên'],
+    [/cl\uFFFDn/g, 'clín'],
+    [/f\uFFFDr/g, 'fér'],
+    [/di\uFFFDr/g, 'diár'],
+    [/s\uFFFDb/g, 'sáb'],
+    [/m\uFFFDs/g, 'mês'],
+    [/iss\uFFFDo/g, 'issão'],
+    [/fun\uFFFD/g, 'funç'],
+    [/ica\uFFFD/g, 'icaç'],
+    [/gom\uFFFDt/g, 'gomát'],
+    [/ran\uFFFDa/g, 'rança'],
+    [/\uFFFDes/g, 'ões'],
+    [/\uFFFDe /g, 'ãe '],
+    [/ncia\uFFFD/g, 'ncias'],
+    [/sal\uFFFDr/g, 'salár'],
+    [/hor\uFFFDr/g, 'horár'],
+    [/prot\uFFFDt/g, 'protét'],
+    [/prot\uFFFD/g, 'próte'],
+    [/pr\uFFFDt/g, 'prét'],
+    [/almo\uFFFD/g, 'almoç'],
+    [/fun\uFFFDo/g, 'função'],
+    [/aten\uFFFD/g, 'atenç'],
+    [/informa\uFFFD/g, 'informaç'],
+    [/avalia\uFFFD/g, 'avaliaç'],
+    [/remunera\uFFFD/g, 'remuneraç'],
+    [/comemora\uFFFD/g, 'comemorç'],
+    [/participa\uFFFD/g, 'participaç'],
+    [/bonifica\uFFFD/g, 'bonificaç'],
+    [/indica\uFFFD/g, 'indicaç'],
+    [/capta\uFFFD/g, 'captaç'],
+    [/negocia\uFFFD/g, 'negociaç'],
+    [/programa\uFFFD/g, 'programaç'],
+    [/apresenta\uFFFD/g, 'apresentaç'],
+    [/conten\uFFFD/g, 'contenç'],
+    [/doa\uFFFD/g, 'doaç'],
+    [/ades\uFFFDo/g, 'adesão'],
+    [/divis\uFFFDo/g, 'divisão'],
+    [/revis\uFFFDo/g, 'revisão'],
+    [/gest\uFFFDo/g, 'gestão'],
+    [/reuni\uFFFDo/g, 'reunião'],
+    [/aplica\uFFFDo/g, 'aplicação'],
+    [/solu\uFFFDo/g, 'solução'],
+    [/opera\uFFFDo/g, 'operação'],
+    [/inser\uFFFDo/g, 'inserção'],
+    [/presta\uFFFDo/g, 'prestação'],
+    [/transa\uFFFDo/g, 'transação'],
+    // letras isoladas restantes
+    [/\uFFFD/g, '\u00e7'],
+  ];
+  for(var i=0;i<map.length;i++) s = s.replace(map[i][0], map[i][1]);
+  return s;
+}
+
+function repairFechData(data){
+  var months = Object.keys(data);
+  var changed = 0;
+  for(var i=0;i<months.length;i++){
+    var m = data[months[i]];
+    if(!m.rows) continue;
+    for(var j=0;j<m.rows.length;j++){
+      var orig = m.rows[j].b;
+      var fixed = repairAccents(orig);
+      if(fixed !== orig){ m.rows[j].b = fixed; changed++; }
+    }
+    if(m.label){
+      var fl = repairAccents(m.label);
+      if(fl !== m.label){ m.label = fl; }
+    }
+  }
+  return changed;
+}
+
+// ═══════════════════════════════════════
+// PDF POR MÊS
+// ═══════════════════════════════════════
+const FECH_PDF_KEY = 'ou_athena_fech_pdf_';
+
+function showFechPdf(){
+  hideFechImport(); hideFechNewMonth(); hideFechMigracao();
+  const panel = document.getElementById('fech-pdf-panel');
+  panel.style.display = '';
+  // Pré-seleciona mês atual
+  const key = document.getElementById('fech-month-sel').value;
+  if(key){
+    const parts = key.split('-');
+    document.getElementById('fech-pdf-month').value = parseInt(parts[1]);
+    document.getElementById('fech-pdf-year').value  = parseInt(parts[0]);
+    loadFechPdfViewer(key);
+  } else {
+    const dz = document.getElementById('fech-pdf-drop');
+    if(dz) dz.style.display = '';
+    document.getElementById('fech-pdf-viewer').style.display = 'none';
+  }
+  // Listener de mês/ano
+  document.getElementById('fech-pdf-month').onchange = refreshFechPdfViewer;
+  document.getElementById('fech-pdf-year').onchange  = refreshFechPdfViewer;
+  // Drag & drop no painel PDF
+  const pdz = document.getElementById('fech-pdf-drop');
+  if(pdz && !pdz._dndReady){
+    pdz._dndReady = true;
+    pdz.addEventListener('dragover', e=>{ e.preventDefault(); pdz.style.borderColor='var(--vinho)'; });
+    pdz.addEventListener('dragleave', ()=>pdz.style.borderColor='');
+    pdz.addEventListener('drop', e=>{ e.preventDefault(); pdz.style.borderColor=''; const f=e.dataTransfer.files[0]; if(f) handleFechPdfFile({target:{files:e.dataTransfer.files}}); });
+  }
+}
+function hideFechPdf(){
+  document.getElementById('fech-pdf-panel').style.display = 'none';
+}
+function refreshFechPdfViewer(){
+  const m = parseInt(document.getElementById('fech-pdf-month').value);
+  const y = parseInt(document.getElementById('fech-pdf-year').value);
+  loadFechPdfViewer(monthKey(m,y));
+}
+function loadFechPdfViewer(key){
+  const data = localStorage.getItem(FECH_PDF_KEY + key);
+  const viewer = document.getElementById('fech-pdf-viewer');
+  const drop   = document.getElementById('fech-pdf-drop');
+  const status = document.getElementById('fech-pdf-status');
+  if(data){
+    viewer.style.display = '';
+    drop.style.display   = 'none';
+    document.getElementById('fech-pdf-label').textContent = 'PDF: ' + (getFechData()[key]?.label || key);
+    document.getElementById('fech-pdf-frame').src = data;
+    status.textContent = '';
+  } else {
+    viewer.style.display = 'none';
+    drop.style.display   = '';
+    status.textContent   = '';
+  }
+}
+function handleFechPdfFile(e){
+  const file = e.target.files[0]; if(!file) return;
+  if(!file.name.toLowerCase().endsWith('.pdf')){
+    document.getElementById('fech-pdf-status').style.color='#c0392b';
+    document.getElementById('fech-pdf-status').textContent='⚠ Selecione um arquivo .pdf';
+    return;
+  }
+  const status = document.getElementById('fech-pdf-status');
+  status.style.color = 'var(--moka)';
+  status.textContent = 'Carregando…';
+  const m = parseInt(document.getElementById('fech-pdf-month').value);
+  const y = parseInt(document.getElementById('fech-pdf-year').value);
+  const key = monthKey(m,y);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      localStorage.setItem(FECH_PDF_KEY + key, ev.target.result);
+      status.style.color = '#15803d';
+      status.textContent = '✓ PDF salvo para ' + (getFechData()[key]?.label || monthLabel(m,y));
+      loadFechPdfViewer(key);
+    } catch(err) {
+      status.style.color = '#c0392b';
+      status.textContent = '❌ Erro ao salvar (arquivo muito grande?): ' + err.message;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+function downloadFechPdf(){
+  const m = parseInt(document.getElementById('fech-pdf-month').value);
+  const y = parseInt(document.getElementById('fech-pdf-year').value);
+  const key = monthKey(m,y);
+  const data = localStorage.getItem(FECH_PDF_KEY + key);
+  if(!data) return;
+  const a = document.createElement('a');
+  a.href = data;
+  a.download = 'fechamento-' + key + '.pdf';
+  a.click();
+}
+function deleteFechPdf(){
+  const m = parseInt(document.getElementById('fech-pdf-month').value);
+  const y = parseInt(document.getElementById('fech-pdf-year').value);
+  const key = monthKey(m,y);
+  if(!confirm('Remover PDF de ' + (getFechData()[key]?.label || monthLabel(m,y)) + '?')) return;
+  localStorage.removeItem(FECH_PDF_KEY + key);
+  loadFechPdfViewer(key);
+}
+
+// Drag & drop
+document.addEventListener('DOMContentLoaded', ()=>{
+  const fdz = document.getElementById('fech-drop-zone');
+  if(fdz){
+    fdz.addEventListener('dragover', e=>{ e.preventDefault(); fdz.style.borderColor='var(--vinho)'; });
+    fdz.addEventListener('dragleave', ()=>fdz.style.borderColor='');
+    fdz.addEventListener('drop', e=>{ e.preventDefault(); fdz.style.borderColor=''; const f=e.dataTransfer.files[0]; if(f) handleFechFile({target:{files:e.dataTransfer.files}}); });
+  }
+
+  // Reparo automático de acentos na primeira execução
+  (function(){
+    var REPAIR_KEY = 'ou_fech_accents_repaired_v1';
+    if(localStorage.getItem(REPAIR_KEY)) return;
+    var d = getFechData();
+    var n = repairFechData(d);
+    if(n > 0){ saveFechData(d); console.log('[Athena] Reparo de acentos: ' + n + ' itens corrigidos.'); }
+    localStorage.setItem(REPAIR_KEY,'1');
+  })();
+
+  // Init: seleciona mês mais recente
+  populateFechMonthSel();
+  const keys = Object.keys(getFechData()).sort().reverse();
+  if(keys.length){
+    document.getElementById('fech-month-sel').value = keys[0];
+    renderFechamento();
+    populateFechMonthSel();
+  } else {
+    document.getElementById('fech-empty').style.display = '';
+  }
+});
+</script>
+
+<script id="fech-seed">
+(function(){
+  var SEED_KEY = 'ou_athena_fechamento_seeded_v1';
+  if (localStorage.getItem(SEED_KEY)) return;
+  var existing = localStorage.getItem('ou_athena_fechamento');
+  try { if (existing && Object.keys(JSON.parse(existing)||{}).length > 0) { localStorage.setItem(SEED_KEY,'1'); return; } } catch(e){}
+  var seed = {"2025-12":{"key":"2025-12","label":"Dezembro 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":7740.74},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":4644.42},{"b":"Comissão de Resgate Brendha - R$ 106.650,00  0,2%","d":213.3,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ )","d":1248.91,"t":0},{"b":"Comissão de Lucro gerencial Jarina 0,8%","d":1757.83,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 22.707,28","d":227.07,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos","d":3000,"t":0},{"b":"Pagamento Dr. Aurelio (19 dias + 06 meia diárias)","d":15500,"t":6500},{"b":"Pagamento Dra Ana Paula (01 dia acompanhando e atendendo)","d":350,"t":0},{"b":"Pagamento Dra. Stefany (mensal R$ 10.000,00 - 10 dias de férias (R$ 400,00 por dia) adicionar 01 turno tarde 22/12 R$ 258,72","d":2758.82,"t":3500},{"b":"Pagamento Dr. Scharles urgências durante o recesso","d":800,"t":0},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00   (R$ 280,00 por dia, descontado férias 7,5 dias R$ 2100,00 (adicionar atendimentos sobreaviso)","d":1900,"t":3000},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 (01 sábado e 01 tarde R$ 550,00) + 5 diárias de clçnico a R$ 500,00)","d":4700,"t":0},{"b":"Pagamento Dra. Louize (01 dia a R$ 500,00 + 01 turno tarde R$ 289,47)","d":789.47,"t":0},{"b":"Pagamento Bonificação Funcionário do mês Thais","d":200,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias R$ 400,00 - descontada 01 hora que foi pedido para chegar mais tarde)","d":0,"t":1557},{"b":"Pagamento Protético Junior (R$ 850 16,5 dias + 03:40 horas = 14.391,67) R$ 6.000,00 com NF, restante em dinheiro","d":8391.67,"t":6000},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":1360,"t":0},{"b":"Pagamento Programa Senhorita Festi Queijo 2/4","d":625,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 7-10","d":650,"t":0},{"b":"Pagamento Parcela 3-3 gincana","d":1000,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ (DESCONTADO 07 DIAS DA VISITA A MÃE + 03 DIAS DAS FçRIAS R$ 80,00)","d":0,"t":1280},{"b":"Pagamento captação interna - 26 aval recepção Bruna","d":78,"t":0},{"b":"Pagamento captação interna - 26 aval recepção Bianca","d":78,"t":0},{"b":"Pagamento Captação interna - 26 aval gerente Jarina","d":78,"t":0},{"b":"Pagamento Bruna supervisão da recepção - dias trabalhados","d":216,"t":0},{"b":"Pagamento ingressos jogo do grçmio","d":120,"t":0},{"b":"Pagamento 1 e 2/6 camiseta, lanche, gasolina e pedçgio jogo do Gremio","d":209.94,"t":0},{"b":"Pagamento Parcela 6/10 realocação dos ares","d":2416,"t":0},{"b":"Pagamento Chopp e Clube","d":654,"t":0},{"b":"Pagamento Avaliação de colaboradores (todos nota mçxima)","d":700,"t":0},{"b":"Pagamento instrumentais Dr Aurelio 2-3","d":820,"t":0},{"b":"Bonificação Bianca segundo horário recepção","d":100,"t":0},{"b":"Pagamento Van confraternização final de ano","d":400,"t":0},{"b":"Pagamento Pilhas AA","d":33.8,"t":0},{"b":"Pagamento Brendha + Jarina  (festa do colono Santa Luiza)","d":460,"t":0},{"b":"Pagamento assistçncia tçcnica - Ritieli","d":570,"t":0},{"b":"Pagamento parcela 1-4 celular mkt","d":520,"t":0},{"b":"Pagamento Leandro 1-2 troca de 48 lçmpadas,incluindo servião, conserto chave de luz rx, e conserto do motor da tenda inflçvel","d":800,"t":0},{"b":"Kits cirçrgicos 3-3","d":733.37,"t":0},{"b":"Mensalidade sistema Gigaconsult","d":603.5,"t":0},{"b":"Pagamento Guilherme Knoll contenções","d":320,"t":0}],"acards":{}},"2026-02":{"key":"2026-02","label":"Fevereiro 2026","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":9063.27},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":5437.96},{"b":"Comissão de Resgate Brendha - R$ 177.190,00  0,2%","d":354.38,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 481.610,89)","d":963.22,"t":0},{"b":"Comissão de Lucro gerencial Jarina 0,5% R$ 122.610,28","d":613.05,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 16.594,13","d":165.94,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos 1 caso","d":1500,"t":0},{"b":"Pagamento Dr. Aurelio (09 DIAS + 3 sábados)","d":10500,"t":0},{"b":"Pagamento Dra. Stefany (R$ 500,00 diárias18 dias + 2 sábados)","d":6000,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 8.000,00 - 02 dias) R$ 7.272,72","d":4272.72,"t":3000},{"b":"Pagamento Dra Ana (R$ 350,00 8 diárias + 4 sábados)","d":0,"t":3500},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 + 01 sábado e 01 tarde R$ 550,00 )","d":2750,"t":0},{"b":"Pagamento Dra. Louize (01 turno tarde R$ 289,47)","d":289.47,"t":0},{"b":"Pagamento Dr. Pedro (02 diárias R$ 400,00 )","d":0,"t":800},{"b":"Pagamento Protético Junior (R$ 850,00 dia 20 dias = R$  17.000,00) R$ 10.000,00 com NF, restante em dinheiro","d":7000,"t":10000},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento parcela 1/2 piquenique estação","d":750,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Pagamento captação interna - 50 aval recepção Bruna","d":215,"t":0},{"b":"Pagamento condução MKT e mçdias Bruna","d":500,"t":0},{"b":"Pagamento Captação interna - 50 aval gerente Jarina","d":215,"t":0},{"b":"Pagamento Patrocínio em Festa Mundo Novo","d":350,"t":0},{"b":"Pagamento celular mkt 3-5","d":530,"t":0},{"b":"Pagamento Kaefer copor 2-3","d":800,"t":0},{"b":"Pagamento 4/6 camiseta, lanche, gasolina e pedçgio jogo do Gremio","d":105,"t":0},{"b":"Pagamento Parcela 10/10 realocação dos ares","d":2420,"t":0},{"b":"Pagamento Cafç da manhç presente aniversário Thais","d":33,"t":0},{"b":"Pagamento Avaliação de colaboradores (todos nota mçxima)","d":600,"t":0},{"b":"Pagamento diária anestesiologia Bruno Lauda 04/01","d":2800,"t":0},{"b":"Pagamento Rádio","d":9000,"t":0},{"b":"Pagamento assistçncia tçcnica - Ritieli","d":845,"t":0},{"b":"Pagamento Leandro 2 -2 troca de 48 lçmpadas,incluindo servião, conserto chave de luz rx, e conserto do motor da tenda inflçvel 2-2","d":850,"t":0},{"b":"Pagamento patrocínio 1/3 terno time de futebol de barão","d":500,"t":0},{"b":"Pagamento festa comunidade Mundo Novo - Jarina","d":230,"t":0},{"b":"Pagamento festa comunidade Mundo Novo - Thais","d":230,"t":0},{"b":"Pagamento anestesista Geison 01 diária","d":2300,"t":0},{"b":"Boleto Dental","d":1209.11,"t":0},{"b":"Boleto adesivos espumantes Vision","d":262.5,"t":0},{"b":"Membranas TraumaShop","d":525.85,"t":0},{"b":"Pagamento Dental parcela","d":1362.03,"t":0},{"b":"Pagamento Facebook e Instagram","d":4000,"t":0},{"b":"Pagamento Guilherme Knoll - contenções metçlicas","d":365,"t":0},{"b":"Pagamento presente dois anos de clínica Thais TSB","d":73.8,"t":0},{"b":"Pagamento contenções Ritieli","d":200,"t":0},{"b":"Pagamento Marcelo Barras","d":4350,"t":0}],"acards":{}},"2025-11":{"key":"2025-11","label":"Novembro 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = R$ 13.735,58 2,5% - distratos (Deste valor, R$ 5.000,00 fora adiantado em novembro + restante pix dezembro)","d":494.23,"t":13241.35},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":8241.35},{"b":"Comissão de Resgate Brendha - 0,2% R$ 140.230,00","d":280.46,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 542.727,79)","d":1085.46,"t":0},{"b":"Diferenã salário Jarina","d":184,"t":0},{"b":"Comissão Lucro Gerencial Jarina R$ 131.339,69","d":646.7,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 24.122,08","d":241.22,"t":0},{"b":"Pagamento Dr. Aurelio (13 dias + 6 meia diárias ) = R$ 16.000,00","d":1000,"t":15000},{"b":"Pagamento Dra. Stefany (mensal R$ 8.000,00 - 02 sábado (R$ 177,78= 355,76) - 02 dias (R$ 355,55 = R$ 711,10) = R$ 6.933,14","d":3433.34,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00 - 01 dia (R$ 311,11) - 01 sábado (R$ 155,55) - 01 tarde 5,5hrs ( R$ 180,12)  =  R$ 6.353,22","d":3353.22,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(04 sábados R$ 160,00)","d":640,"t":0},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 +01 sábado + 01 tarde)","d":2750,"t":0},{"b":"Pagamento Dra. Louize (02 turnos da tarde)","d":578.95,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias R$ 400,00)","d":0,"t":1600},{"b":"Pagamento Dra. Juliana (16,5 dias R$ 600,00 + 1 sábado - 6,5 horas) = 9789,48","d":4894.74,"t":4894.74},{"b":"Pagamento Protético Junior (R$ 850,00 dia 21 dias = R$  17.850,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":11850,"t":6000},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Programa Senhorita Festi Queijo 1/4","d":625,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 6-10","d":650,"t":0},{"b":"Pagamento Parcela 2-3 gincana","d":1000,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Pagamento Lab externo - Contenções Guilherme","d":120,"t":0},{"b":"Pagamento parcela 2 pintura e lavagem externa","d":900,"t":0},{"b":"Pagamento camisetas Gincana","d":500,"t":0},{"b":"Pagamento Parcela 5/10 realocação dos ares","d":2420,"t":0},{"b":"Pagamento Bianca recepcionista uma semana fora da folha","d":573.33,"t":0},{"b":"Pagamento serviços assistencia tçcnica","d":750,"t":0},{"b":"Pagamento  Patrocinio copos Kaefer 2-2","d":1188,"t":0},{"b":"Pagamento Dr Geison 2,5 diárias","d":5000,"t":0},{"b":"Patrocinio festa Comunidade São Luiz de Santa Luiza","d":600,"t":0},{"b":"Pagamento alimentação Brendha encontro AGO","d":50,"t":0},{"b":"Pagamento lanche Junior e Aurelio","d":97.36,"t":0},{"b":"Pagamento avaliação de funcionários - nota mçxima","d":600,"t":0},{"b":"Pagamento gratificação gerçncia e relacionamento","d":150,"t":0},{"b":"Pagamento remçdio equipe","d":10,"t":0},{"b":"Pagamento odorizador de ambiente + lanche ASB e TSB agradecimento","d":102.27,"t":0},{"b":"Pagamento cestas e petiscos para lanche de entrosamento de equipe","d":109.37,"t":0},{"b":"Pagamento bonificação funcionário do mês - Jarina","d":200,"t":0},{"b":"Pagamento Dr Aurelio instrumentais 1-3","d":810,"t":0},{"b":"Pagamento leads internos - recepção Bruna 45","d":225,"t":0},{"b":"Pagamento leads internos - recepção Bianca 45","d":225,"t":0},{"b":"Pagamento Leads internos - gerente Jarina 45","d":225,"t":0},{"b":"Pagamento Participação festa Desvio Machado - Bruna","d":230,"t":0},{"b":"Pagamento Participação Festa Desvio Machado - Thais","d":230,"t":0},{"b":"Pagamento Supervisão recepção (não recebe marketing)","d":300,"t":0},{"b":"Pagamento bonificação segundo horário recepção","d":100,"t":0},{"b":"Pagamento embalagem e parte lanche Alexandre e Fran + embalagens para presentes","d":87.9,"t":0},{"b":"Pagamento itens cesta paciente","d":80.8,"t":0}],"acards":{}},"2026-04":{"key":"2026-04","label":"Abril 2026","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos R$ 14.857,94","d":0,"t":14857},{"b":"Comissão de Resgate Brendha - R$ 274.205,00  0,4%","d":1096.82,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 449.822,78 )","d":899.65,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 30.773,32","d":307.73,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos 1 caso","d":3000,"t":0},{"b":"Pagamento 5/5 jogo do grçmio","d":105,"t":0},{"b":"Pagamento Dr. Aurelio (18 dias + 3 sábados)","d":12000,"t":7000},{"b":"Pagamento Dra. Stefany (R$ 500,00 diária 17 dias + 2 sábados = R$ 9.000,00 - R$ 181,67 2/5 meeting - 02 horas no dia 20/04 R$ 105,26 = R$ 8.713,07","d":5213.07,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 8.000,00 - 02 feriados e 01 sábado = R$ 7.166,67","d":4166.67,"t":3000},{"b":"Pagamento Dra Ana (R$ 350,00 17 diárias + 3 sábados + diferenã ref a 3 horas endo R$ 32,47)","d":3009.47,"t":3500},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 + 01 sábado e 02 tarde R$ 550,00 )","d":3025,"t":0},{"b":"Pagamento Dr. Pedro (03 diárias R$ 400,00 )","d":0,"t":1200},{"b":"Pagamento Protético Junior (R$ 850,00 dia 22,5 dias = R$  19.100,00 ) R$ 10.000,00 com NF, restante em dinheiro","d":9100,"t":10000},{"b":"Pagamento parcela 1/12 deslocamento e curso IA","d":4326.97,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento laboratçrio Marcelo","d":3580,"t":0},{"b":"Pagamento Duda 05 jogos municipal + 02 citadino","d":820,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Pagamento Laboratçrio externo Ritieli","d":625,"t":0},{"b":"Lanche aniversário Bruna","d":21.25,"t":0},{"b":"Pagamento piquenique participação Bruna","d":230,"t":0},{"b":"Pagamento piquenique participação Brendha","d":230,"t":0},{"b":"Pagamento piquenique participação Jarina","d":230,"t":0},{"b":"Pagamento Motoboy corrida Marcelo 31/03/2026","d":50,"t":0},{"b":"Pagamento cafç Thais (usou o carro para buscar frasco para biopsia no laboratçrio)","d":23,"t":0},{"b":"Pagamento Chocolates Pçscoa Equipe","d":360,"t":0},{"b":"Pagamento presente Stç","d":92,"t":0},{"b":"Alimentação Brendha e Jarina Meeting","d":306.88,"t":0},{"b":"Presente aniversário Jarina","d":100,"t":0},{"b":"Pagamento captação interna - 43 aval recepção Bruna","d":215,"t":0},{"b":"Pagamento captação interna - 43 aval recepção Mariele","d":215,"t":0},{"b":"Pagamento Captação interna - 43 aval gerente Jarina","d":215,"t":0},{"b":"Pagamento diferenã de salário Mariele","d":100,"t":0},{"b":"Lembranã Hçlida CRM","d":62.3,"t":0},{"b":"Flores 01 ano de clínica Suelen","d":58,"t":0},{"b":"Prçmio engajamento Projeto CRM Recepcionista Bruna","d":70,"t":0},{"b":"Pagamento parcela 5-5 celular mkt","d":530,"t":0},{"b":"Pagamento condução marketin Bruna recepcionista","d":500,"t":0},{"b":"Pagamento Parcela 10/10 realocação dos ares","d":2419,"t":0},{"b":"Patrocinio time de futebol Barão 3/3","d":500,"t":0},{"b":"Pagamento Avaliação de colaboradores (todos nota mçxima)","d":700,"t":0},{"b":"Pagamento duas diárias anestesiologia Dr Bruno","d":5000,"t":0},{"b":"Pagamento Rádio","d":9000,"t":0},{"b":"Pagamento isqueiro laboratçrio","d":27.96,"t":0},{"b":"Pagamento assistçncia tçcnica - Ritieli","d":630,"t":0},{"b":"Ref a pagamento contenções Guilherme","d":325,"t":0},{"b":"Pagamento turno anestesiologia GEISON PINTO (14/04/2026)","d":1150,"t":0},{"b":"Pagamento Mão de obra e tinta para pintura parede corredor rx","d":400,"t":0},{"b":"Parcela 1 manutenção preventiva ares da clínica","d":403,"t":0},{"b":"Pagamento diária  anestesiologia Geison Pinto ( 28/04/2026)","d":1150,"t":0},{"b":"Pagamento Motoboy corrida Marcelo 23/04/2026","d":45,"t":0},{"b":"Pagamento coca lanche dia do trabalhador","d":14,"t":0},{"b":"Marca texto e papel pardo","d":19.45,"t":0},{"b":"Pagamento grampos e postit","d":30.84,"t":0},{"b":"Pagamaneo 01 caixa de canetas Bic","d":61,"t":0},{"b":"Pagamento lanche aniversário Fran","d":30.4,"t":0},{"b":"Pagamento materiais de escritçrio","d":66.34,"t":0},{"b":"çagamento motoboy 16/04 Marcelo","d":45,"t":0},{"b":"Pagamento fotos polaroid","d":144,"t":0},{"b":"Pagamento Salutz boleto campo","d":567.5,"t":0},{"b":"Pagamento boleto implantes e componentes","d":345.42,"t":0},{"b":"Pagamento DentalShop pedido lab","d":1209.9,"t":0},{"b":"Pagamento DentalShop pedido cons","d":1334.9,"t":0},{"b":"Pagamento Implantes e componentes","d":87,"t":0},{"b":"Pagamento boleto membranas","d":515.4,"t":0},{"b":"Pagamento Liberty","d":1090,"t":0},{"b":"Pagamento Facebook e Instagram","d":4000,"t":0},{"b":"Pagamento insumos mçquina cafç","d":340,"t":0},{"b":"Pagamento painel interno vision","d":335,"t":0}],"acards":{"fluxo":[],"saque":[],"sobra":[],"despesas":[],"dinheiro":[],"fat_bruto":[]}},"2025-08":{"key":"2025-08","label":"Agosto 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":15320.8},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":9192.48},{"b":"Comissão de Resgate Brendha - Meta Elite R$ 366.205,00","d":1831.03,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 535.922,03 )","d":1071.84,"t":0},{"b":"Diferenã salário Jarina","d":240,"t":0},{"b":"Comissão sobre Lucro Jarina R$ 145.346,22 0,5%","d":726.75,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 53.371,40","d":533.71,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos","d":0,"t":1500},{"b":"Pagamento Dr. Aurelio (17 dias + 3 meias diárias)","d":0,"t":18500},{"b":"Pagamento Dra. Stefany (mensal R$ 8.000,00 - 01 sábado (R$ 143,34) - 02 horas (R$ 71,66) = R$ 7.785,00","d":4285,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00 - 01 dia (R$ 297,87) =  R$ 6.702,13","d":3702.13,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(05 sábados R$ 160,00)","d":800,"t":0},{"b":"Pagamento Dra. Fernanda (05 diárias R$ 550,00)","d":2750,"t":0},{"b":"Pagamento Dra. Louize (03 diárias R$ 500,00 + 02 sábados R$ 330,00 - 03 horas","d":2002.1,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias R$ 400,00)","d":0,"t":1600},{"b":"Pagamento Dr. Narton (20 diárias a R$ 600,00 - 02 horas)","d":0,"t":11873.69},{"b":"Pagamento Protético Junior (R$ 800,00 dia 23,5 dias = R$  18.800,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":12800,"t":6000},{"b":"Pagamento Dr. Mateus (clçnico geral - 04 diárias a R$ 300,00)","d":1200,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Comerciais final do Master futebol de campo","d":500,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 3-10","d":650,"t":0},{"b":"Pagamento Parcela 1-3 Programação Festi Queijo Rádio Estação","d":500,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Bonificação Bruna - Supervisão da Recepção","d":500,"t":0},{"b":"Pagamento Comerciais do municipal de campo 3-3","d":1000,"t":0},{"b":"Pagamento parcela 4 IPTU clínica","d":582,"t":0},{"b":"Pagamento Parcela 2/10 realocação dos ares","d":2418,"t":0},{"b":"Pagamento serviços assistencia tçcnica (R$ 940,00 ref ao mês + R$ 10,00 adiantado)","d":950,"t":0},{"b":"Pagamento salário Andressa (Total de agosto + 03 dias de setembro - desconto de horas faltas)","d":2145.46,"t":0},{"b":"Pagamento bolos Cafç da manhç equipe (Fran + Jari)","d":100,"t":0},{"b":"Pagamento lanche conversa 1-1 recepcionista Bruna","d":40,"t":0},{"b":"Pagamento Brendha e Jarina - Peã Agosto Lilas","d":200,"t":0},{"b":"Pagamento Brendha + Bruna (festa do colono Santa Luiza)","d":460,"t":0},{"b":"Pagamento patrocinio Jantar Gringos da Serra","d":1200,"t":0},{"b":"Pagamento fotos para mural e imçtadas para lembranã de equipe","d":123.9,"t":0},{"b":"Pagamento Jarina e Thais (jantar gringos da Serra)","d":460,"t":0}],"acards":{}},"2025-05":{"key":"2025-05","label":"Maio 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos = R$ 13.229,49","d":3638,"t":9591.49},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":7937.68},{"b":"Comissão de Resgate Brendha - 0.3% R$ 298.720,00","d":1493.6,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2%)","d":853.96,"t":0},{"b":"Diferenã salário Jarina","d":241,"t":0},{"b":"Comissão de Leads Jarina (R$ 4,00 por presenã)- 29 aval","d":116,"t":0},{"b":"Comissão de Cobrança Alexandre - Adicional pela ajuda recep.","d":75,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 32.593,53","d":325.93,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos (02 casos)","d":0,"t":3000},{"b":"Pagamento Dr. Aurelio (14 diárias e 5 turnos)","d":0,"t":16500},{"b":"Pagamento Dra. Stefany (mensal R$ 7.000,00 - 01 ausçncia sábado, 01h30 e 01 feriado = R$ 6.499,00)","d":2999,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 6.000,00 - ausçncias 01 feriado = R$ 5.728,00) + adicionado 272,00(01 diária) por dia em que assumiu a agenda de sedação = R$ 6.000,00","d":3000,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(03 sábados R$ 160,00)","d":480,"t":0},{"b":"Pagamento Dra. Fernanda (05 diárias R$ 550,00)","d":2750,"t":0},{"b":"Pagamento Dra. Louize (04 diárias R$ 500,00 + 02 sábado R$ 330,00)","d":2660,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias R$ 400,00)","d":1600,"t":0},{"b":"Pagamento Dr. Narton (20 diárias a R$ 600,00 - descontado 1 tarde e 1 manhç + 02 horas)","d":0,"t":11274},{"b":"Pagamento Protético Junior (R$ 800,00 dia 23,5 dias = R$  18.800,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":12800,"t":6000},{"b":"Pagamento Dr. Mateus (clçnico geral - 04 diárias a R$ 300,00)","d":1200,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal - descontado 1 dia)","d":1910,"t":0},{"b":"Pagamento 02 dias trabalhados Andressa recepção","d":180,"t":0},{"b":"Pagamento Rádio Estação - Live aniversário 7-8","d":625,"t":0},{"b":"Pagamento 4-4 eventos e cartinhas de natal Rádio Estação","d":1000,"t":0},{"b":"Pagamento Parcela 3-5 patrocínio da Rádio no campeonato Citadino","d":1000,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":2000,"t":0},{"b":"Bonifiação Bruna - Supervisão da Recepção","d":500,"t":0},{"b":"Pagamento parte almoço encontro de cultura equipe","d":219.97,"t":0},{"b":"Pagamento VR Andressa (desconto de 3 dias)","d":173,"t":0},{"b":"Pagamento parcela 1 IPTU clínica","d":587.13,"t":0},{"b":"Pagamento parcela 2 mão de obra e materiais janela lab","d":2950,"t":0},{"b":"Pagamento de parte dos consertos de canetas da clínica e do lab","d":825,"t":0},{"b":"Pagamento Catia - 03 dias (teste recepcionista)","d":258.82,"t":0},{"b":"Pagamento ingressos e patrocínio Jantar MaB","d":830,"t":0},{"b":"Pagamento de insumos para cestas pçs-operatçrias","d":49,"t":0},{"b":"Pagamento Bolos Meeting","d":70,"t":0},{"b":"Pagamento parte alimentação meeting(Dra Mone pagou)","d":334.15,"t":0},{"b":"Pagamento alimentação Brendha evento AGO","d":18.05,"t":0},{"b":"Pagamento Lab externo - contenções Guilherme Knoll","d":320,"t":0},{"b":"Pagamento parcial Laboratçrio Marcelo (barras e armações) R$2.060,00 - restante serç com caixa","d":600,"t":0},{"b":"Pagamento flor um ano de recepção Bruna","d":40,"t":0}],"acards":{}},"2025-06":{"key":"2025-06","label":"Junho 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":13805.64},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":8283.38},{"b":"Comissão de Resgate Brendha - 0.2% R$ 169.830,00","d":339.66,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2%)","d":924.48,"t":0},{"b":"Diferenã salário Jarina","d":241,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 41.599,73","d":416,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos (04 casos)","d":0,"t":6000},{"b":"Pagamento Dr. Aurelio (14 diárias e 2 turnos)","d":0,"t":15000},{"b":"Pagamento Dra. Stefany (mensal R$ 7.000,00 - 01 ausçncia sábado e 01 feriado + 30 min em 27/06 = R$ 6.522,73)","d":3022.73,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 6.000,00 - ausçncias 01 feriado = R$ 5.728,00)","d":2728,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(04 sábados R$ 160,00)","d":640,"t":0},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00)","d":2200,"t":0},{"b":"Pagamento Dra. Louize (04 diárias R$ 500,00 - 02 horas R$ 105,20","d":1894.8,"t":0},{"b":"Pagamento Dr. Pedro (05 diárias R$ 400,00 + 01 sábado R$ 200,00)","d":2200,"t":0},{"b":"Pagamento Dr. Narton (20 diárias a R$ 600,00)","d":0,"t":12000},{"b":"Pagamento Protético Junior (R$ 800,00 dia 22 dias = R$  17.600,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":11600,"t":6000},{"b":"Pagamento Dr. Mateus (clçnico geral - 03 diárias a R$ 300,00)","d":900,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Missa Caravaggio 1-2","d":400,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 1-10","d":650,"t":0},{"b":"Pagamento Parcela 4-5 patrocínio da Rádio no campeonato Citadino","d":1000,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":2000,"t":0},{"b":"Bonificação Bruna - Supervisão da Recepção","d":500,"t":0},{"b":"Pagamento Comerciais do municipal de campo 1-3","d":1000,"t":0},{"b":"Pagamento VR Andressa (desconto de 4 dias)","d":164,"t":0},{"b":"Pagamento parcela 2 IPTU clínica","d":590,"t":0},{"b":"Pagamento de parte dos consertos de canetas da clínica e do lab","d":1120,"t":0},{"b":"Pagamento adiantamento de salário Andressa - recepção (por fora)","d":800,"t":0},{"b":"Pagamento salário Andressa (menos adiantamento e 01 falta e inçcio 29/05 = 2 dias)","d":1139.3,"t":0},{"b":"Pagamento Laboratçrio externo contenções Guilherme","d":440,"t":0}],"acards":{}},"2025-03":{"key":"2025-03","label":"Março 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de vendas Dra. Mone = 2,5 % - R$ 627.339,91 distratos","d":0,"t":14442.64},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":8665.58},{"b":"Comissão de Resgate Brendha - 308.950,00 (0,5%)","d":1544.75,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% )","d":838.1,"t":0},{"b":"Comissão Leads Jarina (R$ 4,00 por presenã ) 45 x 4,00","d":180,"t":0},{"b":"Comissão de Cobrança Alexandre 1% - R$ 40.872,40","d":408.72,"t":0},{"b":"Pagamento Dr. Aurelio 12 diárias e 4 sábados","d":0,"t":14000},{"b":"Pagamento Dra. Stefany (mensal R$ 7.000,00 - ausçncia 0)","d":7000,"t":0},{"b":"Pagamento Dr. Scharles (mensal R$ 6.000,00 - ausçncias 0)","d":6000,"t":0},{"b":"Pagamento Dra. Laura - A partir de Janeiro 2025 apenas turno no sábado (3 sábados)","d":480,"t":0},{"b":"Pagamento Dra. Louize (06 diárias R$ 500,00 + 01 sábado R$ 330,00)","d":3330,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias a R$ 400,00 - R$ 1.600,00)","d":1600,"t":0},{"b":"Pagamento Dr. Narton - (19 diárias a R$ 600,00)","d":0,"t":11400},{"b":"Pagamento Protético Junior ( R$ 800,00 dia 21 dias) R$ 6.000,00 nota, restante em dinheiro","d":10800,"t":6000},{"b":"Pagamento Aux. De Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Laboratçrio Breda - placas de bruxismo e acetato","d":912,"t":0},{"b":"Pagamento Kaefer - recadinhos para palestra no centro de idosos","d":48,"t":0},{"b":"Pagamento Fatura de telefone da recepção","d":90,"t":0},{"b":"Pagamento 2-4 eventos e cartinhas de natal com Rádio Estação FM","d":1000,"t":0},{"b":"Pagamento parcela 1-5 Patrocinio da Radio no Campeonato Citadino","d":1000,"t":0},{"b":"Pagamento parcela aniversário clínica 05-08","d":625,"t":0},{"b":"Pagamento lanche equipe Final da Copa Oral Unic Citadino","d":200,"t":0},{"b":"Pagamento Ajuste Uniforme Marta DML","d":35,"t":0},{"b":"Pagamento Serviços gerais/ Marta (conta CNPJ)","d":0,"t":2000},{"b":"Bonificação Bruna - Supervisão da Recepção","d":300,"t":0},{"b":"Pagamento cartão 01 ano de clínica Dra. Stefany e voucher de valores para brindes","d":35,"t":0},{"b":"Pagamento caixa de gordura, anéis de borracha e sanfonas para laboratçrio interno","d":402.59,"t":0},{"b":"Pagamento Logo rádio p/ camisas clínica","d":50,"t":0},{"b":"Pagamento 7 copos de çgua para recepção (estava em falta nos fornecedores)","d":10.32,"t":0},{"b":"Pagamento Lab Marcelo / barras de protocolo","d":4870,"t":0},{"b":"Pagamento etanol para lamparinas","d":20,"t":0},{"b":"Pagamento Produtos para cestas pçs-operatçrias","d":50.76,"t":0},{"b":"Pagamento Taxi Brendha e Bruna palestra idosos","d":32.5,"t":0},{"b":"Pagamento apostilas de vendas Dra e Brendha","d":52.6,"t":0}],"acards":{}},"2025-04":{"key":"2025-04","label":"Abril 2025","rows":[{"b":"Avaliadora Dra. Mone","d":5000,"t":0},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":10596.9},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":6358.13},{"b":"Comissão de Resgate Brendha - 0.3% R$ 254.500,00","d":763.5,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2%)","d":874.82,"t":0},{"b":"Diferenã salário Jarina","d":261,"t":0},{"b":"Comissão de Leads Jarina (R$ 4,00 por presenã)- 33","d":132,"t":0},{"b":"Comissão de Cobrança Alexandre - Adicional pela ajuda recep.","d":137,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 26.305,42","d":263.05,"t":0},{"b":"Pagamento Dr. Aurelio Espumantes Final de Ano","d":0,"t":1500},{"b":"Pagamento Dr. Aurelio (9 diárias e 3 turnos)","d":0,"t":10500},{"b":"Pagamento Dra. Stefany (mensal R$ 7.000,00 - 01 ausçncia e 01 feriado = R$ 6.301,00)","d":2801,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 6.000,00 - ausçncias 02 feriados = R$ 5.500,00)","d":2500,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(03 sábados R$ 160,00)","d":480,"t":0},{"b":"Pagamento Dra. Fernanda (02 diárias R$ 550,00)","d":1100,"t":0},{"b":"Pagamento Dra. Louize (05 diárias R$ 500,00 + 01 sábado R$ 330,00)","d":2830,"t":0},{"b":"Pagamento Dr. Pedro (03 diárias R$ 400,00)","d":1200,"t":0},{"b":"Pagamento Dr. Narton (19 diárias a R$ 600,00)","d":0,"t":11400},{"b":"Pagamento Protético Junior (R$ 800,00 dia 22 diárias = R$ 17.600,00) R$ 6.000,00 com NF, restante em dinheiro","d":11600,"t":6000},{"b":"Pagamento Dr. Mateus (clçnico geral - 04 diárias a R$ 300,00)","d":1200,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Rádio Estação - Live aniversário 6-8","d":625,"t":0},{"b":"Pagamento 3-4 eventos e cartinhas de natal Rádio Estação","d":1000,"t":0},{"b":"Pagamento Parcela 2-5 patrocínio da Rádio no campeonato Citadino","d":1000,"t":0},{"b":"Pagamento Calã e Calçado Branco Suelen ASB","d":250,"t":0},{"b":"Pagamento Chocolates Pçscoa","d":339.8,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Bonifiação Bruna - Supervisão da Recepção","d":500,"t":0},{"b":"Pagamento encanador","d":330,"t":0},{"b":"Pagamento lembranã dia do trabalhador","d":208.5,"t":0},{"b":"Pagamento lembranã dia das mães Bruna e Fran","d":0,"t":99.8},{"b":"Pagamento Robo aspirador","d":800,"t":0},{"b":"Pagamento Andressa evento Final Copa Municipal - 4h","d":100,"t":0},{"b":"Pagamento Chçs para pacientes","d":18.6,"t":0},{"b":"Pagamento Jalecos ASBs - Troca de zipers","d":50,"t":0}],"acards":{}},"2026-03":{"key":"2026-03","label":"Março 2026","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":13297.51},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":7966.13},{"b":"Comissão de Resgate Brendha - R$ 359.120,00  0,5%","d":1795.6,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 508.959,76 )","d":1017.92,"t":0},{"b":"Comissão de Lucro gerencial Jarina 0,8% R$ 165.567,74","d":1324.55,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 49.039,68","d":490.4,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos 1 caso","d":1500,"t":0},{"b":"Pagamento Dr. Aurelio (15 dias + 2 tarde + 02 sábados)","d":10000,"t":10000},{"b":"Pagamento Dra. Stefany (R$ 500,00 diária 22 dias + 2 sábados = R$ 11.500,00 - R$ 181,67 1/5 meeting = R$ 11.318,33)","d":7818.33,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 8.000,00 - 01 tarde e 01 sábado = R$ 7.666,66","d":4666.66,"t":3000},{"b":"Pagamento Dra Ana (R$ 350,00 15 diárias + 4 sábados + diferenã ref a 5 horas endo R$ )","d":2502.64,"t":3500},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 + 01 sábado e 01 tarde R$ 550,00 )","d":2750,"t":0},{"b":"Pagamento Dra. Louize (01 turno tarde R$ 289,47)","d":289.47,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias R$ 400,00 )","d":0,"t":1600},{"b":"Pagamento Protético Junior (R$ 850,00 dia 24 dias = R$  20.400,00 ) R$ 10.000,00 com NF, restante em dinheiro","d":10400,"t":10000},{"b":"agamento condução de mçdias Bruna","d":500,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Marcelo Barras","d":4450,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Pagamento laboratçrio Externo Guilherme","d":205,"t":0},{"b":"Pagamento captação interna - 28 aval recepção Bruna","d":84,"t":0},{"b":"Pagamento captação interna - 28 aval recepção Mariele","d":84,"t":0},{"b":"Pagamento Captação interna - 28 aval gerente Jarina","d":84,"t":0},{"b":"Pagamento parcela 4-5 celular mkt","d":530,"t":0},{"b":"Pagamento 5/6 camiseta, lanche, gasolina e pedçgio jogo do Gremio","d":105,"t":0},{"b":"Pagamento pipocas para piquenique parque da Estação","d":42.18,"t":0},{"b":"Pagamento plantas para decoração da avaliação  relacionamento","d":31.82,"t":0},{"b":"Pagamento Parcela 9/10 realocação dos ares","d":2420,"t":0},{"b":"Patrocinio time de futebol Barão 2/3","d":500,"t":0},{"b":"Pagamento Avaliação de colaboradores (todos nota mçxima)","d":700,"t":0},{"b":"Pagamento diária anestesiologia GEISON PINTO (03/03/2026)","d":2300,"t":0},{"b":"Pagamento Rádio","d":9000,"t":0},{"b":"Pagamento assistçncia tçcnica - Ritieli","d":1280,"t":0},{"b":"Pagamento fora da folha Mariele 21,5 dias + R$100,00 bonus horário","d":1830,"t":0},{"b":"Pagamento diária anestesiologia GEISON PINTO (17/03/2026)","d":2300,"t":0},{"b":"Copos Kafer 3/3","d":713,"t":0},{"b":"Pagamento diária  anestesiologia Geison Pinto ( 31/03/2026)","d":2300,"t":0},{"b":"Pagamento parcela 2/2 piquenique estação","d":750,"t":0},{"b":"Pagamento eletricista Leandro 2-2","d":740,"t":0},{"b":"Contenções Ritiele","d":115,"t":0}],"acards":{}},"2025-10":{"key":"2025-10","label":"Outubro 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos R$ 9.838,94","d":0,"t":14692.86},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":8815.72},{"b":"Comissão de Resgate Brendha - 0,2% R$ 207.050,00","d":414.1,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 464.227,90 )","d":928.45,"t":0},{"b":"Diferenã salário Jarina","d":240,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 30.383,93","d":303.83,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos 1 caso","d":0,"t":1500},{"b":"Pagamento Dr. Aurelio (15 dias + 5 meia)","d":0,"t":17500},{"b":"Pagamento Dra. Stefany (mensal R$ 8.000,00 - 01 sábado e 02 horas ) = R$ 7.798,00","d":4298,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00","d":4000,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(02 sábados R$ 160,00)","d":320,"t":0},{"b":"Pagamento Dra. Fernanda (05 diárias R$ 550,00 + 01 sábado)","d":3000,"t":0},{"b":"Pagamento Dra. Louize (02 diárias R$ 500,00 )","d":1000,"t":0},{"b":"Pagamento Dr. Pedro (03 diárias R$ 400,00)","d":0,"t":1200},{"b":"Pagamento Dr. Narton (22 diárias a R$ 600,00 + 30 minutos)","d":0,"t":13231.5},{"b":"Pagamento Protético Junior (R$ 800,00 dia 25,5 dias = R$  18.800,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":14400,"t":6000},{"b":"Pagamento Dra Juliana (5 dias a R$ 500,00)","d":0,"t":2500},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Parcela 1 gincana Carlos Barbosa","d":1000,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 5-8","d":650,"t":0},{"b":"Pagamento Parcela 3-3 Programação Festi Queijo Rádio Estação","d":500,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Pagamento Parcela 4/10 realocação dos ares","d":2420,"t":0},{"b":"Pagamento serviços assistencia tçcnica (Total R$ 2.740,00/2(descontado R$ 10,00 adiantado)  parcela 2","d":1490,"t":0},{"b":"Pagamento  Patrocinio copos Kaefer 1-2","d":1188,"t":0},{"b":"Pagamento bonificação avaliação de funcionários - 3 funcionários","d":300,"t":0},{"b":"Pagamento patrocínio + ingresso festa São roque","d":475,"t":0},{"b":"Pagamento entrada pintura externa e lavagem da fachada","d":1200,"t":0},{"b":"Pagamento lanche equipe (alinhamento recepção)","d":40,"t":0},{"b":"Pagamento Jarina e Brendha em festa nossa senhora de aparecida","d":460,"t":0},{"b":"Pagamento recepcionista Adriane (01 dia fora da folha)","d":77,"t":0},{"b":"Pagamento assistencia tçcnica RX","d":400,"t":0},{"b":"Pagamento conserto no trinco da porta rx + instalação TV adm","d":150,"t":0},{"b":"Pagamento Bruna - Avaliações 49 avaliações comparecidas","d":245,"t":0},{"b":"Pagamento Jarina - Avaliações 49 avaliações comparecidas","d":245,"t":0},{"b":"Pagamento Bruna - Marketing - 100%","d":500,"t":0}],"acards":{}},"2026-05":{"key":"2026-05","label":"Maio 2026","rows":[{"b":"Avaliador Dr. Aurelio","d":2000,"t":3000,"_pending":false},{"b":"Comissão de Resgate Brendha - R$ 359.120,00  0,2%","d":718.24,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 508.959,76 )","d":1017.92,"t":0},{"b":"Comissão de Lucro gerencial Jarina 0,5% R$ 163.873,32","d":1319.57,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 49.039,68","d":490.4,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos 1 caso","d":0,"t":2500,"_pending":false},{"b":"Pagamento Dra. Stefany (R$ 500,00 diária 22 dias + 2 sábados = R$ 11.500,00 - R$ 181,67 1/5 meeting + uber meeting R$ 200,00 = R$ )","d":7818.33,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 8.000,00 - 01 tarde e 01 sábado = R$ 7.666,66","d":4666.66,"t":3000},{"b":"Pagamento Dra Ana (R$ 350,00 15 diárias + 4 sábados + diferenã ref a 4,5 horas endo R$ 47,38)","d":2497.38,"t":3500},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 + 01 sábado e 01 tarde R$ 550,00 )","d":2750,"t":0},{"b":"Pagamento Dra. Louize (01 turno tarde R$ 289,47)","d":289.47,"t":0},{"b":"Pagamento Dr. Pedro (03 diárias R$ 400,00 )","d":1200,"t":0},{"b":"Pagamento Protético Junior (R$ 850,00 dia 24 dias = R$  20.400,00 ) R$ 10.000,00 com NF, restante em dinheiro","d":5000,"t":10000},{"b":"Pagamento Uber Meeting Jarina e Brendha","d":398,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Programa Senhorita Festi Queijo 2/4","d":625,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 7-10","d":650,"t":0},{"b":"Pagamento Duda 04 JOGOS MUNICIPAL","d":560,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Pagamento Laboratçrio externo Guilherme","d":205,"t":0},{"b":"Pagamento presente dois anos de clínica Bruna","d":80,"t":0},{"b":"Etanol lab","d":20,"t":0},{"b":"Cafç aniversário Brendha","d":19.97,"t":0},{"b":"Parcela 2/12 curso IA","d":3900,"t":0},{"b":"Pagamento Avaliação de colaboradores (todos nota mçxima)","d":700,"t":0},{"b":"Pagamento TRçS diárias anestesiologia Dr Bruno","d":7500,"t":0},{"b":"Pagamento Rádio","d":9000,"t":0},{"b":"Pagamento assistçncia tçcnica - Ritieli","d":1650,"t":0},{"b":"Jantar do queijo e do vinho 1/2","d":800,"t":0},{"b":"Pagamento presente término da pçs Scharles","d":75,"t":0},{"b":"Pagamento lanche Alexia","d":32,"t":0},{"b":"Pagamento festa triçngulo Brendha","d":230,"t":0},{"b":"Pagamento festa triçngulo Jarina","d":230,"t":0},{"b":"Pagamento jantar destaques campeonato municipal Jarina","d":230,"t":0},{"b":"Pagamento jantar destaques campeonato municipal Thais","d":230,"t":0},{"b":"Pagamento lanche despedida Pedro","d":31,"t":0},{"b":"Pagamento calçado Mariele","d":130,"t":0},{"b":"Pagamento bolo reunião equipe","d":50,"t":0},{"b":"Pagamento bonificação implantação CRM (Bruna, Brendha, Alexandre, Jarina)","d":2000,"t":0},{"b":"Pagamento final do campeonato municipal Bruna","d":230,"t":0},{"b":"Pagamento final do campeonato municipal Suelen","d":230,"t":0},{"b":"Pagamento IPTU parcela 1","d":606.5,"t":0},{"b":"Patrocinio telão municipal + jantar destaques","d":2000,"t":0},{"b":"Comissão de vendas Dr. Aurelio","d":15462.58,"t":0,"_cat":"comissoes","_pending":false},{"b":"Pagamento Dr. Aurelio (6,5 dias)","d":0,"t":6500,"_cat":"dentistas","_pending":false}],"acards":{"fluxo":[{"val":515419.15,"desc":""}],"saque":[],"sobra":[],"despesas":[],"dinheiro":[],"fat_bruto":[{"val":711360.42,"desc":""}]}},"2025-07":{"key":"2025-07","label":"Julho 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":13180.43},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":7908.26},{"b":"Comissão de Resgate Brendha - Meta Elite R$ 350.190,00","d":1750.95,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 493.661,56)","d":987.32,"t":0},{"b":"Diferenã salário Jarina","d":242,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 49.410,70","d":494.1,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos (04 casos meia R$ 2.000,00 + 01 caso sozinho R$ 1.500,00","d":0,"t":3500},{"b":"Pagamento Dr. Aurelio (17 dias)","d":0,"t":17000},{"b":"Pagamento Dra. Stefany (mensal R$ 8.000,00 - 01tarde + 01 sábado (R$ 320,00) = R$ 7.680,00) - descontado do total R$ 260,00 ingressos palestra ACI (SALçRIO REAJUSTADO)","d":3920,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00 - ausçncias 01 diária (280,00) = R$ 6.720,00)  (SALçRIO REAJUSTADO)","d":3720,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(03 sábados R$ 160,00)","d":480,"t":0},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00)","d":2200,"t":0},{"b":"Pagamento Dra. Louize (03 diárias R$ 500,00 + 01 sábado R$ 330,00 + 02 tardes R$ 289,50","d":2409,"t":0},{"b":"Pagamento Dr. Pedro (04 diárias R$ 400,00)","d":1600,"t":0},{"b":"Pagamento Dr. Narton (23 diárias a R$ 600,00)","d":0,"t":13800},{"b":"Pagamento Protético Junior (R$ 800,00 dia 25 dias = R$  20.000,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":14000,"t":6000},{"b":"Pagamento Dr. Mateus (clçnico geral - 05 diárias a R$ 300,00)","d":1500,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Missa Caravaggio 2-2","d":400,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 2-10","d":650,"t":0},{"b":"Pagamento Parcela 5-5 patrocínio da Rádio no campeonato Citadino","d":1000,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Bonificação Bruna - Supervisão da Recepção","d":500,"t":0},{"b":"Pagamento Comerciais do municipal de campo 2-3","d":1000,"t":0},{"b":"Pagamento Vale Refeição Andressa (4 faltas 36,00)","d":164,"t":0},{"b":"Pagamento parcela 3 IPTU clínica","d":580,"t":0},{"b":"Pagamento Parcela 1 realocação dos ares","d":2418,"t":0},{"b":"Pagamento serviços assistencia tçcnica","d":665,"t":0},{"b":"Pagamento salário Andressa (descontado 01 dia de falta + 14:42 H.E 50% + 0:50 H.E 75%)","d":2147.53,"t":0},{"b":"Pagamento  Patrocinio Churrasco Kaefer","d":1300,"t":0},{"b":"Compra de folhas coloridas e itens para cestas de brinde","d":32,"t":0},{"b":"Patrocinio festa Comunidade Linha Comprida","d":800,"t":0},{"b":"Pagamento 3 ingressos festa do Colono Linha Torino","d":195,"t":0},{"b":"Pagamento deslocamento + agua e refri  para equipe festa do colono Linha Torino e Linha Comprida","d":172,"t":0},{"b":"Pagamento Brendha - trabalhou no Festi Queijo","d":250,"t":0},{"b":"Pagamento 2 ingressos Festa do Colono Santa Luiza","d":150,"t":0},{"b":"Pagamento itens para cesta pçs-operatçria","d":170.65,"t":0},{"b":"Pagamento bolinhos para cesta pçs-operatçria","d":25.5,"t":0},{"b":"Pagamento Colaborador do Mês Thais","d":200,"t":0},{"b":"Pagamento Rudi gamela para sorteio no jantar do gringos da serra + tçbua para sorteio em ação interna","d":340,"t":0},{"b":"Diferenã de salário Alexandre (30,00 mes de julho + 250,00 agosto)","d":280,"t":0},{"b":"Pagamento bandeja para cesta de sorteio de festas comunidade","d":53.7,"t":0},{"b":"Pagamento bota recepcionista Andressa","d":50,"t":0},{"b":"Pagamento Guilherme - contenções orto","d":120,"t":0},{"b":"Pagamento Tabua Brinde para evento cervejaria Kaefer","d":130,"t":0},{"b":"Pagamento Marcelo Barras e armações protocolo","d":3630,"t":0}],"acards":{}},"2025-09":{"key":"2025-09","label":"Setembro 2025","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos R$ 9.838,94","d":100,"t":9738.94},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":5903.37},{"b":"Comissão de Resgate Brendha - Meta Excelçncia R$ 253.720,00","d":1014.88,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 460.778,54)","d":921.56,"t":0},{"b":"Diferenã salário Jarina","d":240,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 28.420,28","d":284.2,"t":0},{"b":"Bonificação auxilio na recepção e relacionamento Alexandre","d":200,"t":0},{"b":"Pagamento Dr Aurelio 5 casos de Zigomáticos","d":0,"t":7500},{"b":"Pagamento Dr. Aurelio (16,5 dias +  02 sábados)","d":0,"t":17500},{"b":"Pagamento Dra. Stefany (mensal R$ 8.000,00 - 02 sábados (R$ 153,10 cada) - 01 feriado (R$ 363,63) = R$ 7.330,17","d":3830.17,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00 - 01 dia (R$ 291,66) - 01 feriado sábado ( R$ 122,80) - 01:30 (R$ 45,70)=  R$ 6.539,84","d":3539.84,"t":3000},{"b":"Pagamento Dra. Laura - a partir de Janeiro 2025 apenas turno no sábado(03 sábados R$ 160,00)","d":480,"t":0},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00)","d":2200,"t":0},{"b":"Pagamento Dra. Louize (02 diárias R$ 500,00)","d":1000,"t":0},{"b":"Pagamento Dr. Pedro (05 diárias R$ 400,00)","d":0,"t":2000},{"b":"Pagamento Dr. Narton (21 diárias a R$ 600,00 - 01:30 horas 29/09 R$ 94,72)","d":0,"t":12505.28},{"b":"Pagamento Protético Junior (R$ 800,00 dia 23 dias = R$  18.400,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":12400,"t":6000},{"b":"Pagamento Dr. Mateus (clçnico geral - 01 diárias a R$ 300,00)","d":300,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":2000,"t":0},{"b":"Pagamento Programa festa do colono e Motorista","d":500,"t":0},{"b":"Pagamento programa ACBF rumo aos 50 4-6","d":650,"t":0},{"b":"Pagamento Parcela 2-3 Programação Festi Queijo Rádio Estação","d":500,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Bonificação Bruna - Supervisão da Recepção","d":500,"t":0},{"b":"Pagamento parcela 5 IPTU clínica","d":596,"t":0},{"b":"Pagamento Parcela 3/10 realocação dos ares","d":2414,"t":0},{"b":"Pagamento serviços assistencia tçcnica (Total R$ 2.740,00/2(descontado R$ 10,00 adiantado)  parcela 1","d":1370,"t":0},{"b":"Pagamento Bruna e Thais (festa da melhor idade)","d":460,"t":0},{"b":"Pagamento 02 dias Recepcionista Rosicleia + 02 dias de vale R$ 9,00 (teste)","d":190.72,"t":0}],"acards":{}},"2026-01":{"key":"2026-01","label":"Janeiro 2026","rows":[{"b":"Avaliadora Dra. Mone","d":0,"t":5000},{"b":"Comissão de Vendas Dra. Mone = 2,5% - distratos","d":0,"t":12464.25},{"b":"Comissão Ageodonto (Bruto 1,5% - distratos)","d":0,"t":7478.55},{"b":"Comissão de Resgate Brendha - R$ 214.870,00  0,2%","d":429.74,"t":0},{"b":"Comissão Fluxo de Caixa Brendha (0.2% R$ 471.487,53 )","d":942.97,"t":0},{"b":"Comissão de Cobrança Alexandre - 1% - R$ 27.413,30","d":274.13,"t":0},{"b":"Pagamento Dr Aurelio casos de Zigomáticos 1 caso","d":0,"t":1500},{"b":"Pagamento Dr. Aurelio (18 dias + 3 sábados)","d":15000,"t":4000},{"b":"Pagamento Dra. Stefany (R$ 500,00 diária19 dias + 2 sábados)","d":6500,"t":3500},{"b":"Pagamento Dr. Scharles (mensal R$ 7.000,00 - mes cheio)","d":4000,"t":3000},{"b":"Pagamento Dra Ana (R$ 350,00 12 diárias + 4 sábados)","d":4900,"t":0},{"b":"Pagamento Dra. Fernanda (04 diárias R$ 550,00 + 01 sábado e 01 tarde R$ 550,00 )","d":2750,"t":0},{"b":"Pagamento Dra. Louize (01 dia a R$ 500,00 + 01 turno tarde R$ 289,47)","d":500,"t":0},{"b":"Pagamento Dr. Pedro (03 diárias R$ 400,00 + 30 minutos 12/01)","d":0,"t":1226},{"b":"Pagamento Protético Junior (R$ 850,00 dia 22 dias = R$  18.800,00 ) R$ 6.000,00 com NF, restante em dinheiro","d":11850,"t":6000},{"b":"Pagamento Assistçncia tçcnica Ritieli (bloco e consultçrios)","d":1400,"t":0},{"b":"Pagamento Aux de Prótese Fran (mensal)","d":1820,"t":0},{"b":"Pagamento Programa Senhorita Festi Queijo 3/4","d":625,"t":0},{"b":"Pagamento Marta - Serviços Gerais PJ","d":0,"t":2000},{"b":"Ref a patrocinio e 2 ingressos para Festa de comunidade do dia 08/02/2025","d":350,"t":0},{"b":"Pagamento captação interna - 50 aval recepção Bruna","d":250,"t":0},{"b":"Pagamento bonificação Marketing Bruna 100%","d":500,"t":0},{"b":"Pagamento Captação interna - 50 aval gerente Jarina","d":250,"t":0},{"b":"Pagamento funcionário do Mes Scharles","d":300,"t":0},{"b":"Pagamento Kaefer copor 1-3","d":800,"t":0},{"b":"Pagamento parcela 2-4 celular mkt","d":530,"t":0},{"b":"Pagamento 3/6 camiseta, lanche, gasolina e pedçgio jogo do Gremio","d":104.97,"t":0},{"b":"Pagamento Parcela 8/10 realocação dos ares","d":2418,"t":0},{"b":"Pagamento Contenções Guilherme","d":165,"t":0},{"b":"Pagamento Avaliação de colaboradores","d":600,"t":0},{"b":"Pagamento instrumentais Dr Aurelio 3-3","d":820,"t":0},{"b":"Pagamento Rádio","d":9000,"t":0},{"b":"Pagamento lanche equipe","d":46.3,"t":0},{"b":"Pagamento reset impressora recepção","d":130,"t":0},{"b":"Pagamento medicação bloco","d":33.38,"t":0},{"b":"Pagamento caneta bloco","d":2150,"t":0},{"b":"Pagamento boleto implantes e componentes 2/2","d":342.74,"t":0},{"b":"Pagamento boleto kits higiene bucal para brinde em evento centro dos idosos","d":206,"t":0},{"b":"Pagamento boleto laboratçrio alinhadores Jonas Kafer 2/3","d":136,"t":0},{"b":"Pagamento boleto cota capital Unicred","d":45,"t":0},{"b":"Pagamento boleto insumos dental 2/5","d":1722.5,"t":0},{"b":"Pagamento boleto insumos laboratçrio 2/5","d":1039.8,"t":0},{"b":"Pagamento Boleto Power BI","d":300.04,"t":0},{"b":"Pagamento boleto componentes  12/24","d":27.16,"t":0},{"b":"Pagamento boleto implantes e componentes 12/24","d":40.7,"t":0},{"b":"Pagamento Contribuição Assistencial","d":134.77,"t":0},{"b":"Pagamento boleto parte do pedido programado de implantes e componentes  anual 2/24","d":1400.57,"t":0},{"b":"Pagamento boleto parte pedido programado  de implantes e componentes anual 2/24","d":127.24,"t":0},{"b":"Pagamento Cota Capital Fev","d":45,"t":0},{"b":"Pagamento Fundo de Propaganda","d":4770.62,"t":0},{"b":"Pagamento Tim","d":130.26,"t":0},{"b":"Pagamento Caixa para presente 2 anos clínica Scharles","d":11.9,"t":0},{"b":"Pagamento medicações sedação","d":717.94,"t":0},{"b":"Pagamento Giga","d":603.5,"t":0}],"acards":{}}};
+  localStorage.setItem('ou_athena_fechamento', JSON.stringify(seed));
+  localStorage.setItem(SEED_KEY,'1');
+  console.log('[Athena] Fechamento: ' + Object.keys(seed).length + ' meses migrados do Desktop');
+})();
+</script>
+</body>
+</html>
