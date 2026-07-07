@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Antes e Depois — Oral Unic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -161,7 +163,7 @@ _fbLoad();
   --azul: #2563eb; --azul-light: #1d4ed8;
   --bg: #f8f5f0;
 }
-body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #1a0f0a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: #1a0f0a; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
 .header { background: var(--vinho); color: var(--marfim); padding: 14px 24px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 .header-title { font-size: 1rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
@@ -949,7 +951,7 @@ function abrirSimulador(nomeOverride) {
   const label = document.getElementById('simulador-pac-label');
 
   // Monta URL com nome como query param para pré-preencher o campo
-  const url = 'https://simulador-sorriso-giq5lgw1d-iaoraluniccb-8815s-projects.vercel.app/index.html' + (nome ? '?nome=' + encodeURIComponent(nome) : '');
+  const url = 'https://sistemaathena.app.br/simulador-sorriso/index.html' + (nome ? '?nome=' + encodeURIComponent(nome) : '');
   frame.src = url;
 
   if (nome) {

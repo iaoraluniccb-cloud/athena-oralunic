@@ -936,9 +936,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const hoje = new Date();
     const y = hoje.getFullYear();
-    const m = String(hoje.getMonth()+1).padStart(2,'0');
-    const d = String(hoje.getDate()).padStart(2,'0');
-    document.getElementById('dataCirurgia').min = `${y}-${m}-${d}`;
+    // Sem restrição de data mínima — permite simular datas passadas
   });
 </script>
 </body>

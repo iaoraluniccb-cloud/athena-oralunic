@@ -587,7 +587,7 @@ function renderFechamento(){
     { key:'despesas',  label:'Despesas',          autoVal: despesasAuto,         sub: resumo.despesas!=null?'da planilha':`${rows.length} pagamentos` },
     { key:'dinheiro',  label:'Dinheiro',          autoVal: dinheiroAutoVal,      sub: resumo.dinheiro!=null?'da planilha':`${rows.filter(r=>r.d>0).length} saídas` },
     { key:'saque',     label:'Saque',             autoVal: saqueAutoVal,         sub: saqueAutoVal!=null?'da planilha':'manual' },
-    { key:'sobra',     label:'Sobra de Caixa',    autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, signed:true },
+    { key:'sobra',     label:'Sobra de Caixa do Mês Anterior',    autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, signed:true },
   ];
 
   if(!month.acards) month.acards = {};

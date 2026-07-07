@@ -185,7 +185,13 @@ body {
 }
 .nav-item .icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; display:flex; align-items:center; justify-content:center; }
 /* ── Favoritos ── */
-#group-favoritos { display: block; }
+#group-favoritos { display: block; background: #6A1F30 !important; border-radius: 8px; margin: 0 8px 4px 8px; padding: 2px 0; }
+#group-favoritos .fav-clone,
+#group-favoritos .fav-clone * { color: rgba(253,249,244,0.85) !important; }
+#group-favoritos .fav-clone { background: transparent !important; display: flex !important; opacity: 1 !important; }
+#group-favoritos .fav-clone:hover { background: rgba(253,249,244,0.1) !important; }
+#group-favoritos .fav-clone .icon svg { stroke: rgba(253,249,244,0.85) !important; fill: none !important; }
+#group-favoritos .fav-empty { color: rgba(253,249,244,0.35) !important; }
 .fav-star {
   margin-left: auto;
   font-size: 15px;
@@ -216,6 +222,28 @@ body {
   font-style: italic;
   font-family: 'Nunito', sans-serif;
 }
+/* ── Seção Favoritos — fundo vinho, texto marfim ── */
+#group-favoritos {
+  background: var(--vinho-deep);
+  border-radius: 8px;
+  margin: 0 8px 4px 8px;
+  padding: 2px 0;
+}
+#group-favoritos .fav-clone {
+  color: rgba(253,249,244,0.85) !important;
+  background: transparent !important;
+}
+#group-favoritos .fav-clone:hover {
+  color: #fdf9f4 !important;
+  background: rgba(253,249,244,0.1) !important;
+}
+#group-favoritos .fav-clone.active {
+  color: #fdf9f4 !important;
+  background: rgba(253,249,244,0.15) !important;
+}
+#group-favoritos .fav-clone .icon svg { stroke: rgba(253,249,244,0.85) !important; }
+#group-favoritos .fav-clone .nav-label { color: inherit !important; }
+#group-favoritos .fav-empty { color: rgba(253,249,244,0.35); }
 
 /* Itens principais — creme */
 .nav-item.nav-destaque,
@@ -1912,7 +1940,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
     <div class="page-panel" id="page-prontuarios">
       <iframe class="page-iframe" id="iframe-prontuarios"
         src="about:blank"
-        data-src="https://athena-prontuario-server.onrender.com/index.html"
+        data-src="https://athena-api-vercel.vercel.app/index.html"
         allow="*"></iframe>
     </div>
 
@@ -2000,7 +2028,7 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
     <div class="page-panel" id="page-dio">
       <iframe class="page-iframe" id="iframe-dio"
         src="about:blank"
-        data-src="https://athena-prontuario-server.onrender.com/dio-v2.html"
+        data-src="https://athena-api-vercel.vercel.app/dio-v2.html"
         allow="*"></iframe>
     </div>
 
@@ -2088,12 +2116,10 @@ body.pode-editar-home .home-edit-btn { display: inline-flex; align-items: center
 
     <!-- ──────────── GERADOR DE PROPOSTA ──────────── -->
     <div class="page-panel" id="page-gerador-proposta">
-      <div class="placeholder-page">
-        <div class="placeholder-icon">📝</div>
-        <div class="placeholder-title">Gerador de Proposta</div>
-        <div class="placeholder-sub">Propostas comerciais personalizadas para tratamentos</div>
-        <div class="placeholder-badge">Em desenvolvimento</div>
-      </div>
+      <iframe class="page-iframe" id="iframe-gerador-proposta"
+        src="about:blank"
+        data-src="projects/sistema-integrado-oral-unic/gerador-proposta.html"
+        allow="*"></iframe>
     </div>
 
     <!-- ──────────── CALCULADORA RELACIONAMENTO (iframe) ──────────── -->
@@ -3215,6 +3241,14 @@ function _favRender(uid) {
   var emptyEl = document.getElementById('fav-empty-msg');
   if (!group) return;
 
+  // Aplica estilo do container via JS para garantir independente de cache CSS
+  if (!document.getElementById('_fav-style')) {
+    var st = document.createElement('style');
+    st.id = '_fav-style';
+    st.textContent = '#group-favoritos{background:var(--vinho-deep)!important;border-radius:8px;margin:0 8px 4px 8px;padding:2px 0}#group-favoritos .fav-clone{color:rgba(253,249,244,0.85)!important;background:transparent!important}#group-favoritos .fav-clone:hover{color:#fdf9f4!important;background:rgba(253,249,244,0.1)!important}#group-favoritos .fav-clone .nav-label{color:rgba(253,249,244,0.85)!important}#group-favoritos .fav-clone .icon svg{stroke:rgba(253,249,244,0.85)!important}#group-favoritos .fav-empty{color:rgba(253,249,244,0.35)!important}';
+    document.head.appendChild(st);
+  }
+
   // Remove clones antigos (mantém só #fav-empty-msg)
   Array.from(group.querySelectorAll('.fav-clone')).forEach(function(el){ el.remove(); });
 
@@ -3225,12 +3259,27 @@ function _favRender(uid) {
   if (emptyEl) emptyEl.style.display = 'none';
 
   list.forEach(function(page) {
-    var orig = document.querySelector('.nav-item[data-page="' + page + '"]');
-    if (!orig || orig.closest('#group-favoritos')) return;
+    // Busca o original fora do grupo de favoritos explicitamente
+    var allMatches = document.querySelectorAll('.nav-item[data-page="' + page + '"]');
+    var orig = null;
+    for (var i = 0; i < allMatches.length; i++) {
+      if (!allMatches[i].closest('#group-favoritos')) { orig = allMatches[i]; break; }
+    }
+    if (!orig) return;
     var clone = orig.cloneNode(true);
     clone.classList.add('fav-clone');
+    clone.classList.remove('active');
+    clone.classList.remove('nav-destaque'); // evita CSS conflitante de cor
+    clone.removeAttribute('style');
+    clone.style.display = 'flex';
+    clone.style.opacity = '1';
+    clone.style.pointerEvents = 'auto';
     // Remove qualquer onclick inline herdado do original
     clone.removeAttribute('onclick');
+    var labelInClone = clone.querySelector('.nav-label');
+    if (labelInClone) labelInClone.style.color = 'var(--vinho-deep)';
+    var iconInClone = clone.querySelector('.icon svg');
+    if (iconInClone) iconInClone.style.stroke = 'var(--vinho-deep)';
     var starInClone = clone.querySelector('.fav-star');
     if (starInClone) {
       starInClone.textContent = '★';
@@ -3352,9 +3401,14 @@ function nav(btn) {
   // Deactivate old — só mexe nos 2 elementos ativos, não em todos os 32
   if (_activeNavBtn)   _activeNavBtn.classList.remove('active');
   if (_activeNavPanel) _activeNavPanel.classList.remove('active');
+  // Remove active de qualquer clone/original do item anterior
+  if (_activeNavBtn) {
+    var _oldPage = _activeNavBtn.dataset.page;
+    document.querySelectorAll('.nav-item[data-page="' + _oldPage + '"]').forEach(function(el){ el.classList.remove('active'); });
+  }
 
-  // Activate new
-  btn.classList.add('active');
+  // Activate new — marca tanto o clicado quanto seu par (original ↔ clone)
+  document.querySelectorAll('.nav-item[data-page="' + page + '"]').forEach(function(el){ el.classList.add('active'); });
   const panel = document.getElementById('page-' + page);
   if (panel) panel.classList.add('active');
 
@@ -4158,7 +4212,7 @@ function toggleSidebar() {
     sessionStorage.setItem('athena_logged_in', user.id);
     try { document.dispatchEvent(new CustomEvent('athena:loggedin', { detail: user })); } catch(e){}
     // Warm-up: acorda o Render server antes do usuário navegar para Prontuários/DIO
-    try { fetch('https://athena-prontuario-server.onrender.com/api/me', { method:'GET', mode:'no-cors' }).catch(function(){}); } catch(e){}
+    try { fetch('https://athena-api-vercel.vercel.app/api/me', { method:'GET', mode:'no-cors' }).catch(function(){}); } catch(e){}
     try { atualizarSidebarUser(user); } catch(e){}
     try { atualizarBdayAvatars(); } catch(e){}
     try { aplicarPermissoes(user.id); } catch(e){}
@@ -4336,7 +4390,7 @@ function toggleSidebar() {
     setTimeout(function(){ errEl.textContent = ''; }, 2500);
   }
 
-  var _AUTH_SERVER = 'https://athena-prontuario-server.onrender.com';
+  var _AUTH_SERVER = 'https://athena-api-vercel.vercel.app';
 
   function _confirmarSenha() {
     var entered = (document.getElementById('pwd-modal-input').value || '').trim();
@@ -4969,6 +5023,7 @@ function aplicarPermissoes(userId) {
   var permitido = PERMISSOES[userId] || PERMISSOES[userId.replace(/_/g,'-')] || PERMISSOES[userId.replace(/-/g,'_')];
   var navItems = document.querySelectorAll('.nav-item[data-page]');
   navItems.forEach(function(btn) {
+    if (btn.closest('#group-favoritos')) return; // clones de favoritos não recebem restrição
     var page = btn.getAttribute('data-page');
     var liberado = (permitido === '*') || (Array.isArray(permitido) && permitido.indexOf(page) !== -1);
 
@@ -6546,7 +6601,7 @@ window.lcropConfirmar = function() {
     ],
   };
 
-  var _SERVER = 'https://athena-prontuario-server.onrender.com';
+  var _SERVER = 'https://athena-api-vercel.vercel.app';
   var _CONFIG_URL = 'https://eeqpvuaigqzclpompxao.supabase.co/storage/v1/object/public/config/home.json';
   var _CONFIG_UPLOAD_URL = 'https://eeqpvuaigqzclpompxao.supabase.co/storage/v1/object/config/home.json';
   // Anon key — apenas para leitura pública; escrita via server
@@ -9158,31 +9213,64 @@ window.addEventListener('message', function(e) {
   // Perfil do Paciente finalizou tour → guarda nome e abre Antes e Depois
   if (e.data && e.data.type === 'abrir_antes_depois') {
     var nome = e.data.nome || '';
-    if (nome) _athenaUltimoNomeTour = nome; // guarda em memória para o DIO
+    var obs  = e.data.obs  || '';
+    if (nome) _athenaUltimoNomeTour = nome;
 
     // 1. Navegar para a aba Antes e Depois
     var btnAD = document.querySelector('[data-page="antes-depois"]');
     if (btnAD) btnAD.click();
 
-    // 2. Aguarda iframe carregar e repassa a mensagem
+    // 2. Garante que o iframe carregue e só então envia a mensagem
     var iframe = document.getElementById('iframe-antes-depois');
+    if (!iframe) return;
+
     function _enviarParaAD() {
-      if (!iframe) return;
+      // Ativa o src se ainda não carregou
       if (!iframe.src || iframe.src === 'about:blank') {
-        iframe.src = iframe.getAttribute('data-src');
+        iframe.src = iframe.getAttribute('data-src') || '';
       }
+
+      var _jaEnviou = false;
+
+      // Tenta via polling — aguarda o iframe estar responsivo (listener registrado)
       var tentativas = 0;
       var intervalo = setInterval(function() {
         tentativas++;
         try {
-          iframe.contentWindow.postMessage({ type: 'novo_paciente_antes_depois', nome: nome, obs: e.data.obs || '' }, '*');
-          clearInterval(intervalo);
+          iframe.contentWindow.postMessage({ type: 'novo_paciente_antes_depois', nome: nome, obs: obs }, '*');
+          // Aguarda confirmação de volta para saber que foi recebido
+          // Como o antes-depois.html não envia confirmação, usamos um timeout maior
+          // e enviamos múltiplas vezes para garantir (idempotente: cria paciente só se não existir)
+          if (tentativas >= 5) {
+            clearInterval(intervalo);
+            _jaEnviou = true;
+          }
         } catch(err) {
-          if (tentativas > 20) clearInterval(intervalo);
+          if (tentativas > 30) clearInterval(intervalo);
         }
-      }, 300);
+      }, 500);
+
+      // Fallback via onload: se o iframe ainda não carregou, reenviar quando terminar
+      iframe.addEventListener('load', function _onLoad() {
+        iframe.removeEventListener('load', _onLoad);
+        if (_jaEnviou) return;
+        clearInterval(intervalo);
+        setTimeout(function() {
+          try {
+            iframe.contentWindow.postMessage({ type: 'novo_paciente_antes_depois', nome: nome, obs: obs }, '*');
+          } catch(_) {}
+          // Segunda tentativa 800ms depois para garantir que o listener já está registrado
+          setTimeout(function() {
+            try {
+              iframe.contentWindow.postMessage({ type: 'novo_paciente_antes_depois', nome: nome, obs: obs }, '*');
+            } catch(_) {}
+          }, 800);
+        }, 400);
+      });
     }
-    setTimeout(_enviarParaAD, 600);
+
+    // Pequeno delay para a navegação de aba concluir antes de começar
+    setTimeout(_enviarParaAD, 300);
   }
 
   // DIO pede o nome do último tour → responde direto para o iframe remetente
@@ -9721,12 +9809,58 @@ async function _saveServicos() {
 // ── Helpers ───────────────────────────────────
 function _esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ── Seed de recuperação — dados backup ────────
+var _SEED_SENHAS = [
+  {id:'s01',titulo:'Email ADM',usuario:'administrativo@oralunicb.com.br',senha:'Jani-1987 / 9GH1V5V5'},
+  {id:'s02',titulo:'Email Dra. Mone',usuario:'dra.mone@oralunicb.com.br',senha:'Oralunic10'},
+  {id:'s03',titulo:'Gmail Recepção',usuario:'recepcao.oraluniecb@gmail.com',senha:'SORRISO-UNICO'},
+  {id:'s04',titulo:'Gmail Administrativo',usuario:'adm.oucb@gmail.com',senha:'Vivadefrente2024'},
+  {id:'s05',titulo:'Dental Cremer',usuario:'CNPJ',senha:'Alpha@0910'},
+  {id:'s06',titulo:'Dentae Speed',usuario:'Email ADM',senha:'Alpha@0910'},
+  {id:'s07',titulo:'Mercado Livre',usuario:'ORAL0BAI20230103213605',senha:'SORRISO-UNICO'},
+  {id:'s08',titulo:'Magazine Luiza',usuario:'Email ADM',senha:'alpha0910'},
+  {id:'s09',titulo:'Magazine Médica',usuario:'Email ADM',senha:'Janina-1987'},
+  {id:'s10',titulo:'Kabum',usuario:'Email ADM',senha:'Jani-1987'},
+  {id:'s11',titulo:'Cenprot',usuario:'Email ADM',senha:'SORRISO-UNICO'},
+  {id:'s12',titulo:'Pro-Rad',usuario:'AA20 / laizmore@gmail.com',senha:'alpha0910'},
+  {id:'s13',titulo:'VR (Vale Refeição)',usuario:'laizmore@gmail.com',senha:'Vivadefrente24'},
+  {id:'s14',titulo:'TIM / Meu TIM',usuario:'154891609',senha:'6366'},
+  {id:'s15',titulo:'RGE',usuario:'laizmore@gmail.com',senha:'Sorriso_unico0'},
+  {id:'s16',titulo:'Shop Straumann / Neodent',usuario:'Email ADM',senha:'SORRISO-UNICO'},
+  {id:'s17',titulo:'Google Ads',usuario:'Email ADM',senha:'Sorriso-unico'},
+  {id:'s18',titulo:'Skype — Consultório 1',usuario:'Email ADM / Fone recepção',senha:'Jani-1987'},
+  {id:'s19',titulo:'FEPAM — MTR',usuario:'CNPJ 47.048.457/0001-30',senha:'dca9a7'},
+  {id:'s20',titulo:'Athena — Thais',usuario:'thais',senha:'moviski'},
+  {id:'s21',titulo:'OralunicAligner',usuario:'Email ADM',senha:'Jani-1987'},
+  {id:'s22',titulo:'WiFi OralUnic',usuario:'OralUnic_Wifi',senha:'sorrisounico'},
+  {id:'s23',titulo:'WiFi Visitantes',usuario:'ORAL VISITANTES',senha:'syabemvindo'},
+  {id:'s24',titulo:'Portal CRO',usuario:'CNPJ',senha:'Brasil99 (tudo junto)'},
+  {id:'s25',titulo:'Kwid — Portal KION',usuario:'Email ADM',senha:'Oral@03'},
+  {id:'s26',titulo:'Portal Prefeitura NF',usuario:'47048457000130',senha:'Brasil99@'},
+  {id:'s27',titulo:'Flash Benefícios',usuario:'Email ADM / CPF Jari',senha:'Orae@0310'},
+  {id:'s28',titulo:'Unicad',usuario:'Código 6014',senha:'Ramais: 372919 / JARINA / 2184'},
+  {id:'s29',titulo:'Água',usuario:'CNPJ',senha:'842403'},
+  {id:'s30',titulo:'Trello Manu',usuario:'—',senha:'oralunic123'},
+  {id:'s31',titulo:'Amazon',usuario:'Oral Unic CB',senha:'VIVADEFRENTE 23'},
+  {id:'s32',titulo:'iPhone MKR',usuario:'Apple ID: Beta@111022',senha:'671022'},
+  {id:'s33',titulo:'Email Financeiro — Alexandre',usuario:'financeiro.oraluniccb@gmail.com',senha:'FIN15ER33'},
+  {id:'s34',titulo:'Claudia',usuario:'dra.mone@oraluniccb.com.br',senha:'Alpha@09 / Alpha1983'},
+  {id:'s35',titulo:'OV-ADM',usuario:'OV-ADM',senha:'Vivadefrente1410 / sorrisounico'},
+];
+
 // ── Carregamento inicial + onSnapshot ─────────
 async function _init() {
   try {
     var snapS = await getDoc(REF_SENHAS);
-    if (snapS.exists()) _senhas = JSON.parse(snapS.data().data || '[]');
-  } catch(e){}
+    if (snapS.exists()) {
+      var loaded = JSON.parse(snapS.data().data || '[]');
+      _senhas = loaded.length > 0 ? loaded : _SEED_SENHAS;
+      if (loaded.length === 0) { await setDoc(REF_SENHAS, { data: JSON.stringify(_SEED_SENHAS) }); }
+    } else {
+      _senhas = _SEED_SENHAS;
+      await setDoc(REF_SENHAS, { data: JSON.stringify(_SEED_SENHAS) });
+    }
+  } catch(e){ _senhas = _SEED_SENHAS; }
   try {
     var snapSv = await getDoc(REF_SERVICOS);
     if (snapSv.exists()) _servicos = JSON.parse(snapSv.data().data || '[]');

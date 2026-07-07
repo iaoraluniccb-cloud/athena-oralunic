@@ -38,7 +38,7 @@
     --blue:     #1e40af;
     --gray:     #475569;
     --purple:   #6b21a8;
-    --radius:   10px;
+    --radius:   14px;
     --shadow:   0 4px 24px rgba(58,35,24,0.12);
 
     /* Typography */
@@ -50,28 +50,28 @@
   body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-weight: 300; min-height: 100vh; }
 
   /* HEADER */
-  .header { background: var(--vinho-p); border-bottom: 2px solid var(--cobre); padding: 0 32px; display: flex; align-items: center; gap: 20px; height: 68px; }
+  .header { display: none !important; }
   .logo { font-family: var(--font-display); font-size: 22px; font-weight: 300; color: var(--marfim); letter-spacing: 0.25em; text-transform: uppercase; }
   .logo-sub { font-family: var(--font-body); font-size: 11px; font-weight: 300; color: var(--warm); letter-spacing: 0.28em; text-transform: uppercase; margin-left: 10px; opacity: .8; }
   .logo-divider { width: 1px; height: 28px; background: var(--vinho-c); margin: 0 12px; opacity: .5; }
 
   /* MAIN TABS — estilo Athena month-pill */
   .tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-  .tab { padding: 5px 14px; border-radius: 14px; border: 1px solid var(--warm); background: transparent; color: var(--moka); font-family: var(--font-body); font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all .2s; }
-  .tab:hover { background: var(--creme); border-color: var(--cobre); color: var(--vinho); }
-  .tab.active { background: var(--cobre); color: var(--marfim); border-color: var(--cobre); font-weight: 600; }
-  .tab-badge { display: inline-block; background: rgba(139,45,66,0.15); color: var(--vinho); border-radius: 10px; padding: 1px 7px; font-size: 10px; margin-left: 4px; }
+  .tab { padding: 7px 18px; border-radius: 20px; border: 1px solid var(--warm); background: transparent; color: var(--moka); font-family: var(--font-body); font-size: 11px; font-weight: 500; letter-spacing: 0.10em; text-transform: uppercase; cursor: pointer; transition: all .2s; }
+  .tab:hover { background: var(--blush); border-color: var(--cobre); color: var(--vinho); }
+  .tab.active { background: var(--vinho); color: var(--marfim); border-color: var(--vinho); font-weight: 600; box-shadow: 0 2px 8px rgba(139,45,66,.25); }
+  .tab-badge { display: inline-block; background: rgba(255,255,255,0.22); color: inherit; border-radius: 10px; padding: 1px 7px; font-size: 10px; margin-left: 4px; }
 
   /* MAIN */
-  .main { padding: 24px 28px; }
+  .main { padding: 24px 28px; font-family: var(--font-body); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
   /* SUB-TABS (Negativação) */
   .subtabs { display: flex; gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
-  .subtab { padding: 9px 20px; border-radius: 8px 8px 0 0; border: none; background: transparent; color: var(--text2); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; position: relative; bottom: -1px; border-bottom: 2px solid transparent; }
-  .subtab:hover { color: var(--text); background: var(--border); }
-  .subtab.active { color: var(--vinho-p); border-bottom: 2px solid var(--vinho); background: var(--surface); }
+  .subtab { padding: 10px 22px; border-radius: 10px 10px 0 0; border: none; background: transparent; color: var(--text2); font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; position: relative; bottom: -1px; border-bottom: 2px solid transparent; font-family: var(--font-body); }
+  .subtab:hover { color: var(--vinho); background: var(--blush); }
+  .subtab.active { color: var(--vinho-p); border-bottom: 2px solid var(--vinho); background: var(--surface); font-weight: 600; }
   .subtab-badge { display: inline-block; border-radius: 10px; padding: 1px 7px; font-size: 11px; margin-left: 5px; background: var(--surface2); color: var(--text2); }
   .subtab-content { display: none; }
   .subtab-content.active { display: block; }
@@ -80,8 +80,8 @@
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
   .section-title { font-size: 20px; font-weight: 700; }
   .section-title span { color: var(--text2); font-size: 14px; font-weight: 400; margin-left: 10px; }
-  .btn-primary { background: var(--vinho); color: var(--marfim); border: none; border-radius: 8px; padding: 9px 20px; font-size: 12px; font-weight: 400; letter-spacing:.08em; font-family:var(--font-body); cursor: pointer; transition: background .2s; display: flex; align-items: center; gap: 6px; }
-  .btn-primary:hover { background: var(--vinho-p); }
+  .btn-primary { background: var(--vinho); color: var(--marfim); border: none; border-radius: 12px; padding: 9px 22px; font-size: 12px; font-weight: 500; letter-spacing:.08em; font-family:var(--font-body); cursor: pointer; transition: background .2s, box-shadow .2s; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(139,45,66,.2); }
+  .btn-primary:hover { background: var(--vinho-p); box-shadow: 0 4px 12px rgba(139,45,66,.3); }
 
   /* LEGEND */
   .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -109,8 +109,8 @@
   .motivo-negativado { background:rgba(107,33,168,.1);color:#6b21a8;border:1px solid rgba(107,33,168,.2); }
 
   /* CARD (renegociação) */
-  .card { background: var(--surface); border-radius: 8px; border: 1px solid var(--border); padding: 14px; cursor: pointer; transition: border-color .2s, box-shadow .2s; position: relative; overflow: hidden; }
-  .card:hover { border-color: var(--vinho); box-shadow: 0 2px 12px rgba(139,45,66,.1); }
+  .card { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); padding: 16px; cursor: pointer; transition: border-color .2s, box-shadow .2s; position: relative; overflow: hidden; }
+  .card:hover { border-color: var(--vinho); box-shadow: 0 4px 16px rgba(139,45,66,.12); }
   .card-contact-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 8px 0 0 8px; }
   .card-inner { padding-left: 8px; }
   .card-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
@@ -125,8 +125,8 @@
   .tag-concluido { background: rgba(139,45,66,0.10); color: var(--vinho); border:1px solid rgba(139,45,66,.2); }
 
   /* BOLETO CARD */
-  .boleto-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 20px; display:flex; align-items:center; gap:18px; transition:border-color .2s,box-shadow .2s; }
-  .boleto-card:hover { border-color:var(--cobre); box-shadow:0 2px 10px rgba(196,149,90,.12); }
+  .boleto-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 20px; display:flex; align-items:center; gap:18px; transition:border-color .2s,box-shadow .2s; }
+  .boleto-card:hover { border-color:var(--cobre); box-shadow:0 4px 14px rgba(196,149,90,.14); }
   .boleto-card.urgente { border-color:#e05252; box-shadow:0 0 0 2px rgba(224,82,82,.18); background:rgba(224,82,82,.04); }
   .boleto-alerta { display:inline-flex; align-items:center; gap:5px; background:#ffeaea; color:#b91c1c; border:1px solid #fca5a5; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:700; }
   .boleto-check-wrap { flex-shrink:0; }
@@ -161,15 +161,15 @@
 
   /* COBRANÇA LOGIN */
   #cob-login-wall { display:flex; align-items:center; justify-content:center; min-height:70vh; }
-  .cob-login-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:40px 44px; width:360px; box-shadow:var(--shadow); }
+  .cob-login-box { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:42px 46px; width:380px; box-shadow:0 8px 32px rgba(58,35,24,.14); }
   .cob-login-logo { font-family:var(--font-display); font-size:28px; font-weight:400; color:var(--vinho); letter-spacing:.25em; text-transform:uppercase; text-align:center; margin-bottom:4px; }
   .cob-login-sub { font-family:var(--font-body); font-size:10px; font-weight:300; letter-spacing:.28em; text-transform:uppercase; color:var(--text2); text-align:center; margin-bottom:28px; }
 
   /* COBRANÇA TOPBAR */
-  .cob-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .cob-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 18px; }
 
   /* COBRANÇA TABLE */
-  .cob-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .cob-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 2px 10px rgba(58,35,24,.05); }
   .cob-table { width:100%; border-collapse:collapse; font-size:13px; }
   .cob-table th { background:var(--vinho-p); color:var(--warm); font-family:var(--font-body); font-size:10px; font-weight:400; letter-spacing:.28em; text-transform:uppercase; padding:12px 14px; text-align:left; border-bottom:2px solid var(--cobre); }
   .cob-table td { padding:11px 14px; border-bottom:1px solid var(--border); vertical-align:middle; color:var(--tinta); }
@@ -202,8 +202,8 @@
   .neg-list { display: flex; flex-direction: column; gap: 12px; }
   .des-card + .des-card { margin-top: 0; }
   #des-cancel-pend-list, #des-cancel-conc-list, #des-neg-pend-list, #des-neg-conc-list { gap: 5px; }
-  .neg-card { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 16px 18px; position: relative; transition: border-color .2s, box-shadow .2s; }
-  .neg-card:hover { border-color: var(--warm); box-shadow: 0 2px 10px rgba(58,35,24,.07); }
+  .neg-card { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); padding: 18px 20px; position: relative; transition: border-color .2s, box-shadow .2s; }
+  .neg-card:hover { border-color: var(--cobre); box-shadow: 0 4px 16px rgba(58,35,24,.09); }
   .neg-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
   .neg-card-name { font-size: 15px; font-weight: 700; }
   .neg-card-ficha { font-size: 11px; color: var(--text2); margin-top: 2px; }
@@ -228,7 +228,7 @@
   /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 100; display: none; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
+  .modal { background: var(--surface); border-radius: 20px; border: 1px solid var(--border); width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow); }
   .modal-sm { width: 420px; }
   .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
   .modal-title { font-size: 17px; font-weight: 700; }
@@ -239,7 +239,7 @@
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group.full { grid-column: 1 / -1; }
   label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; }
-  input, select, textarea { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 9px 13px; font-size: 14px; outline: none; transition: border-color .2s; width: 100%; font-family: var(--font-body); }
+  input, select, textarea { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); padding: 9px 13px; font-size: 14px; outline: none; transition: border-color .2s; width: 100%; font-family: var(--font-body); }
   input.nome-input { text-transform: uppercase; }
   input:focus, select:focus, textarea:focus { border-color: var(--vinho); box-shadow: 0 0 0 2px rgba(139,45,66,.12); }
   input[readonly] { background: var(--surface2); }
@@ -252,14 +252,14 @@
   .btn-remove { background: none; border: none; color: var(--red); cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; }
   .btn-remove:hover { background: rgba(239,68,68,.15); }
   .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
-  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 400; letter-spacing:.04em; font-family:var(--font-body); cursor: pointer; transition: background .2s; }
+  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); border-radius: 12px; padding: 9px 20px; font-size: 13px; font-weight: 400; letter-spacing:.04em; font-family:var(--font-body); cursor: pointer; transition: background .2s; }
   .btn-secondary:hover { background: var(--border); color: var(--text); }
   .btn-io { background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: 7px; padding: 6px 12px; font-size: 11px; letter-spacing:.06em; font-family:var(--font-body); cursor: pointer; transition: all .15s; display:inline-flex;align-items:center;gap:5px;white-space:nowrap; }
   .btn-io:hover { background: var(--surface2); color: var(--text); border-color: var(--text2); }
-  .btn-save { background: var(--vinho); color: var(--marfim); border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 400; letter-spacing:.08em; font-family:var(--font-body); cursor: pointer; transition: background .2s; }
-  .btn-save:hover { background: var(--vinho-p); }
-  .btn-danger { background: #991b1b; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 400; font-family:var(--font-body); cursor: pointer; }
-  .btn-purple { background: #6b21a8; color: #fff; border: none; border-radius: 8px; padding: 9px 24px; font-size: 13px; font-weight: 400; font-family:var(--font-body); cursor: pointer; }
+  .btn-save { background: var(--vinho); color: var(--marfim); border: none; border-radius: 12px; padding: 9px 24px; font-size: 13px; font-weight: 500; letter-spacing:.08em; font-family:var(--font-body); cursor: pointer; transition: background .2s, box-shadow .2s; box-shadow: 0 2px 8px rgba(139,45,66,.2); }
+  .btn-save:hover { background: var(--vinho-p); box-shadow: 0 4px 12px rgba(139,45,66,.3); }
+  .btn-danger { background: #991b1b; color: #fff; border: none; border-radius: 12px; padding: 9px 24px; font-size: 13px; font-weight: 500; font-family:var(--font-body); cursor: pointer; }
+  .btn-purple { background: #6b21a8; color: #fff; border: none; border-radius: 12px; padding: 9px 24px; font-size: 13px; font-weight: 500; font-family:var(--font-body); cursor: pointer; }
 
   /* DETAIL MODAL */
   .detail-section { margin-bottom: 20px; }
@@ -296,7 +296,7 @@
 
   /* STATS BAR */
   .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: 0 1px 4px rgba(58,35,24,.06); }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(58,35,24,.07); }
   .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
   .stat-value { font-size: 22px; font-weight: 800; }
   .stat-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
@@ -528,6 +528,161 @@
   .aprov-save-btn { flex:1; padding:6px; background:var(--vinho); color:var(--marfim); border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; font-family:var(--font-body); }
   .aprov-cancel-btn { padding:6px 10px; background:none; border:1px solid var(--border); border-radius:6px; font-size:11px; color:var(--text2); cursor:pointer; font-family:var(--font-body); }
   .aprov-lock-banner { background:rgba(139,45,66,.07); border:1px solid rgba(139,45,66,.2); border-radius:8px; padding:8px 14px; font-size:11px; color:var(--vinho); display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+
+  /* ═══ REFORMULAÇÃO VISUAL — paleta encorpada + fonte unificada ═══ */
+
+  /* Fonte global: Cormorant SC para títulos (igual ao menu), Josefin Sans para corpo */
+  .main, .tab-content, .subtab-content, .modal, .modal-body,
+  .card, .neg-card, .boleto-card, .stat-card, .cob-table,
+  label, input, select, textarea, button {
+    font-family: 'Josefin Sans', 'Inter', system-ui, sans-serif;
+  }
+  .section-title, .modal-title, .kanban-col .col-title,
+  .placeholder-title, .detail-section-title {
+    font-family: 'Cormorant SC', Georgia, serif !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+    color: var(--vinho-p) !important;
+  }
+  .section-title span {
+    font-family: 'Josefin Sans', 'Inter', system-ui, sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 300 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: none !important;
+    color: var(--text2) !important;
+  }
+
+  /* Botões primários — mais sólidos */
+  .btn-primary {
+    background: var(--vinho) !important;
+    color: var(--marfim) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 9px 20px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.10em !important;
+    box-shadow: 0 3px 10px rgba(139,45,66,.35) !important;
+    transition: background .2s, box-shadow .2s, transform .1s !important;
+  }
+  .btn-primary:hover { background: var(--vinho-p) !important; box-shadow: 0 5px 16px rgba(139,45,66,.45) !important; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* Botões secundários (btn-io) — contorno mais visível */
+  .btn-io {
+    background: var(--surface) !important;
+    color: var(--vinho-p) !important;
+    border: 1.5px solid var(--vinho-c) !important;
+    border-radius: 8px !important;
+    padding: 7px 14px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    transition: all .15s !important;
+  }
+  .btn-io:hover { background: rgba(139,45,66,.08) !important; border-color: var(--vinho) !important; color: var(--vinho) !important; }
+
+  /* Cards de renegociação — mais encorpados */
+  .card {
+    background: var(--surface) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(58,35,24,.10) !important;
+    transition: border-color .2s, box-shadow .2s, transform .15s !important;
+  }
+  .card:hover { border-color: var(--vinho-c) !important; box-shadow: 0 6px 20px rgba(139,45,66,.16) !important; transform: translateY(-2px); }
+  .card-name { font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0.04em !important; color: var(--tinta) !important; }
+
+  /* Stat cards — destaque */
+  .stat-card {
+    background: var(--surface) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 16px !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 3px 12px rgba(58,35,24,.09) !important;
+  }
+  .stat-label { font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 10px !important; font-weight: 700 !important; letter-spacing: 0.28em !important; text-transform: uppercase !important; color: var(--text2) !important; }
+  .stat-value { font-size: 24px !important; font-weight: 800 !important; }
+
+  /* Colunas Kanban — cabeçalho mais escuro */
+  .kanban-col { border: 1.5px solid var(--border) !important; box-shadow: 0 2px 8px rgba(58,35,24,.07) !important; }
+  .col-emdia .kanban-col-header  { background: rgba(30,64,175,.08) !important; }
+  .col-atraso .kanban-col-header { background: rgba(153,27,27,.08) !important; }
+  .col-cancelado .kanban-col-header { background: rgba(100,116,139,.08) !important; }
+  .col-concluido .kanban-col-header { background: rgba(22,101,52,.08) !important; }
+
+  /* Tabelas — cabeçalho mais escuro */
+  .cob-table th { background: var(--vinho-p) !important; color: var(--marfim) !important; font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 10px !important; font-weight: 700 !important; letter-spacing: 0.22em !important; }
+  .cob-table td { font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 13px !important; }
+
+  /* Sub-abas — linha mais pronunciada */
+  .subtab { font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: 0.06em !important; }
+  .subtab.active { color: var(--vinho-p) !important; border-bottom: 3px solid var(--vinho) !important; }
+
+  /* Tabs principais */
+  .tab { font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: 0.12em !important; }
+  .tab.active { background: var(--vinho) !important; color: var(--marfim) !important; box-shadow: 0 3px 10px rgba(139,45,66,.30) !important; }
+
+  /* Cards negativação */
+  .neg-card { border: 1.5px solid var(--border) !important; box-shadow: 0 2px 8px rgba(58,35,24,.07) !important; }
+  .neg-card:hover { border-color: var(--cobre) !important; box-shadow: 0 6px 18px rgba(58,35,24,.12) !important; }
+  .neg-card-name { font-family: 'Josefin Sans','Inter',sans-serif !important; font-weight: 800 !important; }
+
+  /* Modal — mais elegante */
+  .modal { border: 1.5px solid var(--border) !important; box-shadow: 0 20px 60px rgba(26,15,10,.25) !important; }
+  .modal-header { background: linear-gradient(135deg, var(--vinho-p) 0%, var(--vinho) 100%) !important; border-radius: 18px 18px 0 0 !important; }
+  .modal-title { font-family: 'Cormorant SC', Georgia, serif !important; font-size: 16px !important; font-weight: 400 !important; letter-spacing: 0.15em !important; color: var(--marfim) !important; text-transform: uppercase !important; }
+  .modal-close { color: rgba(255,255,255,.7) !important; }
+  .modal-close:hover { background: rgba(255,255,255,.15) !important; color: #fff !important; }
+
+  /* Formulários — inputs com mais contraste */
+  input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]),
+  select, textarea {
+    background: var(--surface) !important;
+    border: 1.5px solid var(--warm) !important;
+    color: var(--tinta) !important;
+    font-family: 'Josefin Sans','Inter',sans-serif !important;
+  }
+  input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):focus,
+  select:focus, textarea:focus {
+    border-color: var(--vinho) !important;
+    box-shadow: 0 0 0 3px rgba(139,45,66,.15) !important;
+  }
+  label { font-family: 'Josefin Sans','Inter',sans-serif !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: 0.10em !important; color: var(--vinho-p) !important; text-transform: uppercase !important; }
+
+  /* Donut wrap — mais rico */
+  #reneg-donut-wrap { box-shadow: 0 2px 12px rgba(58,35,24,.08) !important; border: 1.5px solid var(--border) !important; }
+
+  /* Botão Salvar */
+  .btn-save { font-family: 'Josefin Sans','Inter',sans-serif !important; font-weight: 700 !important; letter-spacing: 0.10em !important; box-shadow: 0 3px 10px rgba(139,45,66,.3) !important; }
+
+  /* Envio de Boletos — título com fonte do menu */
+  #subtab-reneg-boletos .section-title {
+    font-family: 'Cormorant SC', Georgia, serif !important;
+    font-size: 18px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+    color: var(--vinho-p) !important;
+  }
+
+  /* Modal boleto manual — melhor contraste */
+  #modal-boleto-manual .modal-body label {
+    color: var(--vinho-p) !important;
+    font-weight: 700 !important;
+  }
+  #modal-boleto-manual .modal-body input {
+    background: var(--marfim) !important;
+    border: 1.5px solid var(--warm) !important;
+    color: var(--tinta) !important;
+  }
+  #modal-boleto-manual .modal-body input:focus {
+    border-color: var(--vinho) !important;
+    background: #fff !important;
+  }
 </style>
 </head>
 <body>
@@ -537,7 +692,6 @@
   <div class="logo">Athena</div>
   <div class="logo-divider"></div>
   <div class="logo-sub">Controle Financeiro</div>
-  <button onclick="openBackupModal()" title="Backup / Restaurar dados" style="margin-left:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--marfim);border-radius:7px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.04em;display:flex;align-items:center;gap:6px">💾 Backup</button>
 </div>
 
 <!-- BARRA DE ABAS — estilo Athena -->
@@ -547,16 +701,8 @@
     <button class="tab" onclick="switchTab('renegociacao')">Renegociação <span class="tab-badge" id="badge-renegociacao">0</span></button>
     <button class="tab" onclick="switchTab('negativacao')">Negativação <span class="tab-badge" id="badge-negativacao">0</span></button>
     <button class="tab" onclick="switchTab('desativacao')">Desativação <span class="tab-badge" id="badge-desativacao">0</span></button>
-    <button class="tab" onclick="switchTab('aprovacoes')">Aprovações <span class="tab-badge" id="badge-aprovacoes">0</span></button>
   </div>
-  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
-    <div id="fin-user-badge" style="display:none;align-items:center;gap:6px;background:rgba(139,45,66,0.06);border:1px solid rgba(139,45,66,0.15);border-radius:20px;padding:4px 12px 4px 8px">
-      <div style="width:22px;height:22px;border-radius:50%;background:var(--vinho);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--marfim);font-family:var(--font-body);font-weight:600" id="fin-user-avatar">T</div>
-      <span id="fin-user-name" style="font-size:11px;letter-spacing:.06em;color:var(--moka);font-family:var(--font-body)"></span>
-    </div>
-    <button id="fin-save-btn" onclick="finSaveAll()" style="background:var(--vinho);border:none;color:var(--marfim);border-radius:14px;padding:6px 16px;font-size:11px;letter-spacing:.08em;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;gap:6px;transition:background .2s" onmouseenter="this.style.background='var(--vinho-p)'" onmouseleave="this.style.background='var(--vinho)'">💾 Salvar</button>
-    <button onclick="openBackupModal()" style="background:transparent;border:1px solid var(--warm);color:var(--moka);border-radius:14px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:var(--font-body);letter-spacing:.08em;display:flex;align-items:center;gap:6px;opacity:.7">Backup</button>
-  </div>
+  <button onclick="openBackupModal()" title="Backup / Restaurar dados" style="margin-left:auto;background:transparent;border:1.5px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;gap:5px;font-weight:600;">💾 Backup</button>
 </div>
 
 <!-- MAIN -->
@@ -590,19 +736,16 @@
     <!-- MAIN COBRANÇA (hidden until login) -->
     <div id="cob-main" style="display:none">
 
-      <!-- TOP BAR -->
-      <div class="cob-topbar">
-        <div style="display:flex;gap:10px;align-items:center">
-          <label style="font-size:11px;color:var(--text2);letter-spacing:.04em;text-transform:uppercase">Filtrar por mês</label>
-          <input type="month" id="cob-filter-month" style="padding:7px 12px;font-size:13px;width:160px" onchange="renderCob()">
-          
+      <!-- SUB-TABS + FILTRO MÊS -->
+      <div class="subtabs" id="subtabs-cob" style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:0">
+          <button class="subtab active" onclick="switchCobSubtab('cob-registros')">📋 Registros de Recebimento <span class="subtab-badge" id="sbadge-cob-registros">0</span></button>
+          <button class="subtab" onclick="switchCobSubtab('cob-resumo')">📊 Resumo de Cobrança</button>
         </div>
-      </div>
-
-      <!-- SUB-TABS -->
-      <div class="subtabs" id="subtabs-cob">
-        <button class="subtab active" onclick="switchCobSubtab('cob-registros')">📋 Registros de Recebimento <span class="subtab-badge" id="sbadge-cob-registros">0</span></button>
-        <button class="subtab" onclick="switchCobSubtab('cob-resumo')">📊 Resumo de Cobrança</button>
+        <div style="display:flex;gap:8px;align-items:center;padding-right:8px">
+          <label style="font-size:11px;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap">Filtrar por mês</label>
+          <input type="month" id="cob-filter-month" style="padding:6px 10px;font-size:13px;width:160px;border:1.5px solid var(--border);border-radius:8px" onchange="renderCob()">
+        </div>
       </div>
 
       <!-- SUB: REGISTROS -->
@@ -610,7 +753,7 @@
         <div class="section-header" style="margin-bottom:16px">
           <div style="font-size:13px;color:var(--text2)">Registros de pagamentos recebidos por etapa de cobrança.</div>
           <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn-io" onclick="exportarCobCSV()" title="Exportar cobrança como CSV">⬇ CSV</button>
+            <button class="btn-io" onclick="exportarCobExcel()" title="Exportar cobrança como Excel">Exportar</button>
             <button class="btn-primary" onclick="openCobModal()">＋ Novo Registro</button>
           </div>
         </div>
@@ -654,15 +797,15 @@
         <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px">
           <div class="form-group" style="flex:1;min-width:200px">
             <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Boletos Teóricos do Período (R$)</label>
-            <input type="number" id="cob-boletos-teoricos" placeholder="0,00" step="0.01" min="0" style="padding:7px 12px;font-size:13px" oninput="renderCobResumo()">
+            <input type="number" id="cob-boletos-teoricos" placeholder="0,00" step="0.01" min="0" style="padding:7px 12px;font-size:13px" oninput="renderCobResumo();persistCobResumo()">
           </div>
           <div class="form-group" style="flex:1;min-width:200px">
             <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Inadimplência Total do Período (R$)</label>
-            <input type="number" id="cob-inadimplencia" placeholder="0,00" step="0.01" min="0" style="padding:7px 12px;font-size:13px" oninput="renderCobResumo()">
+            <input type="number" id="cob-inadimplencia" placeholder="0,00" step="0.01" min="0" style="padding:7px 12px;font-size:13px" oninput="renderCobResumo();persistCobResumo()">
           </div>
           <div class="form-group" style="width:140px">
             <label style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Meta de Inadimplência (%)</label>
-            <input type="number" id="cob-meta-inadimplencia" value="7" step="0.1" min="0" max="100" style="padding:7px 12px;font-size:13px" oninput="renderCobResumo()">
+            <input type="number" id="cob-meta-inadimplencia" value="7" step="0.1" min="0" max="100" style="padding:7px 12px;font-size:13px" oninput="renderCobResumo();persistCobResumo()">
           </div>
         </div>
 
@@ -764,7 +907,7 @@
 
     <!-- SUB-ABAS RENEGOCIAÇÃO -->
     <div class="subtabs" id="subtabs-reneg">
-      <button class="subtab active" onclick="switchRenegSubtab('reneg-kanban')">📋 Kanban <span class="subtab-badge" id="sbadge-reneg-kanban">0</span></button>
+      <button class="subtab active" onclick="switchRenegSubtab('reneg-kanban')">📋 Registros <span class="subtab-badge" id="sbadge-reneg-kanban">0</span></button>
       <button class="subtab" onclick="switchRenegSubtab('reneg-boletos')">📨 Envio de Boletos <span class="subtab-badge" id="sbadge-reneg-boletos">0</span></button>
       <button class="subtab" onclick="switchRenegSubtab('reneg-simulador')">🧮 Simulador de Renegociação</button>
     </div>
@@ -799,9 +942,22 @@
         </div>
       </div>
       <!-- DONUT CHART: Recuperado por situação -->
-      <div id="reneg-donut-wrap" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;gap:28px">
-        <svg id="reneg-donut" width="120" height="120" viewBox="0 0 120 120"></svg>
-        <div id="reneg-donut-legend" style="display:flex;flex-direction:column;gap:8px;font-size:12px"></div>
+      <div id="reneg-donut-wrap" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;gap:32px;flex-wrap:wrap">
+        <svg id="reneg-donut" width="140" height="140" viewBox="0 0 140 140"></svg>
+        <div style="flex:1;min-width:200px">
+          <div style="font-family:'Cormorant SC',Georgia,serif;font-size:13px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:var(--vinho-p);margin-bottom:12px">Recuperação por Situação</div>
+          <div id="reneg-donut-legend" style="display:flex;flex-direction:column;gap:8px;font-size:12px"></div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+              <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:3px">Total Recuperado</div>
+              <div id="reneg-donut-total-rec" style="font-size:16px;font-weight:800;color:var(--green)">R$ 0,00</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+              <div style="font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);margin-bottom:3px">Saldo Pendente</div>
+              <div id="reneg-donut-saldo" style="font-size:16px;font-weight:800;color:var(--yellow)">R$ 0,00</div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="section-header">
         <div class="section-title">Renegociações <span>Kanban por situação do paciente</span></div>
@@ -811,8 +967,8 @@
             <input type="text" id="reneg-search" placeholder="Buscar paciente ou ficha..." oninput="renderKanban()"
               style="padding:8px 12px 8px 32px;font-size:13px;width:240px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:var(--font-body)">
           </div>
-          <button class="btn-io" onclick="exportarRenegCSV()" title="Exportar renegociações como CSV">⬇ CSV</button>
-          <label class="btn-io" title="Importar planilha de renegociações (.xlsx ou .csv)">⬆ Importar
+          <button class="btn-io" onclick="exportarRenegExcel()" title="Exportar renegociações como Excel">Exportar</button>
+          <label class="btn-io" title="Importar planilha de renegociações (.xlsx ou .csv)">Importar
             <input type="file" accept=".xlsx,.xls,.csv" onchange="importarPlanilhaReneg(this)" style="display:none">
           </label>
           <button class="btn-primary" onclick="openNewModal()">＋ Nova Renegociação</button>
@@ -875,7 +1031,7 @@
     <!-- SUB-ABA: ENVIO DE BOLETOS -->
     <div class="subtab-content" id="subtab-reneg-boletos">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-        <div class="section-title">Envio de Boletos <span>Marque ao enviar — o card é removido automaticamente</span></div>
+        <div class="section-title">Envio de Boletos</div>
         <button onclick="openModalBoletosManual()" style="display:flex;align-items:center;gap:6px;background:var(--vinho-p);color:var(--marfim);border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;letter-spacing:.06em;font-family:var(--font-body);cursor:pointer;transition:background .2s" onmouseover="this.style.background='#4a1020'" onmouseout="this.style.background='var(--vinho-p)'">＋ Criar Card</button>
       </div>
       <div id="boletos-list" style="display:flex;flex-direction:column;gap:10px"></div>
@@ -888,21 +1044,32 @@
 
     <!-- MODAL: NOVO BOLETO MANUAL -->
     <div class="modal-overlay" id="modal-boleto-manual" onclick="if(event.target===this)closeModal('modal-boleto-manual')">
-      <div class="modal-box" style="max-width:420px">
-        <div class="modal-header"><div class="modal-title">Novo Boleto Manual</div><button class="modal-close" onclick="closeModal('modal-boleto-manual')">✕</button></div>
-        <div class="modal-body">
-          <div class="form-group full"><label>Nome do Paciente</label><input type="text" id="bm-nome" placeholder="Nome completo" class="nome-input"></div>
-          <div class="form-grid">
-            <div class="form-group"><label>Nº Ficha</label><input type="text" id="bm-ficha" placeholder="Ex: 00421"></div>
-            <div class="form-group"><label>Valor (R$)</label><input type="number" id="bm-valor" placeholder="0,00" step="0.01" min="0"></div>
-          </div>
-          <div class="form-group full"><label>Parcelas</label><input type="text" id="bm-parcelas" placeholder="Ex: 1/3, 2/3, 3/3 ou Entrada"></div>
-          <div class="form-group full"><label>Data de Envio <span style="color:var(--text2);font-weight:400;font-size:10px">quando pretende enviar ao paciente</span></label><input type="date" id="bm-data-envio"></div>
-          <div class="form-group full"><label>Observação <span style="color:var(--text2);font-weight:400;font-size:10px">opcional</span></label><input type="text" id="bm-obs" placeholder="Ex: boleto gerado pelo banco"></div>
+      <div class="modal-box" style="max-width:460px">
+        <div class="modal-header" style="background:var(--vinho-p);padding:20px 24px;border-radius:12px 12px 0 0">
+          <div class="modal-title" style="color:var(--marfim);font-size:16px;font-weight:700;letter-spacing:.04em">Envio de Boleto</div>
+          <button class="modal-close" onclick="closeModal('modal-boleto-manual')" style="color:var(--warm);font-size:18px;background:none;border:none;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px;transition:background .2s" onmouseenter="this.style.background='rgba(255,255,255,.15)'" onmouseleave="this.style.background='none'">✕</button>
         </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" onclick="closeModal('modal-boleto-manual')">Cancelar</button>
-          <button class="btn-primary" onclick="saveBoletosManual()">Criar Card</button>
+        <div class="modal-body" style="padding:24px;display:flex;flex-direction:column;gap:18px">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:7px">Nome do Paciente</label>
+            <input type="text" id="bm-nome" placeholder="Nome completo do paciente" class="nome-input" style="width:100%;padding:11px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:var(--font-body);transition:border .2s" onfocus="this.style.borderColor='var(--vinho)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:7px">Ficha</label>
+            <input type="text" id="bm-ficha" placeholder="Nº da ficha do paciente" style="width:100%;padding:11px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:var(--font-body);transition:border .2s" onfocus="this.style.borderColor='var(--vinho)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:7px">Data de Vencimento da 1ª Parcela</label>
+            <input type="date" id="bm-data-envio" style="width:100%;padding:11px 14px;font-size:14px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-family:var(--font-body);transition:border .2s" onfocus="this.style.borderColor='var(--vinho)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <!-- campos ocultos mantidos para compatibilidade -->
+          <input type="hidden" id="bm-valor" value="0">
+          <input type="hidden" id="bm-parcelas" value="">
+          <input type="hidden" id="bm-obs" value="">
+        </div>
+        <div class="modal-footer" style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end">
+          <button class="btn-secondary" onclick="closeModal('modal-boleto-manual')" style="padding:10px 20px;font-size:13px;border-radius:8px">Cancelar</button>
+          <button style="background:var(--vinho);color:var(--marfim);border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:600;letter-spacing:.06em;cursor:pointer;font-family:var(--font-body);transition:background .2s" onmouseenter="this.style.background='var(--vinho-p)'" onmouseleave="this.style.background='var(--vinho)'" onclick="saveBoletosManual()">Criar Card</button>
         </div>
       </div>
     </div>
@@ -956,7 +1123,7 @@
               <span>Paciente sugeriu parcela de (R$)</span>
               <span style="font-size:10px;color:var(--text2);font-weight:400;">(opcional)</span>
             </label>
-            <input type="number" id="sim-pac-valor" min="0" step="0.01" placeholder="Ex: 350,00" style="font-size:13px" oninput="simCalcPorParcela()">
+            <input type="number" id="sim-pac-valor" min="0" step="0.01" placeholder="Ex: 350,00" style="font-size:13px" oninput="simCalcPorParcela();simSugerirParcela(this)">
             <div id="sim-pac-resultado" style="font-size:11px;color:var(--text2);margin-top:4px;min-height:14px"></div>
           </div>
 
@@ -980,18 +1147,35 @@
             <div id="sim-grupos-list" style="display:flex;flex-direction:column;gap:6px"></div>
           </div>
 
-          <div class="form-group" style="margin-bottom:14px">
-            <label style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-              <span>Juros (%)</span>
-              <span style="display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:10px;font-weight:600">
-                <button id="sim-juros-toggle-mes" onclick="simToggleJuros('mes')"
-                  style="padding:2px 8px;border:none;cursor:pointer;background:var(--vinho);color:var(--marfim);font-family:var(--font-body);font-size:10px;font-weight:600;transition:background .15s">ao mês</button>
-                <button id="sim-juros-toggle-ano" onclick="simToggleJuros('ano')"
-                  style="padding:2px 8px;border:none;cursor:pointer;background:var(--surface2);color:var(--text2);font-family:var(--font-body);font-size:10px;font-weight:600;transition:background .15s">ao ano</button>
-              </span>
-            </label>
-            <input type="number" id="sim-juros" value="0" min="0" step="0.1" style="font-size:13px" oninput="calcSimulador()">
-            <div id="sim-juros-equiv" style="font-size:10px;color:var(--text2);margin-top:3px;min-height:14px"></div>
+          <!-- Juros com toggle on/off + modo -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text)">
+                <input type="checkbox" id="sim-juros-ativo" onchange="simToggleJurosCampos();calcSimulador();" style="cursor:pointer;width:15px;height:15px;accent-color:var(--vinho)"> Aplicar juros
+              </label>
+            </div>
+            <div id="sim-juros-campos" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0">
+                <div class="form-group" style="margin:0">
+                  <label style="display:flex;align-items:center;justify-content:space-between">
+                    <span>Taxa</span>
+                    <span style="display:inline-flex;border:1px solid var(--border);border-radius:5px;overflow:hidden;font-size:9px;font-weight:700">
+                      <button id="sim-juros-toggle-mes" onclick="simToggleJuros('mes')" style="padding:2px 7px;border:none;cursor:pointer;background:var(--vinho);color:var(--marfim);font-family:var(--font-body);font-size:9px;font-weight:700;transition:background .15s">%/mês</button>
+                      <button id="sim-juros-toggle-ano" onclick="simToggleJuros('ano')" style="padding:2px 7px;border:none;cursor:pointer;background:var(--surface2);color:var(--text2);font-family:var(--font-body);font-size:9px;font-weight:700;transition:background .15s">%/ano</button>
+                    </span>
+                  </label>
+                  <input type="number" id="sim-juros" value="0" min="0" step="0.1" style="font-size:13px" oninput="calcSimulador()">
+                  <div id="sim-juros-equiv" style="font-size:10px;color:var(--text2);margin-top:3px;min-height:14px"></div>
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label>Modo de aplicação</label>
+                  <select id="sim-juros-modo" style="font-size:12px" onchange="calcSimulador()">
+                    <option value="proporcional">Ratear nas parcelas</option>
+                    <option value="extra">Parcelas extras no final</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="form-group" style="margin-bottom:18px">
@@ -999,40 +1183,51 @@
             <input type="date" id="sim-vencimento" style="font-size:13px" oninput="calcSimulador()">
           </div>
 
-          <!-- KPIs rápidos -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
-            <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;border:1px solid var(--border)">
-              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Valor da Parcela</div>
-              <div style="font-size:20px;font-weight:800;color:var(--vinho)" id="sim-kpi-parcela">—</div>
-            </div>
-            <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;border:1px solid var(--border)">
-              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Total a Receber</div>
-              <div style="font-size:20px;font-weight:800;color:var(--green)" id="sim-kpi-total">—</div>
-            </div>
-            <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;border:1px solid var(--border)">
-              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Desconto / Acréscimo</div>
-              <div style="font-size:16px;font-weight:800" id="sim-kpi-delta">—</div>
-            </div>
-            <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;border:1px solid var(--border)">
-              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px">Aproveitamento</div>
-              <div style="font-size:16px;font-weight:800;color:var(--cobre)" id="sim-kpi-aproveitamento">—</div>
-            </div>
-          </div>
-
-          <button onclick="usarSimulacao()" style="width:100%;background:var(--vinho);color:var(--marfim);border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;letter-spacing:.06em;font-family:var(--font-body);cursor:pointer;transition:background .2s" onmouseover="this.style.background='var(--vinho-p)'" onmouseout="this.style.background='var(--vinho)'">
-            ＋ Usar esta Simulação → Nova Renegociação
-          </button>
+          <!-- IDs mantidos ocultos para compatibilidade com o JS -->
+          <span id="sim-kpi-parcela" style="display:none"></span>
+          <span id="sim-kpi-total" style="display:none"></span>
+          <span id="sim-kpi-delta" style="display:none"></span>
+          <span id="sim-kpi-aproveitamento" style="display:none"></span>
         </div>
 
         <!-- PAINEL DE RESULTADO -->
         <div>
-          <!-- Comparativo de cenários -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text2)">Comparativo de Cenários</div>
+
+          <!-- Sua Simulação — cards premium por grupo (colapsável) -->
+          <div id="sim-sua-simulacao" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;display:none;overflow:hidden">
+            <!-- Cabeçalho clicável -->
+            <div onclick="simToggleResumo()" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;transition:background .15s" onmouseover="this.style.background='rgba(139,45,66,.04)'" onmouseout="this.style.background=''">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="background:var(--vinho);color:#fff;font-size:9px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase">Resumo</div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--vinho)">Sua Simulação</div>
+                  <div style="font-size:10px;color:#aaa">Composição completa do acordo</div>
+                </div>
+              </div>
+              <span id="sim-resumo-chevron" style="font-size:16px;color:var(--vinho);transition:transform .25s;display:inline-block;">▾</span>
             </div>
-            <div id="sim-cenarios" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px">
-              <!-- gerado por simRenderCenarios() -->
+            <!-- Corpo colapsável -->
+            <div id="sim-resumo-body" style="padding:0 18px 18px;overflow:hidden;transition:max-height .3s ease,opacity .25s ease;max-height:800px;opacity:1">
+              <div id="sim-grupos-cards" style="display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin-bottom:0"></div>
+              <div id="sim-resumo-total"></div>
+            </div>
+          </div>
+
+          <!-- Comparativo de cenários (colapsável) -->
+          <div style="background:linear-gradient(135deg,var(--surface) 0%,rgba(245,237,226,.6) 100%);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;box-shadow:0 2px 12px rgba(58,35,24,.07);overflow:hidden">
+            <!-- Cabeçalho clicável -->
+            <div onclick="simToggleCenarios()" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s" onmouseover="this.style.background='rgba(139,45,66,.04)'" onmouseout="this.style.background=''">
+              <div>
+                <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--vinho-p)">Comparativo de Cenários</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:2px">Cenários automáticos baseados no valor da dívida</div>
+              </div>
+              <span id="sim-cenarios-chevron" style="font-size:16px;color:var(--vinho-p);transition:transform .25s;display:inline-block;">▾</span>
+            </div>
+            <!-- Corpo colapsável -->
+            <div id="sim-cenarios-body" style="padding:0 20px 20px;overflow:hidden;transition:max-height .3s ease,opacity .25s ease;max-height:600px;opacity:1">
+              <div id="sim-cenarios" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px">
+                <!-- gerado por simRenderCenarios() -->
+              </div>
             </div>
           </div>
 
@@ -1049,11 +1244,12 @@
                     <th style="padding:10px 14px;text-align:left;color:var(--warm);font-size:10px;font-weight:400;letter-spacing:.28em;text-transform:uppercase">#</th>
                     <th style="padding:10px 14px;text-align:left;color:var(--warm);font-size:10px;font-weight:400;letter-spacing:.28em;text-transform:uppercase">Vencimento</th>
                     <th style="padding:10px 14px;text-align:right;color:var(--warm);font-size:10px;font-weight:400;letter-spacing:.28em;text-transform:uppercase">Valor</th>
+                    <th style="padding:10px 14px;text-align:center;color:var(--warm);font-size:10px;font-weight:400;letter-spacing:.28em;text-transform:uppercase">Tipo</th>
                     <th style="padding:10px 14px;text-align:right;color:var(--warm);font-size:10px;font-weight:400;letter-spacing:.28em;text-transform:uppercase">Saldo Restante</th>
                   </tr>
                 </thead>
                 <tbody id="sim-tbody">
-                  <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text2);font-size:13px">Preencha os dados ao lado para simular</td></tr>
+                  <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text2);font-size:13px">Preencha os dados ao lado para simular</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1070,6 +1266,7 @@
       <div class="section-title">Negativação <span>Serasa — Controle de negativações</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn-io" onclick="exportarNegCSV()" title="Exportar negativações como CSV">⬇ CSV</button>
+        <button class="btn-io" onclick="exportarNegExcel()" title="Exportar negativações como Excel">Exportar</button>
       </div>
     </div>
 
@@ -1757,6 +1954,7 @@
       <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6">Exporte todos os dados para um arquivo <strong>.json</strong> e guarde em local seguro. Para restaurar após uma perda, importe o arquivo salvo.</p>
       <div style="display:flex;flex-direction:column;gap:10px">
         <button onclick="exportarBackup()" style="background:var(--green);border:none;color:#fff;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">⬇ Exportar Backup (.json)</button>
+        <button onclick="exportarHTMLCompleto()" style="background:#1e40af;border:none;color:#fff;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px" title="Gera um arquivo HTML completo com todos os dados embutidos — funciona offline">🗂 Exportar App Completo (.html)</button>
         <label style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:8px">
           ⬆ Importar Backup (.json)
           <input type="file" accept=".json" onchange="importarBackup(this)" style="display:none">
@@ -1971,23 +2169,45 @@ function simRenderCenarios(){
   _SIM_CENARIOS_FIXOS.forEach(function(c){
     const parcela = base>0 ? _simCalcParcela(base, c.n, c.juros) : 0;
     const totalC  = parcela * c.n;
+    const economia = base > 0 ? (divida - totalC - entrada) : 0;
     const isMelhor = parcela > 0 && Math.abs(parcela - menorParcela) < 0.01;
     const temJuros = c.juros > 0;
     const div = document.createElement('div');
-    const bg = isMelhor ? 'rgba(139,45,66,.07)' : '#ffffff';
-    const border = isMelhor ? '2px solid var(--vinho)' : '1.5px solid #e2e8f0';
-    div.style.cssText = 'position:relative;text-align:center;padding:12px 10px 10px;background:' + bg + ';border-radius:10px;border:' + border + ';';
-    const melhorBadge = isMelhor ? '<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--vinho);color:#fff;font-size:9px;font-weight:700;padding:1px 8px;border-radius:20px;white-space:nowrap;letter-spacing:0.3px;">MAIS ACESS\u00cdVEL</div>' : '';
-    const parcelaStr = base>0 ? '<div style="font-size:16px;font-weight:800;color:' + (isMelhor?'var(--vinho)':'#1e293b') + ';line-height:1;">' + fmt(parcela) + '</div><div style="font-size:9px;color:#94a3b8;margin-top:1px;">por m\u00eas</div>' : '<div style="font-size:15px;font-weight:700;color:#94a3b8;">&#8212;</div>';
-    const totalStr = base>0 && temJuros ? '<div style="font-size:9px;color:#ef4444;margin-top:4px;font-weight:600;">+juros &middot; total: ' + fmt(totalC) + '</div>' : base>0 ? '<div style="font-size:9px;color:#22c55e;margin-top:4px;font-weight:600;">sem juros &middot; total: ' + fmt(totalC) + '</div>' : '';
-    div.innerHTML = melhorBadge + '<div style="font-size:11px;font-weight:700;color:' + (isMelhor?'var(--vinho)':'#475569') + ';margin-bottom:6px;">' + c.label + '</div>' + parcelaStr + totalStr;
+    // Cards mais compactos: layout horizontal (label + parcela lado a lado)
+    div.style.cssText = 'position:relative;border-radius:10px;overflow:hidden;box-shadow:' + (isMelhor ? '0 3px 14px rgba(139,45,66,.18)' : '0 1px 6px rgba(0,0,0,.07)') + ';transition:transform .18s,box-shadow .18s;cursor:default';
+    div.onmouseenter = function(){ this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(139,45,66,.18)'; };
+    div.onmouseleave = function(){ this.style.transform=''; this.style.boxShadow=(isMelhor?'0 3px 14px rgba(139,45,66,.18)':'0 1px 6px rgba(0,0,0,.07)'); };
+
+    const headerBg = isMelhor ? 'linear-gradient(135deg,var(--vinho-p) 0%,var(--vinho) 100%)' : temJuros ? 'linear-gradient(135deg,#374151 0%,#4b5563 100%)' : 'linear-gradient(135deg,#1e3a5f 0%,#1e40af 100%)';
+    const bodyBg   = isMelhor ? '#fdf6f8' : '#ffffff';
+    const melhorBadge = isMelhor ? '<span style="background:rgba(255,255,255,.22);color:#fff;font-size:7px;font-weight:700;padding:1px 7px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase;margin-right:6px">⭐ Melhor</span>' : '';
+    const jurosBadge  = '<span style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);font-size:7px;padding:1px 6px;border-radius:8px">' + (temJuros?'c/juros':'s/juros') + '</span>';
+
+    const parcelaHtml = base>0
+      ? '<span style="font-size:18px;font-weight:800;color:'+(isMelhor?'var(--vinho)':'#1e293b')+';letter-spacing:-.3px">' + fmt(parcela) + '</span><span style="font-size:9px;color:#94a3b8;margin-left:2px">/mês</span>'
+      : '<span style="font-size:16px;font-weight:700;color:#cbd5e1">—</span>';
+
+    const totalHtml = base>0
+      ? '<div style="font-size:9px;color:#94a3b8;margin-top:4px">Total: <strong style="color:#475569">' + fmt(totalC+entrada) + '</strong>'
+        + (economia < 0 ? ' · <span style="color:#ef4444">+'+fmt(Math.abs(economia))+'</span>' : economia > 0 ? ' · <span style="color:#22c55e">−'+fmt(economia)+'</span>' : '')
+        + '</div>'
+      : '';
+
+    div.innerHTML =
+      '<div style="background:'+headerBg+';padding:8px 12px;display:flex;align-items:center;justify-content:space-between">'
+        + '<div>'
+          + '<div style="font-size:14px;font-weight:800;color:#fff;line-height:1">' + c.label + '</div>'
+          + '<div style="font-size:8px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.3px;margin-top:1px">' + c.desc + '</div>'
+        + '</div>'
+        + '<div style="text-align:right">' + melhorBadge + jurosBadge + '</div>'
+      + '</div>'
+      + '<div style="background:'+bodyBg+';padding:10px 12px">'
+        + parcelaHtml
+        + totalHtml
+      + '</div>';
     container.appendChild(div);
   });
-
-  const curr = document.createElement('div');
-  curr.style.cssText = 'position:relative;text-align:center;padding:12px 10px 10px;background:rgba(139,45,66,.04);border-radius:10px;border:2px dashed var(--vinho);';
-  curr.innerHTML = '<div style="font-size:9px;color:var(--vinho);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Sua simula\u00e7\u00e3o</div><div style="font-size:16px;font-weight:800;color:var(--vinho);line-height:1;" id="cen-atual">&#8212;</div><div style="font-size:9px;color:#94a3b8;margin-top:1px;">por m\u00eas</div>';
-  container.appendChild(curr);
+  // "Simulação Atual" removido — agora está no card Resumo
 }
 
 function simCalcPorParcela(){
@@ -2000,9 +2220,43 @@ function simCalcPorParcela(){
   const entrada  = parseFloat(document.getElementById('sim-entrada') ? document.getElementById('sim-entrada').value : 0)||0;
   const base = Math.max(0, divida*(1-desconto/100) - entrada);
   if(base <= 0){ resultado.textContent = ''; return; }
+  // Mantém o valor exato sugerido pelo paciente
   const n = Math.ceil(base / pacVal);
-  const valAjustado = Math.round(base/n*100)/100;
-  resultado.innerHTML = '<span style="color:var(--vinho);font-weight:600">' + n + 'x de R$ ' + valAjustado.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</span> <span style="color:var(--text2)">aplique nos grupos abaixo</span>';
+  const resto = Math.round((base - pacVal * (n-1)) * 100) / 100;
+  if(n === 1){
+    resultado.innerHTML = '<span style="color:var(--vinho);font-weight:600">1x de R$ ' + base.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</span> <span style="color:var(--text2)">aplique nos grupos abaixo</span>';
+  } else if(Math.abs(resto - pacVal) < 0.01){
+    resultado.innerHTML = '<span style="color:var(--vinho);font-weight:600">' + n + 'x de R$ ' + pacVal.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</span> <span style="color:var(--text2)">aplique nos grupos abaixo</span>';
+  } else {
+    resultado.innerHTML = '<span style="color:var(--vinho);font-weight:600">' + (n-1) + 'x de R$ ' + pacVal.toLocaleString('pt-BR',{minimumFractionDigits:2}) + ' + 1x de R$ ' + resto.toLocaleString('pt-BR',{minimumFractionDigits:2}) + '</span> <span style="color:var(--text2)">aplique nos grupos abaixo</span>';
+  }
+}
+
+function simSugerirParcela(el){
+  const sugerido = parseFloat(el.value)||0;
+  if(sugerido <= 0) return;
+  const divida   = parseFloat(document.getElementById('sim-divida')?.value)||0;
+  const desconto = parseFloat(document.getElementById('sim-desconto')?.value)||0;
+  const entrada  = parseFloat(document.getElementById('sim-entrada')?.value)||0;
+  const base = Math.max(0, divida*(1-desconto/100) - entrada);
+  if(base <= 0) return;
+  // Calcula quantidade com o VALOR EXATO do paciente (não redistribui)
+  const qtdTotal = Math.ceil(base / sugerido);
+  if(qtdTotal <= 0 || qtdTotal > 120) return;
+  const resto = Math.round((base - sugerido * (qtdTotal - 1)) * 100) / 100;
+  const list = document.getElementById('sim-grupos-list');
+  if(!list) return;
+  list.innerHTML = '';
+  _simGrupoIdx = 0;
+  // Se o resto for igual ao valor sugerido (sem sobra), um grupo só
+  if(Math.abs(resto - sugerido) < 0.01 || qtdTotal === 1){
+    simAddGrupo(qtdTotal, sugerido.toFixed(2));
+  } else {
+    // Grupo principal com valor exato do paciente + grupo final com o resto
+    simAddGrupo(qtdTotal - 1, sugerido.toFixed(2));
+    simAddGrupo(1, resto.toFixed(2));
+  }
+  calcSimulador();
 }
 
 function simToggleJuros(modo){
@@ -2046,54 +2300,115 @@ function simAtualizarEquiv(){
   }
 }
 
+function simToggleJurosCampos(){
+  const ativo  = document.getElementById('sim-juros-ativo')?.checked;
+  const campos = document.getElementById('sim-juros-campos');
+  if(campos) campos.style.display = ativo ? 'block' : 'none';
+}
+
+let _simResumoAberto = true;
+function simToggleResumo(){
+  _simResumoAberto = !_simResumoAberto;
+  const body = document.getElementById('sim-resumo-body');
+  const chev = document.getElementById('sim-resumo-chevron');
+  if(!body) return;
+  if(_simResumoAberto){
+    body.style.maxHeight = '800px'; body.style.opacity = '1';
+    if(chev) chev.style.transform = '';
+  } else {
+    body.style.maxHeight = '0'; body.style.opacity = '0';
+    if(chev) chev.style.transform = 'rotate(-90deg)';
+  }
+}
+
+let _simCenariosAberto = true;
+function simToggleCenarios(){
+  _simCenariosAberto = !_simCenariosAberto;
+  const body = document.getElementById('sim-cenarios-body');
+  const chev = document.getElementById('sim-cenarios-chevron');
+  if(!body) return;
+  if(_simCenariosAberto){
+    body.style.maxHeight = '600px'; body.style.opacity = '1';
+    if(chev) chev.style.transform = '';
+  } else {
+    body.style.maxHeight = '0'; body.style.opacity = '0';
+    if(chev) chev.style.transform = 'rotate(-90deg)';
+  }
+}
+
 function calcSimulador(){
   simAtualizarEquiv();
-  const divida   = parseFloat(document.getElementById('sim-divida').value)||0;
-  const desconto = parseFloat(document.getElementById('sim-desconto').value)||0;
-  const entrada  = parseFloat(document.getElementById('sim-entrada').value)||0;
-  const juros    = simGetTaxaMensal();
-  const vencStr  = document.getElementById('sim-vencimento').value;
-  const grupos   = simGetGrupos();
+  const divida     = parseFloat(document.getElementById('sim-divida').value)||0;
+  const desconto   = parseFloat(document.getElementById('sim-desconto').value)||0;
+  const entrada    = parseFloat(document.getElementById('sim-entrada').value)||0;
+  const jurosAtivo = document.getElementById('sim-juros-ativo')?.checked || false;
+  const juros      = jurosAtivo ? simGetTaxaMensal() : 0;
+  const jurosModo  = document.getElementById('sim-juros-modo')?.value || 'proporcional';
+  const vencStr    = document.getElementById('sim-vencimento').value;
+  const grupos     = simGetGrupos();
 
-  const resetKPIs = () => {
+  const _reset = () => {
     ['sim-kpi-parcela','sim-kpi-total','sim-kpi-delta','sim-kpi-aproveitamento',
-     'cen-atual','sim-table-info'].forEach(id=>{
-      const el=document.getElementById(id); if(el) el.textContent='—';
-    });
+     'cen-atual','sim-table-info'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent='—'; });
     document.getElementById('sim-tbody').innerHTML=
-      '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text2);font-size:13px">Preencha os dados ao lado para simular</td></tr>';
+      '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text2);font-size:13px">Preencha os dados ao lado para simular</td></tr>';
+    const ss = document.getElementById('sim-sua-simulacao'); if(ss) ss.style.display='none';
   };
 
-  if(divida <= 0 || grupos.length === 0){ resetKPIs(); return; }
+  if(divida <= 0 || grupos.length === 0){ _reset(); return; }
 
-  const valorBase = divida * (1 - desconto/100);
-  const vencBase  = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
+  const valorBase  = divida * (1 - desconto/100);
+  const aParcelar  = Math.max(0, valorBase - entrada);
+  const vencBase   = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
 
-  // Gera lista de parcelas a partir dos grupos
-  const parcelasList = [];
-  grupos.forEach(g=>{
-    for(let i=0;i<g.qtd;i++) parcelasList.push(g.val);
-  });
-  const nParcelas   = parcelasList.length;
-  const totalParc   = parcelasList.reduce((a,b)=>a+b,0);
-  const totalGeral  = entrada + totalParc;
-  const delta       = totalGeral - divida;
+  // Gera lista de parcelas (com suporte a juros modo extra)
+  const parcelas = [];
+  if(juros > 0 && jurosModo === 'extra'){
+    grupos.forEach(g=>{ for(let i=0;i<g.qtd;i++) parcelas.push({valor:g.val,tipo:'Parcela',idx:parcelas.length}); });
+    const totalJuros  = aParcelar * juros * parcelas.length;
+    // Usar o ÚLTIMO grupo como referência para o valor das parcelas de juros
+    const ultimoGrupo = grupos[grupos.length-1];
+    const valParc     = ultimoGrupo ? ultimoGrupo.val : (parcelas.length>0 ? parcelas[0].valor : 1);
+    const nParcelasJuros = Math.max(1, Math.ceil(totalJuros / valParc));
+    for(let j=0;j<nParcelasJuros;j++){
+      const v = j < nParcelasJuros-1
+        ? Math.round(valParc*100)/100
+        : Math.round((totalJuros - valParc*(nParcelasJuros-1))*100)/100;
+      parcelas.push({valor:Math.max(0,v),tipo:'Juros',idx:parcelas.length});
+    }
+  } else {
+    grupos.forEach(g=>{
+      let val = g.val;
+      if(juros > 0){
+        const baseGrupo = aParcelar * (g.val * g.qtd) / Math.max(1, grupos.reduce((s,x)=>s+x.val*x.qtd,0));
+        val = baseGrupo * (juros * Math.pow(1+juros,g.qtd)) / (Math.pow(1+juros,g.qtd)-1);
+        val = Math.round(val*100)/100;
+      }
+      for(let i=0;i<g.qtd;i++) parcelas.push({valor:val,tipo:'Parcela',idx:parcelas.length});
+    });
+  }
+
+  const totalParc  = parcelas.reduce((s,p)=>s+p.valor,0);
+  const totalGeral = entrada + totalParc;
+  const delta      = totalGeral - divida;
   const aproveitamento = divida > 0 ? (totalGeral/divida*100) : 0;
+  const parcelasNormais = parcelas.filter(p=>p.tipo==='Parcela');
 
-  // KPI: "Valor da Parcela" mostra resumo dos grupos
+  // KPIs
   const kpiParc = document.getElementById('sim-kpi-parcela');
-  if(grupos.length === 1){
-    kpiParc.textContent = fmt(grupos[0].val);
+  if(grupos.length===1){
+    kpiParc.textContent = fmt(parcelasNormais[0]?.valor||0);
+    kpiParc.style.fontSize='20px';
   } else {
     kpiParc.textContent = grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ');
     kpiParc.style.fontSize='12px';
   }
   document.getElementById('sim-kpi-total').textContent = fmt(totalGeral);
   const deltaEl = document.getElementById('sim-kpi-delta');
-  if(delta < 0){
+  if(delta < -0.01){
     deltaEl.style.color='var(--red)';
     deltaEl.textContent = '−'+fmt(Math.abs(delta))+' ('+Math.abs(desconto).toFixed(1)+'% desc.)';
-  } else if(delta > 0){
+  } else if(delta > 0.01){
     deltaEl.style.color='var(--green)';
     deltaEl.textContent = '+'+fmt(delta)+' (acréscimo)';
   } else {
@@ -2106,45 +2421,233 @@ function calcSimulador(){
 
   // Comparativo de cenários
   simRenderCenarios();
-  const cenAtualLabel = grupos.length===1 ? fmt(grupos[0].val)+'/mês' : grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join('+');
+  const cenAtualLabel = grupos.length===1 ? fmt(parcelasNormais[0]?.valor||0)+'/mês' : grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join('+');
   const cenAtualEl = document.getElementById('cen-atual');
   if(cenAtualEl) cenAtualEl.textContent = cenAtualLabel;
   document.getElementById('sim-table-info').textContent =
-    `${nParcelas} parcela${nParcelas!==1?'s':''} · Total: ${fmt(totalGeral)}`;
+    `${parcelas.length} parcela${parcelas.length!==1?'s':''} · Total: ${fmt(totalGeral)}`;
 
-  // Tabela
+  // Cards "Sua Simulação"
+  _simRenderSuaSimulacao({ entrada, parcelas, totalGeral, delta, divida, desconto, juros, jurosModo, vencStr });
+
+  // Tabela de parcelas
   const tbody = document.getElementById('sim-tbody');
   tbody.innerHTML='';
-  let saldo = totalParc;
-  for(let i=0; i<parcelasList.length; i++){
-    const val = parcelasList[i];
-    saldo = Math.max(0, Math.round((saldo - val)*100)/100);
-    const vencData = new Date(vencBase);
-    vencData.setMonth(vencBase.getMonth() + i);
-    const vencFmt = fmtDate(vencData.toISOString().slice(0,10));
-    const isLast = i===parcelasList.length-1;
+  let saldo = aParcelar;
+  let primeiraJuros = true;
+
+  if(entrada > 0){
     const tr = document.createElement('tr');
-    tr.style.borderBottom='1px solid var(--border)';
-    if(isLast) tr.style.fontWeight='600';
+    tr.style.cssText='border-bottom:1px solid var(--border);background:rgba(22,101,52,.05)';
     tr.innerHTML=`
-      <td style="padding:9px 14px;color:var(--text2)">${i+1}</td>
-      <td style="padding:9px 14px">${vencFmt}</td>
-      <td style="padding:9px 14px;text-align:right;color:var(--vinho);font-weight:600">${fmt(val)}</td>
-      <td style="padding:9px 14px;text-align:right;color:${saldo<=0?'var(--green)':'var(--text2)'};font-size:12px">${saldo<=0?'✓ Quitado':fmt(saldo)}</td>`;
+      <td style="padding:9px 14px;color:#aaa;font-size:11px">—</td>
+      <td style="padding:9px 14px;color:#aaa;font-size:11px">—</td>
+      <td style="padding:9px 14px;text-align:right;color:#166534;font-size:15px;font-weight:800">${fmt(entrada)}</td>
+      <td style="padding:9px 14px;text-align:center"><span style="background:#d1fae5;color:#166534;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700">ENTRADA</span></td>
+      <td style="padding:9px 14px;text-align:right;font-size:12px;color:#888">${fmt(aParcelar)}</td>`;
     tbody.appendChild(tr);
   }
 
+  parcelas.forEach((p,idx)=>{
+    const isJuros = p.tipo==='Juros';
+    if(isJuros && primeiraJuros){
+      primeiraJuros = false;
+      const sep = document.createElement('tr');
+      sep.innerHTML=`<td colspan="5" style="padding:0;background:linear-gradient(90deg,transparent,rgba(146,64,14,.15),transparent);height:2px;border:none"></td>`;
+      tbody.appendChild(sep);
+      const lbl = document.createElement('tr');
+      lbl.style.background='rgba(146,64,14,.04)';
+      lbl.innerHTML=`<td colspan="5" style="padding:5px 14px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#92400e;border-bottom:1px solid rgba(146,64,14,.12)">▸ Parcelas de juros${jurosModo==='extra'?' — ao final':''}</td>`;
+      tbody.appendChild(lbl);
+    }
+    if(!isJuros){
+      const jurosParc = juros>0 && jurosModo==='proporcional' ? saldo*juros : 0;
+      const amort = juros>0 && jurosModo==='proporcional' ? p.valor - jurosParc : p.valor;
+      saldo = Math.max(0, Math.round((saldo - amort)*100)/100);
+    }
+    const bgNormal = isJuros ? 'rgba(146,64,14,.025)' : (idx%2===0?'#fff':'rgba(139,45,66,.02)');
+    const bgHover  = isJuros ? 'rgba(146,64,14,.07)'  : 'rgba(139,45,66,.06)';
+    const badgeBg  = isJuros ? '#fef3c7' : (idx%2===0?'#f3f4f6':'var(--surface2)');
+    const badgeCor = isJuros ? '#92400e' : 'var(--text2)';
+    const valCor   = isJuros ? '#b45309' : 'var(--vinho)';
+    const vencData = new Date(vencBase);
+    vencData.setMonth(vencBase.getMonth() + (p.idx !== undefined ? p.idx : idx));
+    const vencFmt  = fmtDate(vencData.toISOString().slice(0,10));
+    const saldoTxt = !isJuros
+      ? (saldo<=0 ? '<span style="color:#166534;font-weight:700">✓ Quitado</span>' : `<span style="color:var(--text2)">${fmt(saldo)}</span>`)
+      : '<span style="color:#bbb">—</span>';
+    const tr = document.createElement('tr');
+    tr.style.cssText=`border-bottom:1px solid var(--border);background:${bgNormal};transition:background .12s`;
+    tr.onmouseenter=function(){this.style.background=bgHover;};
+    tr.onmouseleave=function(){this.style.background=bgNormal;};
+    tr.innerHTML=`
+      <td style="padding:9px 14px;color:#aaa;font-size:11px;font-weight:600">${idx+1}</td>
+      <td style="padding:9px 14px;font-size:13px">${vencFmt}</td>
+      <td style="padding:9px 14px;text-align:right;color:${valCor};font-weight:700">${fmt(p.valor)}</td>
+      <td style="padding:9px 14px;text-align:center"><span style="background:${badgeBg};color:${badgeCor};padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700">${p.tipo.toUpperCase()}</span></td>
+      <td style="padding:9px 14px;text-align:right;font-size:12px">${saldoTxt}</td>`;
+    tbody.appendChild(tr);
+  });
+
   const tfoot = document.createElement('tr');
-  tfoot.style.cssText='background:var(--surface2);border-top:2px solid var(--border);font-weight:700';
+  tfoot.style.cssText='background:var(--vinho-p);font-weight:700';
   tfoot.innerHTML=`
-    <td colspan="2" style="padding:10px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text2)">
-      ${entrada>0?`Entrada: ${fmt(entrada)} + `:''}${nParcelas} parcelas
+    <td colspan="2" style="padding:11px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--warm)">
+      ${entrada>0?`Entrada ${fmt(entrada)} + `:''}${parcelas.length} parcela${parcelas.length!==1?'s':''}
     </td>
-    <td style="padding:10px 14px;text-align:right;color:var(--green);font-size:14px">${fmt(totalGeral)}</td>
-    <td style="padding:10px 14px;text-align:right;font-size:11px;color:var(--text2)">
-      ${delta<0?'<span style="color:var(--red)">−'+fmt(Math.abs(delta))+'</span>':delta>0?'<span style="color:var(--green)">+'+fmt(delta)+'</span>':'Sem diferença'}
+    <td style="padding:11px 14px;text-align:right;color:#fff;font-size:15px;font-weight:800">${fmt(totalGeral)}</td>
+    <td></td>
+    <td style="padding:11px 14px;text-align:right;font-size:11px;color:var(--warm)">
+      ${delta<-0.01?'<span style="color:#86efac">−'+fmt(Math.abs(delta))+'</span>':delta>0.01?'<span style="color:#fcd34d">+'+fmt(delta)+'</span>':'<span style="color:var(--warm)">Sem diferença</span>'}
     </td>`;
   tbody.appendChild(tfoot);
+}
+
+function _simAddMes(dateStr, months){
+  const d = new Date((dateStr||new Date().toISOString().slice(0,10))+'T12:00:00');
+  d.setMonth(d.getMonth()+months);
+  return d.toISOString().slice(0,10);
+}
+
+function _simRenderSuaSimulacao({ entrada, parcelas, totalGeral, delta, divida, desconto, juros, jurosModo, vencStr }){
+  const wrap    = document.getElementById('sim-sua-simulacao');
+  const cardsEl = document.getElementById('sim-grupos-cards');
+  const resumoEl= document.getElementById('sim-resumo-total');
+  if(!wrap || !cardsEl || !resumoEl) return;
+  wrap.style.display='block';
+  cardsEl.innerHTML='';
+  resumoEl.innerHTML='';
+
+  const parcelasNormais = parcelas.filter(p=>p.tipo==='Parcela');
+  const parcelasJuros   = parcelas.filter(p=>p.tipo==='Juros');
+  const totalJuros      = parcelasJuros.reduce((s,p)=>s+p.valor,0);
+  const totalNormal     = parcelasNormais.reduce((s,p)=>s+p.valor,0);
+
+  const grupos = [];
+  if(entrada > 0) grupos.push({
+    tipo:'entrada',label:'Entrada',sublabel:'À vista na assinatura',n:1,valor:entrada,total:entrada,
+    cor:'#166534',bg:'rgba(22,101,52,.07)',borda:'rgba(22,101,52,.22)',light:'#dcfce7',
+    icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
+  });
+  if(parcelasNormais.length > 0){
+    // Detecta grupos distintos por valor para exibir resumo correto
+    const gruposDistintos = [];
+    let i = 0, pn = parcelasNormais;
+    while(i < pn.length){
+      const val = pn[i].valor;
+      let cnt = 0;
+      while(i < pn.length && Math.abs(pn[i].valor - val) < 0.02){ cnt++; i++; }
+      gruposDistintos.push({qtd:cnt, val});
+    }
+    const sublabelParc = gruposDistintos.length===1
+      ? (gruposDistintos[0].qtd===1 ? 'Parcela única' : `${gruposDistintos[0].qtd} parcelas mensais`)
+      : gruposDistintos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ');
+    const valorExibir = gruposDistintos.length===1 ? gruposDistintos[0].val : null;
+    grupos.push({
+      tipo:'parcela',label:'Parcelas',sublabel:sublabelParc,
+      n:parcelasNormais.length,valor:valorExibir,total:totalNormal,
+      gruposDistintos,
+      cor:'#8B2D42',bg:'rgba(139,45,66,.07)',borda:'rgba(139,45,66,.22)',light:'#fce7f3',
+      icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B2D42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>'
+    });
+  }
+  if(parcelasJuros.length > 0) grupos.push({
+    tipo:'juros',label:'Parcelas de Juros',sublabel:'Ao final do parcelamento',
+    n:parcelasJuros.length,valor:parcelasJuros[0].valor,total:totalJuros,
+    cor:'#92400e',bg:'rgba(146,64,14,.07)',borda:'rgba(146,64,14,.22)',light:'#fef3c7',
+    icon:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>'
+  });
+
+  grupos.forEach((g,gi)=>{
+    const card = document.createElement('div');
+    card.style.cssText=`flex:1;min-width:160px;max-width:260px;background:${g.bg};border:1.5px solid ${g.borda};border-radius:12px;overflow:hidden`;
+    card.innerHTML=`
+      <div style="height:4px;background:${g.cor};opacity:.7"></div>
+      <div style="padding:14px 16px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:28px;height:28px;background:${g.light};border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${g.icon}</div>
+            <div>
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:${g.cor}">${g.label}</div>
+              <div style="font-size:10px;color:#888;margin-top:1px">${g.sublabel}</div>
+            </div>
+          </div>
+          ${g.n>1?`<div style="background:${g.cor};color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px">${g.n}×</div>`:''}
+        </div>
+        <div style="margin-bottom:10px">
+          ${g.gruposDistintos && g.gruposDistintos.length>1
+            ? `<div style="font-size:11px;color:#888;margin-bottom:4px">Grupos</div>
+               ${g.gruposDistintos.map(gd=>`<div style="font-size:14px;font-weight:700;color:${g.cor};line-height:1.4">${gd.qtd}× ${fmt(gd.val)}</div>`).join('')}`
+            : `<div style="font-size:11px;color:#888;margin-bottom:2px">${g.n>1?'Cada parcela':'Valor'}</div>
+               <div style="font-size:26px;font-weight:800;color:${g.cor};line-height:1;letter-spacing:-.5px">${fmt(g.valor)}</div>`}
+        </div>
+        <div style="background:rgba(255,255,255,.6);border-radius:7px;padding:7px 10px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;color:#666;font-weight:500">Subtotal</span>
+          <span style="font-size:13px;font-weight:700;color:${g.cor}">${fmt(g.total)}</span>
+        </div>
+      </div>`;
+    cardsEl.appendChild(card);
+    if(gi < grupos.length-1){
+      const arrow = document.createElement('div');
+      arrow.style.cssText='display:flex;align-items:center;justify-content:center;padding:0 4px;align-self:center;flex-shrink:0;font-size:14px;color:#aaa;font-weight:700';
+      arrow.textContent='+';
+      cardsEl.appendChild(arrow);
+    }
+  });
+
+  // Previsão de término: data da última parcela
+  let previsaoTermino = '';
+  if(vencStr && parcelas.length > 0){
+    const ultimaParc = parcelas[parcelas.length-1];
+    const vBase = new Date(vencStr+'T12:00:00');
+    vBase.setMonth(vBase.getMonth() + (ultimaParc.idx || parcelas.length-1));
+    previsaoTermino = vBase.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    previsaoTermino = previsaoTermino.charAt(0).toUpperCase() + previsaoTermino.slice(1);
+  }
+  const nParcelasNormais = parcelasNormais.length;
+  const anos = Math.floor(nParcelasNormais/12);
+  const meses = nParcelasNormais % 12;
+  const duracaoLabel = anos>0 ? `${anos} ano${anos>1?'s':''}${meses>0?' e '+meses+' mês':''}` : `${nParcelasNormais} mês${nParcelasNormais!==1?'es':''}`;
+
+  const totalRow = document.createElement('div');
+  totalRow.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-top:14px;border-top:2px solid var(--border);margin-top:4px';
+
+  // KPI 1: Total a Receber + juros discreto
+  const k1 = document.createElement('div');
+  k1.style.cssText='background:rgba(22,101,52,.06);border:2px solid rgba(22,101,52,.18);border-radius:10px;padding:13px 16px';
+  k1.innerHTML=`
+    <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:5px">Total a Receber</div>
+    <div style="font-size:20px;font-weight:800;color:#166534;line-height:1;margin-bottom:4px">${fmt(totalGeral)}</div>
+    <div style="font-size:10px;color:#999">${divida>0?((totalGeral/divida)*100).toFixed(0)+'% do original':''}</div>
+    ${totalJuros>0?`<div style="font-size:10px;color:#92400e;margin-top:4px;display:flex;align-items:center;gap:3px"><span style="opacity:.7">Juros aplicados:</span> <strong>${fmt(totalJuros)}</strong></div>`:''}`;
+  totalRow.appendChild(k1);
+
+  // KPI 2: Juros/Desconto
+  const tjCor  = totalJuros>0?'#92400e':(desconto>0?'#1e40af':'#475569');
+  const tjBg   = totalJuros>0?'rgba(146,64,14,.06)':(desconto>0?'rgba(30,64,175,.05)':'var(--surface2)');
+  const tjBord = totalJuros>0?'rgba(146,64,14,.18)':'var(--border)';
+  const tjVal  = totalJuros>0?fmt(totalJuros):(desconto>0?'−'+fmt(divida*desconto/100):'—');
+  const tjSub  = totalJuros>0?`${((totalJuros/totalGeral)*100).toFixed(1)}% do total`:(desconto>0?`${desconto}% de desconto`:'Sem acréscimo');
+  const k2 = document.createElement('div');
+  k2.style.cssText=`background:${tjBg};border:1px solid ${tjBord};border-radius:10px;padding:13px 16px`;
+  k2.innerHTML=`
+    <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:5px">${totalJuros>0?'Juros Totais':'Desconto Aplicado'}</div>
+    <div style="font-size:16px;font-weight:800;color:${tjCor};line-height:1;margin-bottom:4px">${tjVal}</div>
+    <div style="font-size:10px;color:#999">${tjSub}</div>`;
+  totalRow.appendChild(k2);
+
+  // KPI 3: Total de Parcelas + anos + previsão
+  const k3 = document.createElement('div');
+  k3.style.cssText='background:rgba(139,45,66,.06);border:1px solid rgba(139,45,66,.18);border-radius:10px;padding:13px 16px';
+  k3.innerHTML=`
+    <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-bottom:5px">Total de Parcelas</div>
+    <div style="font-size:16px;font-weight:800;color:#8B2D42;line-height:1;margin-bottom:4px">${parcelas.length} ${parcelas.length===1?'parcela':'parcelas'}</div>
+    <div style="font-size:10px;color:#999">${entrada>0?`+ entrada de ${fmt(entrada)}`:''}</div>
+    <div style="font-size:10px;color:#aaa;margin-top:3px">${nParcelasNormais>=12?`≈ ${duracaoLabel}`:''}</div>
+    ${previsaoTermino?`<div style="font-size:10px;color:#8B2D42;margin-top:3px;font-weight:500">Término: ${previsaoTermino}</div>`:''}`;
+  totalRow.appendChild(k3);
+
+  resumoEl.appendChild(totalRow);
 }
 
 function usarSimulacao(){
@@ -2199,74 +2702,118 @@ function exportarSimulacaoPDF(){
   const grupos = simGetGrupos();
   if(grupos.length===0){ alert('Adicione ao menos um grupo de parcelas.'); return; }
 
-  const nome          = document.getElementById('sim-nome').value.trim() || 'Paciente não identificado';
-  const ficha         = document.getElementById('sim-ficha').value.trim();
-  const numReneg      = document.getElementById('sim-num-reneg').value;
-  const desconto      = parseFloat(document.getElementById('sim-desconto').value)||0;
-  const entrada       = parseFloat(document.getElementById('sim-entrada').value)||0;
-  const jurosInputVal = parseFloat(document.getElementById('sim-juros').value)||0;
-  const vencStr       = document.getElementById('sim-vencimento').value;
+  const nome       = document.getElementById('sim-nome').value.trim() || 'Paciente não identificado';
+  const ficha      = document.getElementById('sim-ficha').value.trim();
+  const numReneg   = document.getElementById('sim-num-reneg').value;
+  const desconto   = parseFloat(document.getElementById('sim-desconto').value)||0;
+  const entrada    = parseFloat(document.getElementById('sim-entrada').value)||0;
+  const jurosAtivo = document.getElementById('sim-juros-ativo')?.checked || false;
+  const juros      = jurosAtivo ? simGetTaxaMensal() : 0;
+  const jurosModo  = document.getElementById('sim-juros-modo')?.value || 'proporcional';
+  const vencStr    = document.getElementById('sim-vencimento').value;
 
-  const parcelasList = [];
-  grupos.forEach(g=>{ for(let i=0;i<g.qtd;i++) parcelasList.push(g.val); });
-  const nParcelas  = parcelasList.length;
-  const totalParc  = parcelasList.reduce((a,b)=>a+b,0);
-  const totalGeral = entrada + totalParc;
-  const delta      = totalGeral - divida;
-  const valorParcela = grupos.length===1 ? grupos[0].val : null;
+  // Usa o mesmo motor de cálculo do calcSimulador
+  const valorBase = divida * (1 - desconto/100);
+  const aParcelar = Math.max(0, valorBase - entrada);
+  const vencBase  = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
 
-  // Monta linhas da tabela
-  let linhasParcelas = '';
-  const vencBase = vencStr ? new Date(vencStr+'T12:00:00') : new Date();
-  let saldo = totalParc;
-  for(let i=0; i<parcelasList.length; i++){
-    const pValor = parcelasList[i];
-    saldo = Math.max(0, Math.round((saldo - pValor)*100)/100);
-    const vencData = new Date(vencBase);
-    vencData.setMonth(vencBase.getMonth()+i);
-    const isLast = i===parcelasList.length-1;
-    linhasParcelas += `<tr style="${isLast?'font-weight:700;background:#f9f5f0':''}${i%2===0?'background:#fdf9f4':''}">
-      <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;color:#6a1f30">${i+1}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8">${fmtDate(vencData.toISOString().slice(0,10))}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;text-align:right;font-weight:600;color:#8b2d42">${fmt(pValor)}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e0c9b8;text-align:right;color:${saldo<=0?'#166534':'#6a1f30'}">${saldo<=0?'✓ Quitado':fmt(saldo)}</td>
-    </tr>`;
+  const parcelas = [];
+  if(juros > 0 && jurosModo === 'extra'){
+    grupos.forEach(g=>{ for(let i=0;i<g.qtd;i++) parcelas.push({valor:g.val,tipo:'Parcela',idx:parcelas.length}); });
+    const totalJuros = aParcelar * juros * parcelas.length;
+    const ultimoGrupo = grupos[grupos.length-1];
+    const valParc = ultimoGrupo ? ultimoGrupo.val : (parcelas.length>0 ? parcelas[0].valor : 1);
+    const nPJ = Math.max(1, Math.ceil(totalJuros/valParc));
+    for(let j=0;j<nPJ;j++){
+      const v = j<nPJ-1 ? Math.round(valParc*100)/100 : Math.round((totalJuros-valParc*(nPJ-1))*100)/100;
+      parcelas.push({valor:Math.max(0,v),tipo:'Juros',idx:parcelas.length});
+    }
+  } else {
+    grupos.forEach(g=>{
+      let val = g.val;
+      if(juros > 0){
+        const baseGrupo = aParcelar*(g.val*g.qtd)/Math.max(1,grupos.reduce((s,x)=>s+x.val*x.qtd,0));
+        val = baseGrupo*(juros*Math.pow(1+juros,g.qtd))/(Math.pow(1+juros,g.qtd)-1);
+        val = Math.round(val*100)/100;
+      }
+      for(let i=0;i<g.qtd;i++) parcelas.push({valor:val,tipo:'Parcela',idx:parcelas.length});
+    });
   }
 
+  const totalParc   = parcelas.reduce((s,p)=>s+p.valor,0);
+  const totalGeral  = entrada + totalParc;
+  const delta       = totalGeral - divida;
+  const totalJurosR = parcelas.filter(p=>p.tipo==='Juros').reduce((s,p)=>s+p.valor,0)
+                    + (juros>0 && jurosModo==='proporcional' ? totalGeral-divida*(1-desconto/100) : 0);
+
+  // Linhas da tabela com tipo
+  let linhasParcelas = '';
+  let saldo = aParcelar;
+  if(entrada > 0){
+    linhasParcelas += `<tr style="background:#f0fdf4">
+      <td style="padding:7px 10px;color:#aaa">—</td>
+      <td style="padding:7px 10px">${fmtDate(vencStr)}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:700;color:#166534">${fmt(entrada)}</td>
+      <td style="padding:7px 10px;text-align:center"><span style="background:#d1fae5;color:#166534;padding:1px 8px;border-radius:12px;font-size:9px;font-weight:700">ENTRADA</span></td>
+      <td style="padding:7px 10px;text-align:right;color:#888;font-size:11px">${fmt(aParcelar)}</td>
+    </tr>`;
+  }
+  parcelas.forEach((p,idx)=>{
+    const isJuros = p.tipo==='Juros';
+    if(!isJuros){
+      const jp = juros>0&&jurosModo==='proporcional' ? saldo*juros : 0;
+      saldo = Math.max(0,Math.round((saldo-(p.valor-jp))*100)/100);
+    }
+    const vd = new Date(vencBase); vd.setMonth(vencBase.getMonth()+(p.idx||idx));
+    const saldoTxt = !isJuros ? (saldo<=0?'✓ Quitado':fmt(saldo)) : '—';
+    const bgRow = isJuros ? '#fffbeb' : (idx%2===0?'#fdf9f4':'#fff');
+    const badgeHtml = isJuros
+      ? '<span style="background:#fef3c7;color:#92400e;padding:1px 8px;border-radius:12px;font-size:9px;font-weight:700">JUROS</span>'
+      : '<span style="background:#f3f4f6;color:#6b7280;padding:1px 8px;border-radius:12px;font-size:9px;font-weight:700">PARCELA</span>';
+    linhasParcelas += `<tr style="background:${bgRow}">
+      <td style="padding:7px 10px;color:#aaa;border-bottom:1px solid #e0c9b8">${idx+1}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid #e0c9b8">${fmtDate(vd.toISOString().slice(0,10))}</td>
+      <td style="padding:7px 10px;text-align:right;font-weight:600;color:${isJuros?'#b45309':'#8b2d42'};border-bottom:1px solid #e0c9b8">${fmt(p.valor)}</td>
+      <td style="padding:7px 10px;text-align:center;border-bottom:1px solid #e0c9b8">${badgeHtml}</td>
+      <td style="padding:7px 10px;text-align:right;color:${saldo<=0&&!isJuros?'#166534':'#6a1f30'};border-bottom:1px solid #e0c9b8">${saldoTxt}</td>
+    </tr>`;
+  });
+
   const dataHoje = fmtDate(today());
-  const deltaHtml = delta<0
-    ? `<span style="color:#991b1b">−${fmt(Math.abs(delta))} (desconto ${desconto}%)</span>`
-    : delta>0 ? `<span style="color:#166534">+${fmt(delta)}</span>`
+  const jurosInputVal = parseFloat(document.getElementById('sim-juros').value)||0;
+  const jurosModoLabel = jurosModo==='extra' ? 'Parcelas extras ao final' : 'Rateado nas parcelas';
+  const deltaHtml = delta<-0.01
+    ? `<span style="color:#991b1b">−${fmt(Math.abs(delta))} (${desconto}% desc.)</span>`
+    : delta>0.01 ? `<span style="color:#166534">+${fmt(delta)} (acréscimo)</span>`
     : '<span style="color:#6a1f30">Sem diferença</span>';
 
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
   <title>Simulação de Renegociação — ${toUpper(nome)}</title>
   <style>
-    @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+    @page { size: A4; margin: 16mm 14mm 16mm 14mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a0f0a; background: #fff; }
-    .header { background: #6a1f30; color: #fdf9f4; padding: 22px 28px 18px; border-bottom: 3px solid #c4955a; }
-    .logo { font-size: 22px; letter-spacing: .25em; text-transform: uppercase; font-weight: 300; margin-bottom: 2px; }
-    .logo-sub { font-size: 10px; letter-spacing: .28em; text-transform: uppercase; opacity: .75; }
-    .doc-title { font-size: 14px; margin-top: 10px; opacity: .9; letter-spacing: .06em; }
-    .body { padding: 22px 28px; }
-    .section { margin-bottom: 20px; }
-    .section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #6a1f30; border-bottom: 1px solid #e0c9b8; padding-bottom: 5px; margin-bottom: 12px; }
-    .info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
-    .info-box { background: #f5ede2; border-radius: 7px; padding: 10px 14px; border: 1px solid #e0c9b8; }
-    .info-label { font-size: 9px; text-transform: uppercase; letter-spacing: .3px; color: #6a1f30; margin-bottom: 4px; }
-    .info-value { font-size: 15px; font-weight: 700; color: #1a0f0a; }
-    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
-    .kpi-box { background: #fdf9f4; border-radius: 7px; padding: 10px 14px; border: 1px solid #e0c9b8; text-align: center; }
-    .kpi-label { font-size: 9px; text-transform: uppercase; letter-spacing: .3px; color: #6a1f30; margin-bottom: 5px; }
-    .kpi-value { font-size: 16px; font-weight: 800; color: #8b2d42; }
-    table { width: 100%; border-collapse: collapse; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1a0f0a; background: #fff; }
+    .header { background: #6a1f30; color: #fdf9f4; padding: 18px 24px 14px; border-bottom: 3px solid #c4955a; }
+    .logo { font-size: 20px; letter-spacing: .25em; text-transform: uppercase; font-weight: 300; margin-bottom: 2px; }
+    .logo-sub { font-size: 9px; letter-spacing: .28em; text-transform: uppercase; opacity: .75; }
+    .doc-title { font-size: 13px; margin-top: 8px; opacity: .9; }
+    .body { padding: 18px 24px; }
+    .section { margin-bottom: 16px; }
+    .section-label { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #6a1f30; border-bottom: 1px solid #e0c9b8; padding-bottom: 4px; margin-bottom: 10px; }
+    .info-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .info-box { background: #f5ede2; border-radius: 6px; padding: 8px 12px; border: 1px solid #e0c9b8; }
+    .info-label { font-size: 8px; text-transform: uppercase; letter-spacing: .3px; color: #6a1f30; margin-bottom: 3px; }
+    .info-value { font-size: 13px; font-weight: 700; color: #1a0f0a; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 8px; }
+    .kpi-box { background: #fdf9f4; border-radius: 6px; padding: 8px 10px; border: 1px solid #e0c9b8; text-align: center; }
+    .kpi-label { font-size: 8px; text-transform: uppercase; letter-spacing: .3px; color: #6a1f30; margin-bottom: 4px; }
+    .kpi-value { font-size: 14px; font-weight: 800; color: #8b2d42; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
     thead tr { background: #6a1f30; }
-    thead th { padding: 9px 12px; text-align: left; color: #e0c9b8; font-size: 9px; font-weight: 400; letter-spacing: .28em; text-transform: uppercase; }
-    thead th:last-child,thead th:nth-child(3) { text-align: right; }
-    .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e0c9b8; display: flex; justify-content: space-between; font-size: 10px; color: #6a1f30; }
-    .assinatura { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-    .assin-line { border-top: 1px solid #3d2a20; padding-top: 6px; font-size: 10px; color: #6a1f30; text-align: center; }
+    thead th { padding: 8px 10px; text-align: left; color: #e0c9b8; font-size: 8px; font-weight: 400; letter-spacing: .28em; text-transform: uppercase; }
+    .footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #e0c9b8; display: flex; justify-content: space-between; font-size: 9px; color: #6a1f30; }
+    .assinatura { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+    .assin-line { border-top: 1px solid #3d2a20; padding-top: 5px; font-size: 9px; color: #6a1f30; text-align: center; }
   </style>
   </head><body>
   <div class="header">
@@ -2287,33 +2834,36 @@ function exportarSimulacaoPDF(){
       <div class="section-label">Resumo da Negociação</div>
       <div class="kpi-grid">
         <div class="kpi-box"><div class="kpi-label">Dívida Original</div><div class="kpi-value" style="color:#991b1b">${fmt(divida)}</div></div>
-        <div class="kpi-box"><div class="kpi-label">Entrada</div><div class="kpi-value" style="color:#854d0e">${fmt(entrada)}</div></div>
-        <div class="kpi-box"><div class="kpi-label">Parcelas</div><div class="kpi-value" style="font-size:${grupos.length>1?'11px':'16px'}">${grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ')}</div></div>
+        <div class="kpi-box"><div class="kpi-label">Entrada</div><div class="kpi-value" style="color:#854d0e">${entrada>0?fmt(entrada):'—'}</div></div>
+        <div class="kpi-box"><div class="kpi-label">Parcelas</div><div class="kpi-value" style="font-size:${grupos.length>1?'10px':'14px'}">${grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ')}</div></div>
         <div class="kpi-box"><div class="kpi-label">Total a Receber</div><div class="kpi-value" style="color:#166534">${fmt(totalGeral)}</div></div>
       </div>
-      <div style="margin-top:10px;background:#f5ede2;border-radius:7px;padding:10px 16px;font-size:12px;border:1px solid #e0c9b8">
-        <strong>${nParcelas} parcela${nParcelas!==1?'s':''}: ${grupos.map(g=>`${g.qtd}×${fmt(g.val)}`).join(' + ')}</strong>
-        ${desconto>0?` · Desconto aplicado: ${desconto}%`:''}
-        · Sem juros
+      <div style="background:#f5ede2;border-radius:6px;padding:9px 14px;font-size:11px;border:1px solid #e0c9b8">
+        <strong>${parcelas.length} parcela${parcelas.length!==1?'s':''}</strong>
+        ${desconto>0?` · Desconto: ${desconto}%`:''}
+        ${jurosAtivo&&jurosInputVal>0?` · Juros: ${jurosInputVal}% ${_simJurosModo==='ano'?'a.a.':'a.m.'} (${jurosModoLabel})`:'· Sem juros'}
         · Diferença vs. dívida: ${deltaHtml}
+        ${totalJurosR>0.01?`<br><span style="color:#92400e;font-size:10px">Total de juros aplicados: <strong>${fmt(totalJurosR)}</strong></span>`:''}
       </div>
     </div>
     <div class="section">
       <div class="section-label">Tabela de Parcelas</div>
       <table>
         <thead><tr>
-          <th style="width:40px">#</th>
+          <th style="width:36px">#</th>
           <th>Vencimento</th>
           <th style="text-align:right">Valor</th>
-          <th style="text-align:right">Saldo Restante</th>
+          <th style="text-align:center">Tipo</th>
+          <th style="text-align:right">Saldo</th>
         </tr></thead>
         <tbody>${linhasParcelas}</tbody>
         <tfoot><tr style="background:#f5ede2;font-weight:700;border-top:2px solid #c4955a">
-          <td colspan="2" style="padding:9px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#6a1f30">
-            ${entrada>0?`Entrada ${fmt(entrada)} + `:''}${nParcelas} parcelas
+          <td colspan="2" style="padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#6a1f30">
+            ${entrada>0?`Entrada ${fmt(entrada)} + `:''}${parcelas.length} parcelas
           </td>
-          <td style="padding:9px 12px;text-align:right;color:#166534;font-size:14px">${fmt(totalGeral)}</td>
-          <td style="padding:9px 12px;text-align:right;font-size:11px">${deltaHtml}</td>
+          <td style="padding:8px 10px;text-align:right;color:#166534;font-size:13px">${fmt(totalGeral)}</td>
+          <td></td>
+          <td style="padding:8px 10px;text-align:right;font-size:10px">${deltaHtml}</td>
         </tr></tfoot>
       </table>
     </div>
@@ -2322,7 +2872,7 @@ function exportarSimulacaoPDF(){
       <div class="assin-line">Responsável Financeiro — Athena</div>
     </div>
     <div class="footer">
-      <span>Athena — Controle Financeiro · Documento gerado em ${dataHoje}</span>
+      <span>Athena — Controle Financeiro · Gerado em ${dataHoje}</span>
       <span>Simulação — não constitui contrato</span>
     </div>
   </div>
@@ -2558,7 +3108,7 @@ function saveNew(){
       nome: record.nome,
       ficha: record.ficha,
       valor: record.valorEntrada,
-      vencimento: dataEntrada,
+      vencimento: null,
       pagamento: dataEntrada,
       diasUteis: 0,
       etapa: 'reneg',
@@ -2723,25 +3273,46 @@ function updateBadges(){
 
 function renderDonut(){
   const cols=['emdia','atraso','cancelamento','concluido'];
-  const hexColors={'emdia':'#1e40af','atraso':'#991b1b','cancelamento':'#64748b','concluido':'#166534'};
-  const labels={'emdia':'Em Dia','atraso':'Atraso / Quebras','cancelamento':'Cancelados','concluido':'Concluído'};
-  const data=cols.map(c=>({
-    col:c,
-    label:labels[c],
-    color:hexColors[c],
-    value:records.filter(r=>r.situacao===c).reduce((a,r)=>a+r.parcelas.filter(p=>p.status==='paga').reduce((b,p)=>b+p.valor,0),0)
+  const hexColors={'emdia':'#1e40af','atraso':'#991b1b','cancelamento':'#64748b','concluido':'#166534','entrada':'#b45309'};
+  const labels={'emdia':'Em Dia','atraso':'Atraso / Quebras','cancelamento':'Cancelados','concluido':'Concluído','entrada':'Entradas'};
+
+  // Calcula parcelas pagas por situação
+  const data = cols.map(c=>({
+    col: c,
+    label: labels[c],
+    color: hexColors[c],
+    value: records.filter(r=>r.situacao===c).reduce((a,r)=>
+      a + r.parcelas.filter(p=>p.status==='paga').reduce((b,p)=>b+p.valor,0), 0)
   }));
-  const total=data.reduce((a,d)=>a+d.value,0);
-  const svg=document.getElementById('reneg-donut');
+
+  // Inclui entradas como categoria separada
+  const totalEntradas = records.reduce((a,r)=>a+(r.valorEntrada||0),0);
+  if(totalEntradas > 0) data.push({ col:'entrada', label:'Entradas', color:'#b45309', value: totalEntradas });
+
+  const total = data.reduce((a,d)=>a+d.value, 0);
+  // Saldo pendente = total em renegociação - total recuperado
+  const totalEmReneg = records.reduce((a,r)=>a+r.valorTotal,0);
+  const saldoPend = Math.max(0, totalEmReneg - total);
+
+  const svg = document.getElementById('reneg-donut');
   if(!svg) return;
   svg.innerHTML='';
-  const cx=60,cy=60,r=46,ir=28;
+  const cx=70,cy=70,r=54,ir=34;
+
   if(total===0){
-    svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="18"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="11" fill="var(--text2)" font-family="'Josefin Sans',sans-serif">R$ 0,00</text>`;
+    const emptyCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    emptyCircle.setAttribute('cx',cx); emptyCircle.setAttribute('cy',cy); emptyCircle.setAttribute('r',r);
+    emptyCircle.setAttribute('fill','none'); emptyCircle.setAttribute('stroke','var(--border)'); emptyCircle.setAttribute('stroke-width','20');
+    svg.appendChild(emptyCircle);
+    const t1=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t1.setAttribute('x',cx);t1.setAttribute('y',cy-4);t1.setAttribute('text-anchor','middle');
+    t1.setAttribute('font-size','10');t1.setAttribute('fill','var(--text2)');t1.setAttribute('font-family',"'Josefin Sans',sans-serif");
+    t1.textContent='Sem dados';
+    svg.appendChild(t1);
   } else {
     let startAngle=-Math.PI/2;
     data.forEach(d=>{
-      if(d.value===0) return;
+      if(d.value<=0) return;
       const angle=(d.value/total)*2*Math.PI;
       const endAngle=startAngle+angle;
       const x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle);
@@ -2749,34 +3320,38 @@ function renderDonut(){
       const large=angle>Math.PI?1:0;
       const path=document.createElementNS('http://www.w3.org/2000/svg','path');
       path.setAttribute('d',`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`);
-      path.setAttribute('fill',d.color);
-      path.setAttribute('opacity','0.85');
+      path.setAttribute('fill',d.color); path.setAttribute('opacity','0.90');
       svg.appendChild(path);
       startAngle=endAngle;
     });
     const hole=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    hole.setAttribute('cx',cx); hole.setAttribute('cy',cy); hole.setAttribute('r',ir);
+    hole.setAttribute('cx',cx);hole.setAttribute('cy',cy);hole.setAttribute('r',ir);
     hole.setAttribute('fill','var(--surface)');
     svg.appendChild(hole);
-    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('x',cx); txt.setAttribute('y',cy-4); txt.setAttribute('text-anchor','middle');
-    txt.setAttribute('font-size','9'); txt.setAttribute('fill','var(--text2)');
-    txt.setAttribute('font-family',"'Josefin Sans',sans-serif"); txt.textContent='Total Pago';
-    svg.appendChild(txt);
-    const txt2=document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt2.setAttribute('x',cx); txt2.setAttribute('y',cy+10); txt2.setAttribute('text-anchor','middle');
-    txt2.setAttribute('font-size','9'); txt2.setAttribute('fill','var(--tinta)'); txt2.setAttribute('font-weight','bold');
-    txt2.setAttribute('font-family',"'Josefin Sans',sans-serif");
-    txt2.textContent=fmt(total);
-    svg.appendChild(txt2);
+    const t1=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t1.setAttribute('x',cx);t1.setAttribute('y',cy-5);t1.setAttribute('text-anchor','middle');
+    t1.setAttribute('font-size','8');t1.setAttribute('fill','var(--text2)');t1.setAttribute('font-family',"'Josefin Sans',sans-serif");
+    t1.textContent='RECUPERADO';
+    svg.appendChild(t1);
+    const t2=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t2.setAttribute('x',cx);t2.setAttribute('y',cy+8);t2.setAttribute('text-anchor','middle');
+    t2.setAttribute('font-size','10');t2.setAttribute('fill','#166534');t2.setAttribute('font-weight','bold');
+    t2.setAttribute('font-family',"'Josefin Sans',sans-serif");
+    t2.textContent=fmt(total);
+    svg.appendChild(t2);
   }
+
   const leg=document.getElementById('reneg-donut-legend');
   if(leg){
-    leg.innerHTML=data.map(d=>{
+    leg.innerHTML=data.filter(d=>d.value>0).map(d=>{
       const pct=total>0?(d.value/total*100).toFixed(1):'0.0';
-      return `<div style="display:flex;align-items:center;gap:8px"><div style="width:10px;height:10px;border-radius:50%;background:${d.color};flex-shrink:0"></div><span style="color:var(--text2)">${d.label}:</span><strong style="color:var(--text)">${fmt(d.value)}</strong><span style="color:var(--text2);font-size:11px">(${pct}%)</span></div>`;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><div style="width:10px;height:10px;border-radius:3px;background:${d.color};flex-shrink:0"></div><span style="color:var(--text2);font-family:'Josefin Sans',sans-serif;font-size:11px">${d.label}:</span><strong style="color:var(--text);font-family:'Josefin Sans',sans-serif;font-size:12px">${fmt(d.value)}</strong><span style="color:var(--text2);font-size:10px;margin-left:2px">(${pct}%)</span></div>`;
     }).join('');
   }
+  const totalRecEl=document.getElementById('reneg-donut-total-rec');
+  const saldoEl=document.getElementById('reneg-donut-saldo');
+  if(totalRecEl) totalRecEl.textContent=fmt(total);
+  if(saldoEl) saldoEl.textContent=fmt(saldoPend);
 }
 
 // ==================== DRAG & DROP ====================
@@ -3966,7 +4541,7 @@ function cobLogout(){
 function showCobMain(){
   document.getElementById('cob-login-wall').style.display='none';
   document.getElementById('cob-main').style.display='block';
-  document.getElementById('cob-user-badge').innerHTML=`<span class="user-badge">${cobUser}</span>`;
+  const _badge = document.getElementById('cob-user-badge'); if(_badge) _badge.innerHTML=`<span class="user-badge">${cobUser}</span>`;
   // default month = current
   const now = new Date();
   const ym  = now.toISOString().slice(0,7);
@@ -4173,6 +4748,24 @@ function renderCob(){
 }
 
 // ==================== RENDER RESUMO ====================
+function persistCobResumo(){
+  const vals = {
+    boletosTeor: document.getElementById('cob-boletos-teoricos')?.value || '',
+    inadimTotal: document.getElementById('cob-inadimplencia')?.value || '',
+    metaInadim:  document.getElementById('cob-meta-inadimplencia')?.value  || ''
+  };
+  localStorage.setItem('cob_resumo', JSON.stringify(vals));
+}
+function restoreCobResumo(){
+  try {
+    const vals = JSON.parse(localStorage.getItem('cob_resumo') || '{}');
+    if(vals.boletosTeor !== undefined){ const el = document.getElementById('cob-boletos-teoricos'); if(el) el.value = vals.boletosTeor; }
+    if(vals.inadimTotal !== undefined){ const el = document.getElementById('cob-inadimplencia'); if(el) el.value = vals.inadimTotal; }
+    if(vals.metaInadim  !== undefined){ const el = document.getElementById('cob-meta-inadimplencia'); if(el) el.value = vals.metaInadim; }
+  } catch(e){}
+  renderCobResumo();
+}
+
 function renderCobResumo(){
   const mes = document.getElementById('cob-filter-month')?.value || '';
   const inadimplencia    = parseFloat(document.getElementById('cob-inadimplencia')?.value)||0;
@@ -4733,6 +5326,45 @@ if(cobUser) { setTimeout(()=>{ if(document.getElementById('tab-cobranca').classL
 renderKanban();
 
 // ==================== BACKUP / RESTORE ====================
+function exportarHTMLCompleto(){
+  // Coleta todos os dados atuais
+  const payload = {
+    v: 1,
+    ts: new Date().toISOString(),
+    renegociacoes: records,
+    negativacoes: negRecords,
+    desativacoes: desRecords,
+    cobrancas: cobRecords,
+    boletosReneg: boletosReneg
+  };
+  const dataJson = JSON.stringify(payload);
+  // Obtém o HTML atual da página
+  const htmlAtual = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+  // Injeta os dados como script de inicialização logo após <body>
+  const scriptInject = `<script>
+(function(){
+  var _d = ${dataJson};
+  try {
+    if(_d.renegociacoes) localStorage.setItem('renegociacoes', JSON.stringify(_d.renegociacoes));
+    if(_d.negativacoes)  localStorage.setItem('negativacoes',  JSON.stringify(_d.negativacoes));
+    if(_d.desativacoes)  localStorage.setItem('desativacoes',  JSON.stringify(_d.desativacoes));
+    if(_d.cobrancas)     localStorage.setItem('cobrancas',     JSON.stringify(_d.cobrancas));
+    if(_d.boletosReneg)  localStorage.setItem('boletosReneg',  JSON.stringify(_d.boletosReneg));
+  } catch(e) { console.warn('Restore falhou:', e); }
+})();
+<\/script>`;
+  const htmlFinal = htmlAtual.replace('<body>', '<body>' + scriptInject);
+  const dt = new Date().toISOString().slice(0,10);
+  const blob = new Blob([htmlFinal], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'athena-cobranca-' + dt + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById('backup-status').textContent = '✓ App HTML exportado com todos os dados!';
+}
+
 function openBackupModal(){
   document.getElementById('backup-status').textContent = '';
   openModal('modal-backup');
@@ -4776,6 +5408,7 @@ function importarBackup(input){
       merge(boletosReneg, data.boletosReneg||[]);
       save(); saveNegs(); persistDes(); persistCob(); persistBoletos();
       renderKanban(); renderNeg(); renderDes(); renderCob();
+restoreCobResumo();
       const status = document.getElementById('backup-status');
       status.style.color='var(--green)';
       status.textContent = `✓ Backup restaurado! (${data.renegociacoes.length} reneg, ${data.desativacoes.length} desativ., ${data.cobrancas.length} cobr.)`;
@@ -7217,12 +7850,115 @@ function exportarRenegCSV(){
   downloadCSV(rows, `renegociacoes-${today()}.csv`);
 }
 
+function exportarRenegExcel(){
+  const situacaoLabels = {emdia:'Em Dia',atraso:'Atraso / Quebras',cancelamento:'Cancelado',concluido:'Concluído'};
+  const contactLabelsExp = {'1':'1º Contato','2':'2º Contato','3':'3º Contato','4':'4º Contato','5':'5º Contato','6':'6º Contato','neg':'Após Negativação'};
+  let rows = [
+    ['RENEGOCIAÇÕES — ORAL UNIC CARLOS BARBOSA'],
+    ['Exportado em:', new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR')],
+    [],
+    ['Nome do Paciente','Nº Ficha','Data Renegociação','Nº Renegociação','Valor Total (R$)','Entrada (R$)','Qtd Parcelas','Situação','Etapa Contato','Parcelas Pagas','Valor Recebido (R$)','Saldo Restante (R$)','Obs']
+  ];
+  records.forEach(r=>{
+    const pagas = (r.parcelas||[]).filter(p=>p.status==='paga');
+    const totalPago = pagas.reduce((s,p)=>s+(p.valor||0),0) + (r.valorEntrada||0);
+    const saldo = Math.max(0,(r.valorTotal||0) - totalPago);
+    rows.push([
+      r.nome||'',
+      r.ficha||'',
+      r.data ? r.data.split('-').reverse().join('/') : '',
+      r.numReneg||1,
+      Number(r.valorTotal||0).toFixed(2).replace('.',','),
+      Number(r.valorEntrada||0).toFixed(2).replace('.',','),
+      (r.parcelas||[]).length,
+      situacaoLabels[r.situacao]||r.situacao||'',
+      contactLabelsExp[r.contato]||r.contato||'',
+      pagas.length,
+      Number(totalPago).toFixed(2).replace('.',','),
+      Number(saldo).toFixed(2).replace('.',','),
+      r.obs||''
+    ]);
+  });
+  const xmlRows = rows.map(row=>{
+    const cells = row.map(cell=>{
+      if(typeof cell === 'number') return `<Cell><Data ss:Type="Number">${cell}</Data></Cell>`;
+      return `<Cell><Data ss:Type="String">${String(cell||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`;
+    }).join('');
+    return `<Row>${cells}</Row>`;
+  }).join('');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="Renegociações">
+    <Table>${xmlRows}</Table>
+  </Worksheet>
+</Workbook>`;
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `renegociacoes_${today()}.xls`; a.click();
+  URL.revokeObjectURL(url);
+}
+
 function exportarNegCSV(){
   const header = ['Nome','Ficha','Valor Total','Status','Data Negativação','Data Pagamento'];
   const rows = [header, ...negRecords.map(r=>[
     r.nome, r.ficha, r.valorTotal, r.status, fmtDate(r.dataNegativacao), fmtDate(r.dataPagamento)
   ])];
   downloadCSV(rows, `negativacoes-${today()}.csv`);
+}
+
+function exportarNegExcel(){
+  const concluidas = negRecords.filter(n=>n.status==='concluida' && !n.protestoEligivel);
+  const pagas      = negRecords.filter(n=>n.status==='paga');
+  const protesto   = negRecords.filter(n=>n.status==='concluida' && n.protestoEligivel);
+  const todos = [...concluidas, ...pagas, ...protesto];
+
+  let rows = [
+    ['NEGATIVAÇÃO — ORAL UNIC CARLOS BARBOSA'],
+    ['Exportado em:', new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR')],
+    [],
+    ['Nome do Paciente','Nº Ficha','Valor Negativado (R$)','Status','Tratamentos','Data Negativação','Data Quitação','Observação']
+  ];
+
+  todos.forEach(n=>{
+    const statusLabel = n.status==='paga' ? 'Pago/Quitado' : n.protestoEligivel ? 'Elegível Protesto' : 'Negativado (Serasa)';
+    rows.push([
+      n.nome||'',
+      n.ficha||'',
+      Number(n.valorTotal||0).toFixed(2).replace('.',','),
+      statusLabel,
+      (n.tratamentos||[]).join('; ')||'',
+      n.dataNegativacao ? n.dataNegativacao.split('-').reverse().join('/') : '',
+      n.dataPagamento   ? n.dataPagamento.split('-').reverse().join('/')   : '',
+      n.obs||''
+    ]);
+  });
+
+  const xmlRows = rows.map(row=>{
+    const cells = row.map(cell=>{
+      if(typeof cell === 'number') return `<Cell><Data ss:Type="Number">${cell}</Data></Cell>`;
+      return `<Cell><Data ss:Type="String">${String(cell||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`;
+    }).join('');
+    return `<Row>${cells}</Row>`;
+  }).join('');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="Negativação">
+    <Table>${xmlRows}</Table>
+  </Worksheet>
+</Workbook>`;
+
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `negativacao_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function exportarDesCSV(){
@@ -7239,6 +7975,73 @@ function exportarCobCSV(){
     r.nome, r.ficha, fmtDate(r.data), r.valor||0, r.etapa||'', r.obs||''
   ])];
   downloadCSV(rows, `cobranca-${today()}.csv`);
+}
+
+function exportarCobExcel(){
+  const mes = document.getElementById('cob-filter-month')?.value || '';
+  const filtered = cobRecords.filter(r=>{
+    const mesOk = !mes || r.mes===mes;
+    const userOk = cobUser==='ADM' || r.usuario===cobUser;
+    return mesOk && userOk;
+  }).sort((a,b)=>b.pagamento.localeCompare(a.pagamento));
+
+  const etapaLabels = {'1':'1º Contato','2':'2º Contato','3':'3º Contato','4':'4º Contato','5':'5º Contato','6':'6º Contato','reneg':'Renegociação','neg':'Após Negativação'};
+
+  let rows = [
+    ['COBRANÇA — ORAL UNIC CARLOS BARBOSA'],
+    ['Período:', mes ? mes.slice(5)+'/'+mes.slice(0,4) : 'Todos'],
+    ['Exportado em:', new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR')],
+    [],
+    ['Etapa','Ficha','Paciente','Vencimento','Pagamento','Dias Úteis','Valor Recebido (R$)','Origem','Observação']
+  ];
+
+  filtered.forEach(r=>{
+    const origem = r.sourceKey?.startsWith('reneg_') ? 'Renegociação' : r.sourceKey?.startsWith('neg_') ? 'Após Negativação' : 'Manual';
+    rows.push([
+      etapaLabels[r.etapa]||r.etapa,
+      r.ficha||'',
+      r.nome||'',
+      r.vencimento ? r.vencimento.split('-').reverse().join('/') : '',
+      r.pagamento  ? r.pagamento.split('-').reverse().join('/')  : '',
+      r.diasUteis||0,
+      Number(r.valor||0).toFixed(2).replace('.',','),
+      origem,
+      r.obs||''
+    ]);
+  });
+
+  const totalValor = filtered.reduce((a,r)=>a+(r.valor||0),0);
+  rows.push([]);
+  rows.push(['','','','','TOTAL','',totalValor.toFixed(2).replace('.',','),'','']);
+
+  // Gerar XML do Excel (formato SpreadsheetML)
+  const xmlRows = rows.map(row=>{
+    const cells = row.map(cell=>{
+      const isNum = typeof cell === 'number' || (typeof cell === 'string' && cell.replace(',','.') !== '' && !isNaN(cell.replace(',','.')));
+      if(typeof cell === 'number'){
+        return `<Cell><Data ss:Type="Number">${cell}</Data></Cell>`;
+      }
+      return `<Cell><Data ss:Type="String">${String(cell).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</Data></Cell>`;
+    }).join('');
+    return `<Row>${cells}</Row>`;
+  }).join('');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <Worksheet ss:Name="Cobrança">
+    <Table>${xmlRows}</Table>
+  </Worksheet>
+</Workbook>`;
+
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cobranca_${mes||'completo'}_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ==================== IMPORTAR PLANILHA RENEGOCIAÇÕES ====================
