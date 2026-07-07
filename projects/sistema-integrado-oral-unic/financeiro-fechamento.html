@@ -586,8 +586,9 @@ function renderFechamento(){
     { key:'fluxo',     label:'Fluxo de Caixa',   autoVal: fluxoCaixaAuto,       sub: resumo.fluxo!=null?'da planilha':'da aba Direção' },
     { key:'despesas',  label:'Despesas',          autoVal: despesasAuto,         sub: resumo.despesas!=null?'da planilha':`${rows.length} pagamentos` },
     { key:'dinheiro',  label:'Dinheiro',          autoVal: dinheiroAutoVal,      sub: resumo.dinheiro!=null?'da planilha':`${rows.filter(r=>r.d>0).length} saídas` },
-    { key:'saque',     label:'Saque',             autoVal: saqueAutoVal,         sub: saqueAutoVal!=null?'da planilha':'manual' },
-    { key:'sobra',     label:'Sobra de Caixa do Mês Anterior',    autoVal: sobraAtualAuto,       sub:`anterior: ${sobraAnterior>=0?'+':''}${fmt(sobraAnterior)}`, signed:true },
+    { key:'saque',         label:'Saque',                       autoVal: saqueAutoVal,    sub: saqueAutoVal!=null?'da planilha':'manual' },
+    { key:'sobra',         label:'Sobra de Caixa do Mês Anterior', autoVal: sobraAnterior,  sub:'acumulada até mês anterior', signed:true },
+    { key:'sobra_atual',   label:'Sobra de Caixa Atual',           autoVal: sobraAtualAuto, sub:`ant. + dinheiro − saídas`, signed:true, readonly:true },
   ];
 
   if(!month.acards) month.acards = {};
@@ -595,12 +596,23 @@ function renderFechamento(){
   saveFechData(data);
 
   document.getElementById('fech-summary-cards').innerHTML = FECH_ACARDS.map(ac => {
-    const items   = month.acards[ac.key] || [];
-    const manualT = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
-    const total   = items.length ? manualT : ac.autoVal;
-    const dispVal = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
+    const items    = month.acards[ac.key] || [];
+    const manualT  = items.reduce((s,it)=>s+(parseFloat(it.val)||0),0);
+    const total    = (!ac.readonly && items.length) ? manualT : ac.autoVal;
+    const dispVal  = ac.signed ? fmtColor(total, true) : fmtNeutral(total);
     const singleVal = items.length ? items[0].val : '';
-    return `<div class="dir-card" style="min-width:0">
+    const bodyContent = ac.readonly
+      ? `<div style="padding:8px 14px 10px;font-size:11px;color:var(--moka);opacity:.6;">${ac.sub}</div>`
+      : `<div style="padding:8px 14px 10px;display:flex;align-items:center;gap:8px">
+          <input type="text" id="facard-input-${ac.key}" value="${singleVal}"
+            placeholder="${ac.autoVal!=null ? fmt(ac.autoVal).replace('R$ ','') : '0,00'}"
+            onblur="saveFechACardSimple('${key}','${ac.key}',this.value)"
+            onkeydown="if(event.key==='Enter'){this.blur();toggleFechACard('${ac.key}')}"
+            style="flex:1;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--vinho);outline:none;padding:4px 6px;text-align:right;">
+          ${singleVal ? `<button onclick="saveFechACardSimple('${key}','${ac.key}','');document.getElementById('facard-input-${ac.key}').value=''"
+            style="background:none;border:1px solid var(--warm);border-radius:4px;cursor:pointer;color:var(--moka);font-size:10px;padding:2px 7px;font-family:'Nunito',sans-serif;">↺ auto</button>` : ''}
+        </div>`;
+    return `<div class="dir-card" style="min-width:0${ac.readonly?' border-top-color:var(--cobre)':''}">
       <div class="dir-card-header" onclick="toggleFechACard('${ac.key}')">
         <div>
           <div class="dir-card-label">${ac.label}</div>
@@ -609,15 +621,7 @@ function renderFechamento(){
         <span class="dir-card-arrow" id="facard-arrow-${ac.key}">▾</span>
       </div>
       <div class="dir-card-body" id="facard-body-${ac.key}" style="display:none">
-        <div style="padding:8px 14px 10px;display:flex;align-items:center;gap:8px">
-          <input type="text" id="facard-input-${ac.key}" value="${singleVal}"
-            placeholder="${ac.autoVal!=null ? fmt(ac.autoVal).replace('R$ ','') : '0,00'}"
-            onblur="saveFechACardSimple('${key}','${ac.key}',this.value)"
-            onkeydown="if(event.key==='Enter'){this.blur();toggleFechACard('${ac.key}')}"
-            style="flex:1;border:none;border-bottom:2px solid var(--warm);background:transparent;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;color:var(--vinho);outline:none;padding:4px 6px;text-align:right;">
-          ${singleVal ? `<button onclick="saveFechACardSimple('${key}','${ac.key}','');document.getElementById('facard-input-${ac.key}').value=''"
-            style="background:none;border:1px solid var(--warm);border-radius:4px;cursor:pointer;color:var(--moka);font-size:10px;padding:2px 7px;font-family:'Nunito',sans-serif;">↺ auto</button>` : ''}
-        </div>
+        ${bodyContent}
       </div>
     </div>`;
   }).join('');
