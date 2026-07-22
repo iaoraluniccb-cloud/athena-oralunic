@@ -2445,11 +2445,10 @@ async function loadPatients() {
   if (!r.ok) { setTimeout(loadPatients, 3000); return; }
   let raw;
   try { raw = await r.json(); } catch { setTimeout(loadPatients, 3000); return; }
-  // Exclui pacientes criados pelo módulo DIO (odontograma separado)
-  const lista = (raw || []).filter(p => {
-    const src = (typeof p.perfil === 'string' ? JSON.parse(p.perfil || '{}') : p.perfil || {}).source;
-    return src !== 'dio';
-  }).map(normalizarPaciente);
+  // Antes excluía pacientes com perfil.source === 'dio' (módulo DIO/odontograma separado).
+  // Removido em 22/07/2026: causava pacientes já cadastrados (ex.: ficha 2793) ficarem
+  // invisíveis na busca/lista principal, mesmo já efetivados no banco.
+  const lista = (raw || []).map(normalizarPaciente);
   // Se API retornou 0 pacientes mas existem no banco, recarrega em 3s
   if (lista.length === 0 && state.patients.length > 0) {
     setTimeout(loadPatients, 3000);
